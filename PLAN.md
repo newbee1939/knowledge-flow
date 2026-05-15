@@ -1,96 +1,147 @@
-TODO: 作成途中
-TODO: 完全に完成してから実装に入る
+# Knowledge Flow — マスタープラン
 
+> Status: Draft v0.4（実装着手前）
+> Last updated: 2026-05-15
 
-# Feed Lab — 最小プラン
+「今日のテックを線で理解できる」自分専用テックニュースメディア。
 
-インプット/アウトプット効率を最大化する個人ツール。
-リポジトリ自体を DB・パイプライン・サイトにする、サーバレス構成。
+**実装方針: Claude Code Skill 1 本で完結させる。** コードを書くのは静的サイトの最小設定だけ。fetch・分類・要約・執筆はすべて Skill 内の自然言語指示で行う。
 
-## 全体像
+---
 
-```
-GitHub Repo (work/feed-lab)
-  ├─ ingest.yml  (毎朝 cron)   多ソース fetch → Claude採点 → digest.md commit
-  ├─ publish.yml (毎時 cron)   share:true を拾って 日英ツイート → X 投稿
-  └─ pages.yml   (push 毎)     mkdocs build → GitHub Pages 公開
-```
-
-## リポジトリ構成（最小）
+## アーキテクチャ
 
 ```
-work/feed-lab/
-├── .github/workflows/{ingest,publish,pages}.yml
-├── src/{ingest,summarize,publish}.py
-├── feeds.yml          # 購読 RSS / 検索クエリのリスト
-├── digests/YYYY/MM/DD.md   # データ本体
-├── docs/ + mkdocs.yml
+毎朝（手動 → のち scheduled agent）
+  └─ Claude Code が .claude/skills/daily-report.md を実行
+       ├─ ニュース取得（curl / WebFetch、既存スキル流用）
+       ├─ FE / BE / Infra / AI / Others に分類 + 重要度評価
+       ├─ ジャンル別レポート本文を執筆
+       └─ reports/YYYY-MM-DD.md を git commit & push
+
+GitHub Pages
+  └─ mkdocs-material + blog plugin が reports/ をサイト化
+       ├─ /              … 最新レポート
+       └─ /YYYY-MM-DD/   … 過去レポート
 ```
 
-## データソース
+設計原則:
+1. **Skill-as-Pipeline** — fetch/分類/執筆は Claude Code Skill で完結。アプリコードは書かない
+2. **Markdown-as-Database** — DB なし。reports/ そのものがデータ
+3. **GitHub-as-Infra** — Actions / Pages / Repo だけ
+4. **Add only when it hurts** — 抽象化・依存追加は痛みを感じてから
 
-`feeds.yml` に書いたものだけ取得。最初は RSS と Hacker News のみ。
-あとから X / GitHub Trending / Reddit を追加可能。
+---
 
-## スコアリング
+## ファイル構成
 
-Claude API が記事ごとに `score (0.0-1.0)` + 1行サマリ + タグを返す。
-上位 N 件を digest に採用。閾値で雑にノイズを切る。
+```
+knowledge-flow/
+├── .claude/skills/daily-report.md   # Skill 本体（ロジックは全部ここ）
+├── reports/YYYY-MM-DD.md            # Claude が書く 1 日 1 ファイル
+├── docs/                            # mkdocs ソース（index は reports へのリンク集）
+├── mkdocs.yml
+├── .github/workflows/pages.yml      # mkdocs build → Pages deploy
+├── PLAN.md                          # 本ファイル
+└── README.md                        # 公開時に作る
+```
 
-## データモデル
+これだけ。`src/`、`scripts/`、`apps/`、`package.json`、`pyproject.toml`、いずれも **作らない**。
 
-各記事は Markdown ファイル。frontmatter に `score / share / posted` を持つ。
-- `share: true` を自分で立てると、次の publish サイクルで X に投稿される
-- 投稿後は `posted: true` と URL が書き戻される
+---
 
-## 公開
+## daily-report.md（Skill の骨組み）
 
-mkdocs-material + blog plugin + rss-plugin で静的サイト + RSS を生成。
-GitHub Pages にデプロイ。メルマガ的に読める。
+```markdown
+---
+description: 1 日分のテックニュースをジャンル別にまとめ reports/ にコミット
+---
+
+# 手順
+
+1. 今日の日付を JST で確定 → `<DATE>` とする
+2. 以下のソースから記事を集める（既存 neta-trend-daily-SKILL の収集方法を流用）
+   - はてなブックマーク IT
+   - Hacker News
+   - Reddit（r/LocalLLaMA, r/ClaudeCode, r/programming, r/webdev, r/netsec）
+   - 主要 RSS: Anthropic, Astro, AWS What's New, ...
+3. 重複排除（記事 URL の utm パラメータ等を正規化）
+4. 5 ジャンル（ai / frontend / backend / infra / others）に分類し、各ジャンル上位 3 件を選ぶ
+5. 各ジャンルにつき 300〜500 字のレポートを執筆
+   - リード文 + 主要 3 トピック + 読者にとっての示唆
+   - 引用 URL は markdown リンクで本文に埋める
+6. frontmatter（後述のスキーマ）を付けて `reports/<DATE>.md` に書く
+7. `git add reports/<DATE>.md && git commit -m "report: <DATE>" && git push`
+
+# レポートのスキーマ
+
+\`\`\`yaml
+date: 2026-05-15
+headline_ja: "一行ヘッドライン"
+genres:
+  ai:        { title: "...", weight: 0.0-1.0 }
+  frontend:  { title: "...", weight: 0.0-1.0 }
+  backend:   { title: "...", weight: 0.0-1.0 }
+  infra:     { title: "...", weight: 0.0-1.0 }
+  others:    null   # 該当なければ null
+share: false        # 手動で true にすると X 投稿対象になる（P3）
+editor_note: ""     # 管理人コメント（AI は触らない）
+\`\`\`
+
+# 注意
+
+- 既存 Skill (neta-trend-daily / url-digest) は触らない
+- editor_note フィールドは絶対に上書きしない
+- 取得に失敗したジャンルは null のまま、レポートも省略
+```
+
+---
 
 ## ロードマップ
 
-| Phase | 内容 |
+| Phase | DoD（これが出来たら次へ） |
 |---|---|
-| P1 | RSS のみ → digest → Pages 公開 |
-| P2 | HN 追加、Claude 採点導入 |
-| P3 | GitHub Trending / X / Reddit 追加 |
-| P4 | share:true → X 日本語自動投稿 |
-| P5 | 英語版投稿、Raycast 即時要約 |
+| **P1 — 手動で動かす** | Skill を書いて手動実行、reports/ にコミットされる。1 件できれば可 |
+| **P2 — サイト化** | mkdocs-material + blog plugin で Pages に出る。RSS フィードも出す |
+| **P3 — 自動化** | scheduled remote agent（or GitHub Actions + Claude Code CLI）で毎朝走る |
+| **P4 — X 投稿** | `share: true` を立てたレポートを X(JP) に投稿する別 Skill `publish-tweet.md` を追加 |
+| **P5 — 線で見るビュー** | 過去レポートを日付×ジャンルのグリッドで横断表示するページを `docs/` に追加 |
+| **P6 — 英語版** | 英語レポート出力＋ X(EN) 投稿。`report.md` プロンプトを多言語化 |
 
-P1 だけで「読めるメルマガサイト」が立つ。各フェーズ単体で使える。
+各 Phase は **既存 Phase に小さな差分** だけ。途中で「思ったより足りない」と感じたら戻ってこの表を更新する。
 
-## 設計原則
-
-1. Markdown-as-Database（DB を持たない）
-2. GitHub-as-Infra（Actions / Secrets / Pages / Repo で完結）
-3. Score-Driven Filtering（数値スコアで絞る）
+---
 
 ## やらないこと
 
-DB / 常駐サーバ / n8n / 管理画面 / 認証 / 関心ドメインモデル
-（必要になったら都度足す）
+- 自前の fetch コード（adapter.ts / sources/*.py 等）
+- Anthropic SDK 直叩き（Claude Code が呼ぶので不要）
+- TypeScript / Python プロジェクト化
+- Astro / Next / SvelteKit
+- DB / 常駐サーバ / 管理画面 / 認証
+- 複数ユーザー対応
 
-## シークレット（GitHub Actions secrets）
+必要になったら都度足す。痛みを感じる前には足さない。
 
-`ANTHROPIC_API_KEY`, `X_API_*`, `REDDIT_*`（追加時に登録）
+---
 
-## その他
+## オープン課題（実装に着手しながら潰す）
 
-- 英語・日本語の両方でアウトプット
-- 様々な場所にアウトプット
-- 日次・週次・月次
-    - 今日は何があったか
-    - 今週のトレンドは何か
-    - 先月からどう変わったか
-- はてブのChrome拡張で行ける。tsumikiは不要
-    - あとで読む記事の要約とかは、TILで管理してもいいかも
-    - それかはてブのチェックを定期予定にするとか
+- [ ] mkdocs-material vs docsify 比較（最初のサイト構築で 30 分だけ素振り）
+- [ ] scheduled remote agent と GitHub Actions + Claude Code CLI、自動化の選択（P3 着手前に決める）
+- [ ] X 投稿に必要な API 権限・Free tier の上限（P4 着手前）
+- [ ] reports/ が増えてきた時のサイトナビゲーション設計（P5 で）
+
+---
 
 ## 参考
 
+- 着想: https://docs.google.com/presentation/d/1eV0iDSK3-XD6Wcl4XlJE76iZD4MnpqkB/edit
+- 既存 Skill: https://gist.github.com/hand-dot/bf6f928dce14095d5eef4f6aae63275e
 - mkdocs-material: https://squidfunk.github.io/mkdocs-material/
 - mkdocs blog plugin: https://squidfunk.github.io/mkdocs-material/setup/setting-up-a-blog/
 - actions/deploy-pages: https://github.com/actions/deploy-pages
-- HN Algolia API: https://hn.algolia.com/api
-- X API v2 search: https://docs.x.com/x-api/posts/recent-search
+
+### 既存運用との関係
+
+`neta-trend-daily` は探索用、`url-digest` は単発要約用としてそのまま残す。本プロジェクトはそれらの収集ノウハウを **継続化・サイト化** する 1 枚上のレイヤー。
