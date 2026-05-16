@@ -1,11 +1,10 @@
-# Knowledge Flow — マスタープラン
+# Tech News Timeline
 
-> Status: Draft v0.4（実装着手前）
-> Last updated: 2026-05-15
+「今日のテックを線で理解できる」自分専用テックニュースメディア。日次レポートを **年→月→日のタイムライン** で横断表示する。
 
-「今日のテックを線で理解できる」自分専用テックニュースメディア。
+**実装方針: Claude Code Skill で完結させる。** コードを書くのは静的サイトの最小設定だけ。fetch・分類・要約・執筆はすべて Skill 内の自然言語指示で行う。
 
-**実装方針: Claude Code Skill 1 本で完結させる。** コードを書くのは静的サイトの最小設定だけ。fetch・分類・要約・執筆はすべて Skill 内の自然言語指示で行う。
+**デザイン方針: モノクロ・ミニマル・洗練。** 黒白（＋極小のアクセント）、装飾を足さず **余白とタイポグラフィの精度** で勝負。年→月→日を横スクロールするタイムラインが主役。mkdocs-material 既定のドキュメントサイト感は**消す**（カスタム CSS で上書き）。「個人のメモサイト」に見えたら負け。
 
 ---
 
@@ -15,21 +14,31 @@
 毎朝（scheduled agent）
   └─ Claude Code が .claude/skills/daily-report.md を実行
        ├─ ニュース取得（curl / WebFetch、既存スキル流用）
-       ├─ FE / BE / Infra / AI / Others に分類 + 重要度が高い順に並べる
+       ├─ AI / Frontend / Backend / Infra / Others に分類 + 重要度順
        ├─ レポート本文を執筆
-       └─ reports/YYYY-MM-DD.md を git commit & push
+       ├─ docs/blog/posts/YYYY-MM-DD.md を書く
+       ├─ docs/index.md（タイムライン UI）を再生成
+       └─ git commit & push
+
+月末（scheduled agent）
+  └─ monthly-summary.md → docs/summaries/YYYY-MM.md
+
+年末（scheduled agent）
+  └─ yearly-summary.md → docs/summaries/YYYY.md
 
 GitHub Pages
-  └─ mkdocs-material + blog plugin が reports/ をサイト化
-       ├─ /              … 最新レポート
-       └─ /YYYY-MM-DD/   … 過去レポート
+  └─ mkdocs-material がビルド
+       ├─ /                  … タイムライン（独自 UI）
+       ├─ /blog/YYYY-MM-DD/  … 日次レポート（blog plugin）
+       └─ /summaries/...     … 月次・年次サマリ
 ```
 
 設計原則:
 1. **Skill-as-Pipeline** — fetch/分類/執筆は Claude Code Skill で完結。アプリコードは書かない
-2. **Markdown-as-Database** — DB なし。reports/ そのものがデータ
-3. **GitHub-as-Infra** — Actions / Pages / Repo だけ
-4. **Add only when it hurts** — 抽象化・依存追加は痛みを感じてから
+2. **Markdown-as-Database** — DB なし。`docs/` 配下の markdown そのものがデータ
+3. **GitHub-as-Infra** — GitHub の Actions / Pages / Repo だけ
+4. **Design-as-Product** — 「個人のメモサイト」に見えたら負け。タイポグラフィと余白に妥協しない
+5. **Add only when it hurts** — 抽象化・依存追加は痛みを感じてから
 
 ---
 
@@ -37,16 +46,26 @@ GitHub Pages
 
 ```
 knowledge-flow/
-├── .claude/skills/daily-report.md   # Skill 本体（ロジックは全部ここ）
-├── reports/YYYY-MM-DD.md            # Claude が書く 1 日 1 ファイル
-├── docs/                            # mkdocs ソース（index は reports へのリンク集）
+├── .claude/skills/
+│   ├── daily-report.md              # 日次 Skill（メイン）
+│   ├── monthly-summary.md           # 月末バッチ（P4）
+│   └── yearly-summary.md            # 年末バッチ（P4）
+├── docs/
+│   ├── index.md                     # タイムライン UI（daily-report が再生成）
+│   ├── stylesheets/extra.css        # カスタム CSS（P2）
+│   ├── blog/
+│   │   ├── index.md
+│   │   └── posts/YYYY-MM-DD.md      # 日次レポート
+│   └── summaries/
+│       ├── YYYY-MM.md               # 月次サマリ（P4）
+│       └── YYYY.md                  # 年次サマリ（P4）
 ├── mkdocs.yml
 ├── .github/workflows/pages.yml      # mkdocs build → Pages deploy
-├── PLAN.md                          # 本ファイル
-└── README.md                        # 公開時に作る
+├── ARCHITECTURE.md                  # 本ファイル
+└── README.md
 ```
 
-これだけ。`src/`、`scripts/`、`apps/`、`package.json`、`pyproject.toml`、いずれも **作らない**。
+`src/`、`scripts/`、`apps/`、`package.json`、`pyproject.toml`、いずれも **作らない**。
 
 ---
 
@@ -54,7 +73,7 @@ knowledge-flow/
 
 ```markdown
 ---
-description: 1 日分のテックニュースをジャンル別にまとめ reports/ にコミット
+description: 1 日分のテックニュースをジャンル別にまとめ docs/blog/posts/ にコミット
 ---
 
 # 手順
@@ -70,13 +89,14 @@ description: 1 日分のテックニュースをジャンル別にまとめ repo
 5. 各ジャンルにつき 300〜500 字のレポートを執筆
    - リード文 + 主要 3 トピック + 読者にとっての示唆
    - 引用 URL は markdown リンクで本文に埋める
-6. frontmatter（後述のスキーマ）を付けて `reports/<DATE>.md` に書く
-7. `git add reports/<DATE>.md && git commit -m "report: <DATE>" && git push`
+6. frontmatter（後述のスキーマ）を付けて `docs/blog/posts/<DATE>.md` に書く
+7. `docs/index.md`（タイムライン UI）の今日の枠を更新
+8. `git add docs/ && git commit -m "report: <DATE>" && git push`
 
 # レポートのスキーマ
 
 \`\`\`yaml
-date: 2026-05-15
+date: 2026-05-16
 title: "一行ヘッドライン"
 \`\`\`
 
@@ -95,11 +115,11 @@ title: "一行ヘッドライン"
 
 | Phase | DoD（これが出来たら次へ） |
 |---|---|
-| **P1 — 手動で動かす** | Skill を書いて手動実行、reports/ にコミットされる。1 件できれば可 |
-| **P2 — サイト化** | mkdocs-material + blog plugin で Pages に出る。RSS フィードも出す |
-| **P3 — 自動化** | scheduled remote agent（or GitHub Actions + Claude Code CLI）で毎朝走る |
-| **P4 — X 投稿** | `share: true` を立てたレポートを X(JP) に投稿する別 Skill `publish-tweet.md` を追加 |
-| **P5 — 線で見るビュー** | 過去レポートを日付×ジャンルのグリッドで横断表示するページを `docs/` に追加 |
-| **P6 — 英語版** | 英語レポート出力＋ X(EN) 投稿。`report.md` プロンプトを多言語化 |
+| **P1 — Skill 化** | `daily-report.md` を書いて手動実行、`docs/blog/posts/<DATE>.md` が 1 件できる |
+| **P2 — サイト化＋タイムライン UI** | mkdocs-material で Pages 公開。`docs/index.md` が年→月→日の横スクロール・タイムライン。**デザインに妥協しない**（カスタム CSS / 独自タイポグラフィ） |
+| **P3 — 自動化** | scheduled agent で毎朝 `daily-report` が走る |
+| **P4 — 月次・年次サマリ** | `monthly-summary.md` / `yearly-summary.md` を追加。月末・年末バッチで生成し、タイムラインの月/年ラベルに反映 |
+| **P5 — X 投稿** | レポートを X(JP) に投稿する別 Skill `publish-tweet.md` を追加 |
+| **P6 — 英語版** | 英語レポート出力＋ X(EN) 投稿。プロンプトを多言語化 |
 
 各 Phase は **既存 Phase に小さな差分** だけ。途中で「思ったより足りない」と感じたら戻ってこの表を更新する。
