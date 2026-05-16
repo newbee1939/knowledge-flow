@@ -12,11 +12,11 @@
 ## アーキテクチャ
 
 ```
-毎朝（手動 → のち scheduled agent）
+毎朝（scheduled agent）
   └─ Claude Code が .claude/skills/daily-report.md を実行
        ├─ ニュース取得（curl / WebFetch、既存スキル流用）
-       ├─ FE / BE / Infra / AI / Others に分類 + 重要度評価
-       ├─ ジャンル別レポート本文を執筆
+       ├─ FE / BE / Infra / AI / Others に分類 + 重要度が高い順に並べる
+       ├─ レポート本文を執筆
        └─ reports/YYYY-MM-DD.md を git commit & push
 
 GitHub Pages
@@ -60,7 +60,7 @@ description: 1 日分のテックニュースをジャンル別にまとめ repo
 # 手順
 
 1. 今日の日付を JST で確定 → `<DATE>` とする
-2. 以下のソースから記事を集める（既存 neta-trend-daily-SKILL の収集方法を流用）
+2. 以下のソースから記事を集める
    - はてなブックマーク IT
    - Hacker News
    - Reddit（r/LocalLLaMA, r/ClaudeCode, r/programming, r/webdev, r/netsec）
@@ -109,39 +109,3 @@ editor_note: ""     # 管理人コメント（AI は触らない）
 | **P6 — 英語版** | 英語レポート出力＋ X(EN) 投稿。`report.md` プロンプトを多言語化 |
 
 各 Phase は **既存 Phase に小さな差分** だけ。途中で「思ったより足りない」と感じたら戻ってこの表を更新する。
-
----
-
-## やらないこと
-
-- 自前の fetch コード（adapter.ts / sources/*.py 等）
-- Anthropic SDK 直叩き（Claude Code が呼ぶので不要）
-- TypeScript / Python プロジェクト化
-- Astro / Next / SvelteKit
-- DB / 常駐サーバ / 管理画面 / 認証
-- 複数ユーザー対応
-
-必要になったら都度足す。痛みを感じる前には足さない。
-
----
-
-## オープン課題（実装に着手しながら潰す）
-
-- [ ] mkdocs-material vs docsify 比較（最初のサイト構築で 30 分だけ素振り）
-- [ ] scheduled remote agent と GitHub Actions + Claude Code CLI、自動化の選択（P3 着手前に決める）
-- [ ] X 投稿に必要な API 権限・Free tier の上限（P4 着手前）
-- [ ] reports/ が増えてきた時のサイトナビゲーション設計（P5 で）
-
----
-
-## 参考
-
-- 着想: https://docs.google.com/presentation/d/1eV0iDSK3-XD6Wcl4XlJE76iZD4MnpqkB/edit
-- 既存 Skill: https://gist.github.com/hand-dot/bf6f928dce14095d5eef4f6aae63275e
-- mkdocs-material: https://squidfunk.github.io/mkdocs-material/
-- mkdocs blog plugin: https://squidfunk.github.io/mkdocs-material/setup/setting-up-a-blog/
-- actions/deploy-pages: https://github.com/actions/deploy-pages
-
-### 既存運用との関係
-
-`neta-trend-daily` は探索用、`url-digest` は単発要約用としてそのまま残す。本プロジェクトはそれらの収集ノウハウを **継続化・サイト化** する 1 枚上のレイヤー。
