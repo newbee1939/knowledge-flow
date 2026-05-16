@@ -77,22 +77,16 @@ description: 1 日分のテックニュースをジャンル別にまとめ repo
 
 \`\`\`yaml
 date: 2026-05-15
-headline_ja: "一行ヘッドライン"
-genres:
-  ai:        { title: "...", weight: 0.0-1.0 }
-  frontend:  { title: "...", weight: 0.0-1.0 }
-  backend:   { title: "...", weight: 0.0-1.0 }
-  infra:     { title: "...", weight: 0.0-1.0 }
-  others:    null   # 該当なければ null
-share: false        # 手動で true にすると X 投稿対象になる（P3）
-editor_note: ""     # 管理人コメント（AI は触らない）
+title: "一行ヘッドライン"
 \`\`\`
+
+本文は markdown の H2 で 5 ジャンル（ai / frontend / backend / infra / others）を区切る。
+`weight` / `share` / `editor_note` 等は必要になってから追加する（[[feedback-simple-first]]）。
 
 # 注意
 
 - 既存 Skill (neta-trend-daily / url-digest) は触らない
-- editor_note フィールドは絶対に上書きしない
-- 取得に失敗したジャンルは null のまま、レポートも省略
+- 取得に失敗したジャンルは本文ごと省略
 ```
 
 ---
