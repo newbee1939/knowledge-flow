@@ -165,3 +165,12 @@ title: "一行ヘッドライン"
 | **P6 — 配信先拡張** | `publish.md` 追加 → X(JP/EN) 投稿 + Spotify 音声配信（TTS → `docs/audio/` + `docs/podcast.xml`、Spotify は RSS から自動取得） |
 
 各 Phase は **既存 Phase に小さな差分** だけ。途中で「思ったより足りない」と感じたら戻ってこの表を更新する。
+
+### P2 終了レビュー — Astro 移行ゲート
+
+P2 完了時点で **タイムライン UI を mkdocs の HTML-in-markdown で組んでいて 1 日以上沼ったら、Astro 移行を発議する**。
+
+- 移行先は [Astro](https://astro.build/)（Content Collections + 内蔵 i18n）
+- posts の markdown と CSS はほぼそのまま持ち込めるので、移行コストが低いうちに決断する
+- 移行する場合は line 38 の「Skill-as-Pipeline」「Markdown-as-Database」は維持。「`src/` / `package.json` を作らない」原則（line 68 相当）は破る前提で書き換える
+- 沼らなければ mkdocs-material のまま P3 へ進む（[[feedback-simple-first]]）
