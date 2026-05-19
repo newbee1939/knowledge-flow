@@ -12,11 +12,11 @@
 ```
 # ブランチ命名: <phase>/<task-id>/<slug>
 git switch main && git pull
-git switch -c p1/p1-1/init-dirs
+git switch -c <phase>/<task-id>/<slug>
 ```
 
-コミットメッセージ: `chore: ディレクトリ構造作成 (P1-1)`
-type: `feat` / `fix` / `chore` / `docs` / `style`
+コミットメッセージ: `<type>: <概要> (<task-id>)`
+type: `feat` / `fix` / `chore` / `docs` / `style` / `refactor` / `ci`
 
 ## セルフレビュー（PR 前に確認）
 
