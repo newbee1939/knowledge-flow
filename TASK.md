@@ -19,7 +19,7 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 **Goal**: `daily-report.md` の手動実行で `docs/blog/posts/<DATE>.md` が 1 件できる
 
 ### P1-1. リポジトリ最小構造の作成
-- [ ] **やること**: 以下のディレクトリを `mkdir -p` で作成
+- [x] **やること**: 以下のディレクトリを `mkdir -p` で作成
   - `.claude/skills/`
   - `docs/blog/posts/`
 - **成果物**: 空ディレクトリ（`.gitkeep` 不要、後続タスクですぐ埋まる）
