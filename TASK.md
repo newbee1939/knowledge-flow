@@ -26,7 +26,7 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **DoD**: `ls .claude/skills docs/blog/posts` が両方成功
 
 ### P1-2. README.md の最小版
-- [ ] **やること**: プロジェクトの一行説明＋ ARCHITECTURE.md へのリンクだけの README.md を作る
+- [x] **やること**: プロジェクトの一行説明＋ ARCHITECTURE.md へのリンクだけの README.md を作る
 - **成果物**: `/README.md`
 - **DoD**: GitHub のリポジトリトップで概要が読める内容
 
