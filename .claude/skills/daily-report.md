@@ -74,12 +74,12 @@ LLM を使った機能の品質を、人手レビューに頼らず CI で自動
 
 ## Reddit
 取得方法は `# 注意` 参照（WebFetch 不可、curl で取る）。
-- r/programming `[RSS]`: https://old.reddit.com/r/programming/.rss
-- r/ExperiencedDevs `[RSS]`: https://old.reddit.com/r/ExperiencedDevs/.rss
-- r/MachineLearning `[RSS]`: https://old.reddit.com/r/MachineLearning/.rss
-- r/LocalLLaMA `[RSS]`: https://old.reddit.com/r/LocalLLaMA/.rss
-- r/sre `[RSS]`: https://old.reddit.com/r/sre/.rss
-- r/devops `[RSS]`: https://old.reddit.com/r/devops/.rss
+- r/programming `[RSS]`: https://www.reddit.com/r/programming/.rss
+- r/ExperiencedDevs `[RSS]`: https://www.reddit.com/r/ExperiencedDevs/.rss
+- r/MachineLearning `[RSS]`: https://www.reddit.com/r/MachineLearning/.rss
+- r/LocalLLaMA `[RSS]`: https://www.reddit.com/r/LocalLLaMA/.rss
+- r/sre `[RSS]`: https://www.reddit.com/r/sre/.rss
+- r/devops `[RSS]`: https://www.reddit.com/r/devops/.rss
 
 ## セキュリティ
 - IPA セキュリティアラート `[HTML]`: https://www.ipa.go.jp/security/security-alert/index.html
@@ -88,5 +88,5 @@ LLM を使った機能の品質を、人手レビューに頼らず CI で自動
 
 - 既存 Skill（neta-trend-daily / url-digest）は触らない。
 - 取得に失敗したソース・ジャンルは省略する（失敗履歴の記録・連続失敗判定は P3 で追加）。
-- Reddit は WebFetch 不可。`curl -s -H 'User-Agent: knowledge-flow/1.0' <URL>` で `old.reddit.com` の RSS を取得する（`www.reddit.com` は接続拒否されるため使わない）。
+- Reddit は WebFetch 不可（Claude Code がブロック）。`curl -s -H 'User-Agent: knowledge-flow/1.0' <URL>` で RSS を取得する。汎用 UA（`Mozilla/5.0` 等）や `.json` API は弾かれるので、固有 UA ＋ `.rss` を使う。レート制限で一時的に失敗することがあるが、その場合はスキップ。
 - index.md（タイムライン）更新は P2、英訳は P5 で追加する。
