@@ -7,16 +7,20 @@
 
 ## ブランチ・PR ワークフロー
 
-**1 タスク（TASK.md 1項目）= 1 ブランチ = 1 PR**
+- 基本的には**1 タスク（TASK.md 1項目）= 1 ブランチ = 1 PR**
+    - 必要に応じて複数タスクを1つのPRにまとめるのは許可
+- 以下を実行してからタスクを開始する
 
 ```
-# ブランチ命名: <phase>/<task-id>/<slug>
-git switch main && git pull
-git switch -c <phase>/<task-id>/<slug>
+# ブランチ命名: feature/任意の命名
+git co main && git pull origin main
+git co -b feature/任意の命名
 ```
 
 コミットメッセージ: `<type>: <概要> (<task-id>)`
 type: `feat` / `fix` / `chore` / `docs` / `style` / `refactor` / `ci`
+
+- 必ず出ているPRをマージしてから次のタスクに進む
 
 ## セルフレビュー（PR 前に確認）
 
