@@ -31,17 +31,17 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **DoD**: GitHub のリポジトリトップで概要が読める内容
 
 ### P1-3. daily-report.md スケルトン作成
-- [ ] **やること**: ARCHITECTURE.md「daily-report.md（Skill の骨組み）」節をベースに `.claude/skills/daily-report.md` を作成。frontmatter（`description`）、`# 手順`、`# レポートのスキーマ`、`# 注意` を含める
+- [x] **やること**: ARCHITECTURE.md「daily-report.md（Skill の骨組み）」節をベースに `.claude/skills/daily-report.md` を作成。frontmatter（`description`）、`# 手順`、`# レポートのスキーマ`、`# 注意` を含める
 - **成果物**: `.claude/skills/daily-report.md`
 - **DoD**: `claude` 起動時に `/daily-report` がスキル一覧に出る
 
 ### P1-4. 情報ソース節を Skill に展開
-- [ ] **やること**: ARCHITECTURE.md「## 情報ソース」節の URL＋タグを `daily-report.md` 内に転記（ARCHITECTURE.md と二重管理になるが、Skill 単体で完結させる方を優先）
+- [x] **やること**: ARCHITECTURE.md「## 情報ソース」節の URL＋タグを `daily-report.md` 内に転記（ARCHITECTURE.md と二重管理になるが、Skill 単体で完結させる方を優先）
 - **成果物**: `daily-report.md` 内の `## 情報ソース` セクション
 - **DoD**: Skill 内に全ソースの URL とタグ（`[RSS]`/`[Atom]`/`[API]`/`[JSON]`/`[HTML]`）が揃う
 
 ### P1-5. 取得手順の具体化（タグ別）
-- [ ] **やること**: 各タグでの取得コマンドを `daily-report.md` 手順に追記
+- [x] **やること**: 各タグでの取得コマンドを `daily-report.md` 手順に追記
   - `[RSS]`/`[Atom]`: WebFetch でそのまま取得
   - `[API]`/`[JSON]`: `curl -s <URL> | jq` でフィールド抽出
   - `[HTML]`: WebFetch で取得 → 本文抽出指示
@@ -50,32 +50,32 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **DoD**: 任意の 1 ソースを取り出して試したとき、Skill の指示だけで取得できる
 
 ### P1-6. 重複排除ルールの明文化
-- [ ] **やること**: URL 正規化ルールを Skill に書く。少なくとも `utm_*` / `fbclid` / `gclid` クエリパラメータを除去、末尾スラッシュ統一、`http→https`
+- [x] **やること**: URL 正規化ルールを Skill に書く。少なくとも `utm_*` / `fbclid` / `gclid` クエリパラメータを除去、末尾スラッシュ統一、`http→https`
 - **成果物**: `daily-report.md` の「3. 重複排除」項
 - **DoD**: 同一記事が複数ソースで現れても 1 件に畳める指示が書かれている
 
 ### P1-7. 分類ルール（5 ジャンル）の定義
-- [ ] **やること**: ai / frontend / backend / infra / others それぞれの判定基準（キーワード例・境界事例）を Skill に書く。各ジャンル上位 3 件まで
+- [x] **やること**: ai / frontend / backend / infra / others それぞれの判定基準（キーワード例・境界事例）を Skill に書く。各ジャンル上位 3 件まで
 - **成果物**: `daily-report.md` の「4. 分類」項
 - **DoD**: 1 記事を読んだとき、どのジャンルに入るか Skill 指示だけで一意に決まる
 
 ### P1-8. 執筆フォーマット（300〜500 字／ジャンル）の固定
-- [ ] **やること**: 「リード文 1 文 → 3 トピック箇条書き → 示唆 1〜2 文」の構造をテンプレ化。引用 URL は本文中にインライン Markdown リンクで埋め込む
+- [x] **やること**: 「リード文 1 文 → 3 トピック箇条書き → 示唆 1〜2 文」の構造をテンプレ化。引用 URL は本文中にインライン Markdown リンクで埋め込む
 - **成果物**: `daily-report.md` の「5. 執筆」項に例文付きで記載
 - **DoD**: テンプレに沿った 1 ジャンル分の見本が Skill 内にある
 
 ### P1-9. レポート frontmatter スキーマの確定
-- [ ] **やること**: `date`（ISO 8601）、`title`（一行ヘッドライン）だけに絞る。`weight` / `share` / `editor_note` は書かない（[[feedback-simple-first]]）
+- [x] **やること**: `date`（ISO 8601）、`title`（一行ヘッドライン）だけに絞る。`weight` / `share` / `editor_note` は書かない（[[feedback-simple-first]]）
 - **成果物**: `daily-report.md` の「# レポートのスキーマ」項
 - **DoD**: スキーマが 2 フィールドのみ
 
 ### P1-10. 出力先パスとファイル名規約
-- [ ] **やること**: `docs/blog/posts/YYYY-MM-DD.md` 固定。同日 2 回実行したら上書き
+- [x] **やること**: `docs/blog/posts/YYYY-MM-DD.md` 固定。同日 2 回実行したら上書き
 - **成果物**: `daily-report.md` の「6. 書き出し」項
 - **DoD**: 日付を渡せば出力先パスが一意に決まる
 
 ### P1-11. git commit 規約
-- [ ] **やること**: メッセージは `report: YYYY-MM-DD` 固定、`git add docs/` で範囲を絞る、`git push` は P1 では任意（手動確認したいので）
+- [x] **やること**: メッセージは `report: YYYY-MM-DD` 固定、`git add docs/` で範囲を絞る、`git push` は P1 では任意（手動確認したいので）
 - **成果物**: `daily-report.md` の「8. commit」項
 - **DoD**: コミットメッセージのフォーマットが明示
 
