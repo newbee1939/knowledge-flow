@@ -54,7 +54,6 @@ title: "一行ヘッドライン"
 - Gigazine `[RSS]`: https://gigazine.net/news/rss_2.0/
 - GIZMODO JP `[RSS]`: https://www.gizmodo.jp/index.xml
 - coliss `[RSS]`: https://coliss.com/feed/
-- Workship `[RSS]`: https://goworkship.com/magazine/feed/
 - Findy `[RSS]`: https://api.findy-code.io/rss/media/recent
 - はてブ SRE 検索 `[RSS]`: https://b.hatena.ne.jp/q/sre?date_range=5y&sort=recent&target=all&users=3&mode=rss
 
@@ -69,7 +68,7 @@ title: "一行ヘッドライン"
 - Dev.to `[RSS]`: https://dev.to/feed/
 - HACKERNOON `[RSS]`: https://hackernoon.com/feed
 - Product Hunt `[RSS]`: https://www.producthunt.com/feed
-- GCP Release Notes `[Atom]`: https://cloud.google.com/feeds/gcp-release-notes.xml
+- Google Cloud Release Notes `[Atom]`: https://cloud.google.com/feeds/gcp-release-notes.xml
 - Google Cloud (Medium) `[RSS]`: https://medium.com/feed/google-cloud
 - SRE Weekly `[RSS]`: https://sreweekly.com/feed/
 
