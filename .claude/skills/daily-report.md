@@ -8,7 +8,7 @@ description: 1 日分のテックニュースをジャンル別にまとめ docs
 2. **取得**: `# 情報ソース` の各行の `[TAG]` に従う。`[RSS]`/`[Atom]`/`[HTML]` は WebFetch、`[API]`/`[JSON]` は `curl -s <URL>` + `jq`。取得できなければそのソースはスキップ。
 3. **重複排除**: URL を正規化（`http`→`https`、`utm_*`/`fbclid`/`gclid` 除去、末尾スラッシュ除去）し、一致するものは 1 件に畳む。
 4. **分類**: ai / frontend / backend / infra / others に分類（1 記事 1 ジャンル、迷ったら主題で判断）。各ジャンル上位 3 件まで。
-5. **執筆**: 各ジャンルで、その日の重要ニュースを 3 件ピックアップし、1 件ずつ簡潔にまとめる。各トピックは「見出し（記事タイトルをインラインリンクにした H3）＋ 要約 2〜3 文」。冗長な前置き・締めは書かない。
+5. **執筆**: 各ジャンルで、その日の重要ニュースを 3 件ピックアップし、1 件ずつしっかり要約する。各トピックは「見出し（記事タイトルをインラインリンクにした H3）＋ 要約 4〜6 文」。要約には〈何が起きたか・技術的な要点・なぜ重要か〉を含める。冗長な前置き・締めは書かない。
 6. **書き出し**: `docs/blog/posts/<DATE>.md` に書く（同日再実行は上書き）。先頭に下記スキーマの frontmatter、本文は H2 で 5 ジャンル。空のジャンルはセクションごと省略。
 7. **commit**: `git add docs/ && git commit -m "report: <DATE>"`。push は任意（手動確認のため）。
 
@@ -31,13 +31,13 @@ title: "一行ヘッドライン"
 ## ai
 
 ### [複数エージェントを協調させる実装パターン](https://example.com/a)
-状態共有とエラー伝播の設計が要点。単一エージェントより制御は複雑だが、役割分担で精度が上がると報告された。
+複数の LLM エージェントを役割分担させて 1 つのタスクを解く構成が紹介された。エージェント間で状態をどう共有し、片方の失敗をどう伝播・回復させるかが設計の肝で、単一エージェントより制御は複雑になる。記事では「プランナー／実行者／検証者」に分ける構成例を示し、検証者を挟むことで誤った出力の混入が減ったと報告。一方でエージェント数に比例してトークンコストとレイテンシが増えるため、タスクの難度に応じて使い分けるべきと結論づけている。
 
 ### [LLM 出力の自動評価を CI に組み込む試み](https://example.com/b)
-回帰検知をどう閾値化するかが論点。人手レビューを減らしつつ品質を担保する実践例として注目。
+LLM を使った機能の品質を、人手レビューに頼らず CI で自動チェックする取り組み。出力のブレをどう数値化し、どこに合格ラインを引くか（回帰検知の閾値化）が最大の論点として挙げられた。記事では正解例との類似度スコアと、別の LLM による採点を組み合わせる手法を紹介。完全な自動化は難しいものの、明らかな劣化を早期に検知する「ガードレール」としては有効だとしている。
 
 ### [小型モデルのローカル運用コスト比較](https://example.com/c)
-推論コストと精度のトレードオフを整理。用途次第では小型モデルのローカル運用が現実的との結論。
+クラウド API と、手元 GPU で動かす小型モデルのコスト・精度を実測比較した記事。リクエスト量が一定を超えるとローカル運用のほうが安くなる損益分岐点が示された。精度は大規模モデルに劣るが、要約や分類など定型タスクでは実用十分との評価。データを外部に出さずに済むプライバシー面の利点も、用途次第では決め手になると整理している。
 ```
 
 # 情報ソース
@@ -72,6 +72,15 @@ title: "一行ヘッドライン"
 - Google Cloud (Medium) `[RSS]`: https://medium.com/feed/google-cloud
 - SRE Weekly `[RSS]`: https://sreweekly.com/feed/
 
+## Reddit
+取得方法は `# 注意` 参照（WebFetch 不可、curl で取る）。
+- r/programming `[RSS]`: https://old.reddit.com/r/programming/.rss
+- r/ExperiencedDevs `[RSS]`: https://old.reddit.com/r/ExperiencedDevs/.rss
+- r/MachineLearning `[RSS]`: https://old.reddit.com/r/MachineLearning/.rss
+- r/LocalLLaMA `[RSS]`: https://old.reddit.com/r/LocalLLaMA/.rss
+- r/sre `[RSS]`: https://old.reddit.com/r/sre/.rss
+- r/devops `[RSS]`: https://old.reddit.com/r/devops/.rss
+
 ## セキュリティ
 - IPA セキュリティアラート `[HTML]`: https://www.ipa.go.jp/security/security-alert/index.html
 
@@ -79,4 +88,5 @@ title: "一行ヘッドライン"
 
 - 既存 Skill（neta-trend-daily / url-digest）は触らない。
 - 取得に失敗したソース・ジャンルは省略する（失敗履歴の記録・連続失敗判定は P3 で追加）。
+- Reddit は WebFetch 不可。`curl -s -H 'User-Agent: knowledge-flow/1.0' <URL>` で `old.reddit.com` の RSS を取得する（`www.reddit.com` は接続拒否されるため使わない）。
 - index.md（タイムライン）更新は P2、英訳は P5 で追加する。
