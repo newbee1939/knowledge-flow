@@ -20,6 +20,7 @@ git co -b feature/任意の命名
 コミットメッセージ: `<type>: <概要> (<task-id>)`
 type: `feat` / `fix` / `chore` / `docs` / `style` / `refactor` / `ci`
 
+- PR上でAIによるレビューが来るので対応する
 - 必ず出ているPRをマージしてから次のタスクに進む
 
 ## セルフレビュー（PR 前に確認）
