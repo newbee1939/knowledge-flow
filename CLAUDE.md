@@ -21,6 +21,7 @@ git co -b feature/任意の命名
 type: `feat` / `fix` / `chore` / `docs` / `style` / `refactor` / `ci`
 
 - PR上でAIによるレビューが来るので対応する
+    - 修正したら、それぞれのコメントに返信した上でコメントをResolveする
 - 必ず出ているPRをマージしてから次のタスクに進む
 
 ## セルフレビュー（PR 前に確認）
