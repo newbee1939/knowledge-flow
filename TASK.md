@@ -167,7 +167,7 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **DoD**: Secrets に登録済み、App がリポジトリに入っている
 - **注記**: **AI 単独不可。ユーザーに依頼**
 
-### P3-2. SKILL.md の commit 手順を push まで含める
+### P3-2. SKILL.md の commit 手順を push まで含める（落とし穴 6）
 - [ ] **やること**: `SKILL.md` の手順 7 は現在 `git commit` までで「push は任意」となっている。**これは P1（手動確認したい）の前提であり、P3 では誰も push しないためレポートがランナー上で消える。** 手順 7 を `git push origin main` まで含める形に更新する
 - **成果物**: `.claude/skills/daily-report/SKILL.md` の手順 7
 - **DoD**: Skill 単体の実行で main まで反映される
