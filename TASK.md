@@ -91,80 +91,76 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 
 ## P2 — サイト化＋タイムライン UI
 
-**Goal**: mkdocs-material で GitHub Pages 公開。`docs/index.md` が年→月→日の横スクロール・タイムライン。デザインに妥協しない
+**Goal**: Astro で GitHub Pages 公開。`/` が posts から導出された年→月→日の横スクロール・タイムライン。デザインに妥協しない
 
-### P2-1. mkdocs / mkdocs-material のローカルセットアップ確認
-- [ ] **やること**: `python3 -m pip install --user mkdocs mkdocs-material` で導入。`mkdocs --version` で確認。**`pyproject.toml` は作らない**（[[feedback-simple-first]] と「ファイル構成」節）
-- **成果物**: ローカル環境への導入のみ
-- **DoD**: `mkdocs serve` がコマンドとして通る
+> **前提**: SSG は Astro（ARCHITECTURE.md「SSG の選定」節）。既製テーマは使わず HTML/CSS を自前で書く。**タイムラインは posts からビルド時に導出する**（Skill には生成させない = 設計原則 Derived-not-Generated）。
 
-### P2-2. mkdocs.yml の最小設定
-- [ ] **やること**: `site_name`、`theme: name: material`、`docs_dir: docs`、`nav` 最小、`extra_css: [stylesheets/extra.css]` を定義
-- **成果物**: `/mkdocs.yml`
-- **DoD**: `mkdocs serve` で localhost が立ち上がり 200 で返る
+### P2-1. Astro プロジェクトの初期化
+- [ ] **やること**: `npm create astro@latest` で最小構成（テンプレートは empty、TypeScript 有効）。バージョンはピン留めする
+- **成果物**: `/package.json`、`/astro.config.mjs`、`/src/`
+- **DoD**: `npm run dev` で localhost が 200 で返る
 
-### P2-3. docs/index.md の初期版
-- [ ] **やること**: H1 タイトル＋短いリード文＋空のタイムライン領域（`<div id="timeline">…</div>`）を置く
-- **成果物**: `/docs/index.md`
-- **DoD**: ローカルでトップが表示
+### P2-2. Content Collections で docs/ を読む
+- [ ] **やること**: `src/content.config.ts` に `glob()` ローダーで `docs/blog/posts/*.md` を読むコレクションを定義。スキーマは `date` / `title` の 2 フィールド（Zod）
+- **成果物**: `/src/content.config.ts`
+- **DoD**: `getCollection()` で既存の `2026-07-13.md` が型付きで取れる
 
-### P2-4. extra.css でデフォルト装飾の打ち消し
-- [ ] **やること**: mkdocs-material 既定のヘッダー色／ナビ／フッターを白黒・ミニマルに上書き。フォントは system-ui＋等幅は SF Mono / Menlo
-- **成果物**: `/docs/stylesheets/extra.css`
-- **DoD**: ロゴ・アクセント色・余計な装飾が消え、白黒ベースになる
+### P2-3. 日次レポートページ
+- [ ] **やること**: `src/pages/blog/[slug].astro` で posts を静的生成。Mermaid コードブロックの描画も通す
+- **成果物**: `/src/pages/blog/[slug].astro`、`/src/layouts/`
+- **DoD**: `/blog/2026-07-13/` が表示され、Mermaid 図が描画される
 
-### P2-5. タイポグラフィと余白の精度調整
-- [ ] **やること**: 本文 line-height、見出しサイズ階層、コンテナ最大幅、余白スケールを CSS 変数で定義
-- **成果物**: `extra.css` を拡張
-- **DoD**: 本文の行送り・余白がデザイン方針（モノクロ・ミニマル・洗練）と一致
+### P2-4. ベースのタイポグラフィと余白
+- [ ] **やること**: 本文 line-height、見出しサイズ階層、コンテナ最大幅、余白スケールを CSS 変数で定義。白黒＋極小アクセント。フォントは system-ui、等幅は SF Mono / Menlo
+- **成果物**: `/src/styles/`
+- **DoD**: 記事ページがデザイン方針（モノクロ・ミニマル・洗練）と一致
 
-### P2-6. タイムライン UI の HTML/CSS 実装
-- [ ] **やること**: 年→月→日の 3 階層を横スクロール領域に。`docs/blog/posts/*.md` の存在から動的に出すのが難しければ、`daily-report.md` 側で `index.md` を再生成する方針を採用
-- **成果物**: `index.md` 内の HTML ブロック＋ `extra.css` のタイムライン部分
-- **DoD**: 過去 3 日分のダミーカードが横スクロールで並ぶ
+### P2-5. タイムライン UI（posts から導出）
+- [ ] **やること**: `src/pages/index.astro` で `getCollection()` の結果を年→月→日に集約し、横スクロール領域に描画。**LLM に HTML を書かせない**
+- **成果物**: `/src/pages/index.astro`＋タイムライン CSS
+- **DoD**: posts を 1 件足すだけで（コード変更なしに）タイムラインにカードが増える
 
-### P2-7. daily-report.md による index.md 再生成
-- [ ] **やること**: 「7. docs/index.md の今日の枠を更新」手順を具体化。既存のタイムライン HTML 構造を破壊せず、今日のカードを差し込む or 当日分を上書き
-- **成果物**: `daily-report.md` の「7」項を詳細化
-- **DoD**: 1 日分追加で再生成しても他日カードが消えない
-
-### P2-8. GitHub Actions ワークフロー（Pages）
-- [ ] **やること**: `mkdocs build` → `actions/deploy-pages` の構成で `.github/workflows/pages.yml` を作成。トリガーは `push: branches: [main]`
+### P2-6. GitHub Actions ワークフロー（Pages）
+- [ ] **やること**: `npm ci` → `astro build` → `actions/deploy-pages` の構成。トリガーは `push: branches: [main]`
 - **成果物**: `/.github/workflows/pages.yml`
 - **DoD**: main への push でビルドが緑、Pages にデプロイされる
 
-### P2-9. GitHub Pages の有効化（リポジトリ設定）
+### P2-7. GitHub Pages の有効化（リポジトリ設定）
 - [ ] **やること**: Settings → Pages → Source を「GitHub Actions」に。ユーザー操作なのでセッションで実行できない → ユーザー依頼タスクとして残す
 - **成果物**: リポジトリ設定の変更
 - **DoD**: 公開 URL が発行される
 - **注記**: AI 単独不可。ユーザーに依頼
 
-### P2-10. 本番公開とリンク検証
-- [ ] **やること**: 公開 URL で表示確認、コンソールエラーゼロ、レスポンシブ崩れがないかを 320 / 768 / 1280 / 1920 px で目視
+### P2-8. 本番公開とレスポンシブ検証
+- [ ] **やること**: 公開 URL で表示確認、コンソールエラーゼロ、320 / 768 / 1280 / 1920 px で目視
 - **成果物**: スクリーンショット or 確認メモ
 - **DoD**: 4 ブレークポイントで破綻なし
 
-### P2-振り返り — Astro 移行ゲート判定
-- [ ] **やること**: タイムライン UI を mkdocs の HTML-in-markdown で組む過程で **1 日以上沼ったか** をチェック。沼った場合は ARCHITECTURE.md「P2 終了レビュー — Astro 移行ゲート」に従い Astro 移行を発議
-- **DoD**: 続行 or 移行のどちらかを決定し、本ファイルに記録
+### P2-振り返り
+- [ ] 想定との差分・沼ったポイント・改善案を追記。**依存が増えすぎて苦痛なら Hugo への差し替えを発議**（ARCHITECTURE.md「この決定は可逆」）
 
 ---
 
 ## P3 — 自動化
 
-**Goal**: scheduled agent で毎朝 `daily-report` が走る
+**Goal**: GitHub Actions の cron で毎朝 `/daily-report` が走る
 
-### P3-1. スケジュール実装方式の選定
-- [ ] **やること**: 以下から選定
-  - (A) Claude Code の `/schedule` skill（リモート routine）
-  - (B) GitHub Actions の `schedule:` で `claude` を CLI 起動
-- 個人運営で OAuth / シークレット管理が薄い前提では (A) を第一候補
-- **成果物**: 決定理由を本ファイルに 1 段落
-- **DoD**: 方式が 1 つに決まる
+> **前提**: 実行基盤は GitHub Actions + `CLAUDE_CODE_OAUTH_TOKEN`（ARCHITECTURE.md「AI の実行基盤」節）。API 従量課金ではなくサブスク枠で動かす。
 
-### P3-2. JST 朝のスケジュール定義
-- [ ] **やること**: 毎朝 07:00 JST（= 22:00 UTC 前日）で発火するスケジュールを設定
-- **成果物**: スケジュール設定（A なら routine、B なら cron 式）
+### P3-1. OAuth トークンの発行と登録
+- [ ] **やること**: ローカルで `claude setup-token` を実行し、GitHub Secrets に `CLAUDE_CODE_OAUTH_TOKEN` として登録。**トークン発行と Secrets 登録はユーザー操作**
+- **成果物**: リポジトリ Secrets
+- **DoD**: Secrets に登録済み
+- **注記**: AI 単独不可。ユーザーに依頼
+
+### P3-2. 日次ワークフローの作成
+- [ ] **やること**: `anthropics/claude-code-action@v1` を使い、`prompt: /daily-report` で実行。`anthropic_api_key: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}` を渡す。`actions/checkout` を先に走らせて `.claude/skills/` を読ませる
+- **成果物**: `/.github/workflows/daily-report.yml`
+- **DoD**: `workflow_dispatch` の手動実行で `docs/blog/posts/<DATE>.md` が commit される
+
+### P3-3. JST 朝のスケジュール定義
+- [ ] **やること**: 毎朝 07:00 JST（= 22:00 UTC 前日）の cron を設定
+- **成果物**: `daily-report.yml` の `schedule:` 節
 - **DoD**: 翌朝に実行ログが残る
 
 ### P3-3. 失敗時のリカバリ手順
@@ -209,7 +205,7 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 
 ### P4-5. タイムライン UI への組み込み
 - [ ] **やること**: 年カードに「年次サマリへのリンク」、月カードに「月次サマリへのリンク」を追加
-- **成果物**: `index.md` 再生成ロジック拡張
+- **成果物**: `src/pages/index.astro` の拡張（summaries コレクションを追加）
 - **DoD**: 公開サイトでリンクが踏める
 
 ---
@@ -218,19 +214,19 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 
 **Goal**: UI 切替が動く。日次レポートは `.md` と `.en.md` の両方を生成
 
-### P5-1. mkdocs-static-i18n 導入
-- [ ] **やること**: `pip install mkdocs-static-i18n`、`mkdocs.yml` の `plugins:` に `i18n` を追加
-- **成果物**: `mkdocs.yml` の plugins セクション
-- **DoD**: `mkdocs serve` が i18n 有効で起動
+### P5-1. Astro 内蔵 i18n の有効化
+- [ ] **やること**: `astro.config.mjs` の `i18n` に `defaultLocale: "ja"` / `locales: ["ja", "en"]` を設定。ルーティング方針（`/` = JP、`/en/` = EN）を決める
+- **成果物**: `astro.config.mjs` の i18n セクション
+- **DoD**: `/en/` が 200 で返る
 
 ### P5-2. 言語切替 UI
 - [ ] **やること**: ヘッダーに JP / EN トグルを配置（モノクロ・ミニマルを維持）
-- **成果物**: `extra.css` ＋必要ならテンプレオーバーライド
+- **成果物**: `src/layouts/` ＋ CSS
 - **DoD**: クリックで言語が切り替わる
 
-### P5-3. daily-report.md に英訳手順を追加
+### P5-3. SKILL.md に英訳手順を追加
 - [ ] **やること**: 「6. 書き出し」の後段に「6b. 同内容を英訳して `<DATE>.en.md` に書く」を追加。**英訳は元日本語の意味を保持、機械翻訳調を避ける**
-- **成果物**: `daily-report.md` の手順拡張
+- **成果物**: `.claude/skills/daily-report/SKILL.md` の手順拡張
 - **DoD**: 1 日分実行すると `.md` と `.en.md` が両方できる
 
 ### P5-4. 英語タイムライン UI 検証
@@ -259,8 +255,8 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **DoD**: 5〜10 分の聴ける音声が出る
 
 ### P6-4. podcast.xml の生成
-- [ ] **やること**: 既存 mp3 一覧から RSS（Apple Podcast / Spotify 仕様準拠）を生成
-- **成果物**: `/docs/podcast.xml`
+- [ ] **やること**: `docs/audio/` の mp3 と posts から RSS（Apple Podcast / Spotify 仕様準拠）を**ビルド時に導出**する Astro エンドポイントを書く（設計原則 Derived-not-Generated）
+- **成果物**: `/src/pages/podcast.xml.ts`
 - **DoD**: RSS バリデータ（castfeedvalidator など）で通る
 
 ### P6-5. Spotify Podcaster 登録
@@ -270,7 +266,7 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **注記**: AI 単独不可。ユーザーに依頼
 
 ### P6-6. 配信自動化のスケジュール統合
-- [ ] **やること**: daily-report 成功後に publish を連鎖発火（同 routine 内か、後続 routine か）
+- [ ] **やること**: daily-report 成功後に publish を連鎖発火（同ワークフロー内の後続 job か、`workflow_run` トリガの別ワークフローか）
 - **DoD**: 1 週間連続で投稿＋音声配信が回る
 
 ---
@@ -278,7 +274,8 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 ## バックログ（Phase 未割当）
 
 - [ ] OGP 画像自動生成（ヘッドライン → 画像）
-- [ ] サイト内検索（mkdocs-material 既定で十分か検証してから）
+- [ ] サイト内検索（痛みを感じてから。Pagefind など静的検索を検討）
+- [ ] `CLAUDE_CODE_OAUTH_TOKEN` の失効監視（期限切れで P3 の cron が黙って落ちるため）
 - [ ] 編集者ノート欄の追加（[[feedback-simple-first]] により「痛みを感じてから」）
 - [ ] アクセス解析（プライバシー配慮の軽量ツール）
 
