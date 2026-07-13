@@ -7,8 +7,8 @@ description: 1 日分のテックニュースをジャンル別にまとめ docs
 1. **日付**: 今日を JST で `<DATE>`（`YYYY-MM-DD`）に確定。引数で日付を渡されたらそれを優先。
 2. **取得**: `# 情報ソース` の各行の `[TAG]` に従う。`[RSS]`/`[Atom]`/`[HTML]` は WebFetch、`[API]`/`[JSON]` は `curl -s <URL>` + `jq`。取得できなければそのソースはスキップ。
 3. **重複排除**: URL を正規化（`http`→`https`、`utm_*`/`fbclid`/`gclid` 除去、末尾スラッシュ除去）し、一致するものは 1 件に畳む。
-4. **分類**: ai / infra / backend / frontend / others に分類（1 記事 1 ジャンル、迷ったら主題で判断）。各ジャンル上位 3 件まで。
-5. **執筆**: 各ジャンルで、その日の重要ニュースを 3 件ピックアップし、1 件ずつしっかり要約する。各トピックは「見出し（記事タイトルをインラインリンクにした H3）＋ 要約 4〜6 文」。要約には〈何が起きたか・技術的な要点・なぜ重要か〉を含める。冗長な前置き・締めは書かない。
+4. **分類**: AI / Infra / Backend / Frontend / Others に分類（1 記事 1 ジャンル、迷ったら主題で判断）。各ジャンル上位 5 件まで。
+5. **執筆**: 各ジャンルで、その日の重要ニュースを 5 件ピックアップし、1 件ずつしっかり要約する。各トピックは「見出し（記事タイトルをインラインリンクにした H3）＋ 要約 4〜6 文」。要約には〈何が起きたか・技術的な要点・なぜ重要か〉を含める。冗長な前置き・締めは書かない。
 6. **書き出し**: `docs/blog/posts/<DATE>.md` に書く（同日再実行は上書き）。先頭に下記スキーマの frontmatter、本文は H2 で 5 ジャンル。空のジャンルはセクションごと省略。
 7. **commit**: `git add docs/ && git commit -m "report: <DATE>"`。push は任意（手動確認のため）。
 
@@ -23,12 +23,12 @@ title: "一行ヘッドライン"
 ---
 ```
 
-本文は H2 で `ai` / `infra` / `backend` / `frontend` / `others` を区切り、各ジャンル内に重要ニュース 3 件を H3 で並べる。
+本文は H2 で `AI` / `Infra` / `Backend` / `Frontend` / `Others` を区切り、各ジャンル内に重要ニュース 5 件を H3 で並べる。
 
-執筆例（ai）:
+執筆例（AI、紙面の都合上 3 件のみ抜粋）:
 
 ```markdown
-## ai
+## AI
 
 ### [複数エージェントを協調させる実装パターン](https://example.com/a)
 
@@ -55,7 +55,7 @@ LLM を使った機能の品質を、人手レビューに頼らず CI で自動
 - ITmedia 最新記事 `[RSS]`: https://rss.itmedia.co.jp/rss/2.0/topstory.xml
 - @IT 最新記事 `[RSS]`: https://rss.itmedia.co.jp/rss/2.0/ait.xml
 - Gigazine 最新記事 `[RSS]`: https://gigazine.net/news/rss_2.0/
-- Gizmodo JP 新着記事 `[RSS]`: https://www.gizmodo.jp/index.xml
+- Gizmodo JP 新着記事 `[RSS]`: https://www.gizmodo.jp/feed/index.xml
 - coliss 新着記事 `[RSS]`: https://coliss.com/feed/
 - Findyメディア 新着記事 `[RSS]`: https://api.findy-code.io/rss/media/recent
 - はてブ SRE 検索 `[RSS]`: https://b.hatena.ne.jp/q/sre?date_range=5y&sort=recent&target=all&users=3&mode=rss
@@ -71,7 +71,7 @@ LLM を使った機能の品質を、人手レビューに頼らず CI で自動
 - Dev.to `[RSS]`: https://dev.to/feed/
 - HackerNoon `[RSS]`: https://hackernoon.com/feed
 - Product Hunt `[RSS]`: https://www.producthunt.com/feed
-- Google Cloud Release Notes `[Atom]`: https://cloud.google.com/feeds/gcp-release-notes.xml
+- Google Cloud Release Notes `[Atom]`: https://docs.cloud.google.com/feeds/gcp-release-notes.xml
 - Google Cloud (Medium) `[RSS]`: https://medium.com/feed/google-cloud
 - SRE Weekly `[RSS]`: https://sreweekly.com/feed/
 
@@ -89,6 +89,5 @@ LLM を使った機能の品質を、人手レビューに頼らず CI で自動
 
 # 注意
 
-- 既存 Skill（neta-trend-daily / url-digest）は触らない。
 - 取得に失敗したソース・ジャンルは省略する。
 - Reddit は WebFetch 不可（Claude Code がブロック）。`curl -s -H 'User-Agent: knowledge-flow/1.0' <URL>` で RSS を取得する。汎用 UA（`Mozilla/5.0` 等）や `.json` API は弾かれるので、固有 UA ＋ `.rss` を使う。レート制限で一時的に失敗することがあるが、その場合はスキップ。
