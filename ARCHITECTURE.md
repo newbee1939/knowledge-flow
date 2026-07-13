@@ -71,87 +71,11 @@ knowledge-flow/
 
 ---
 
-## daily-report.md（Skill の骨組み）
+## Skill の内容・情報ソース
 
-````markdown
----
-description: 1 日分のテックニュースをジャンル別にまとめ docs/blog/posts/ にコミット
----
+**唯一の真実は `.claude/skills/daily-report/SKILL.md`。** 手順・執筆ルール・レポートのスキーマ・情報ソース一覧はすべてそちらに書く。本ドキュメントには転記しない（二重管理は必ずドリフトするため）。
 
-# 手順
-
-1. 今日の日付を JST で確定 → <DATE>
-2. 「## 情報ソース」から取得（各行の `[TAG]` に従う。`[RSS]`/`[Atom]`=WebFetch、`[API]`/`[JSON]`=curl+jq、`[HTML]`=WebFetch+パース。フォールバックは同節参照）
-3. 重複排除（URL の utm パラメータ等を正規化）
-4. 5 ジャンル（ai / frontend / backend / infra / others）に分類、各ジャンル上位 3 件
-5. 各ジャンル 300〜500 字（リード文 + 3 トピック + 示唆、引用 URL は本文リンク）
-6. frontmatter + 本文を docs/blog/posts/<DATE>.md に書く
-7. docs/index.md の今日の枠を更新
-8. git add docs/ && git commit -m "report: <DATE>" && git push
-
-# レポートのスキーマ
-
-```yaml
-date: 2026-05-16
-title: "一行ヘッドライン"
-```
-
-本文は H2 で 5 ジャンル（ai / frontend / backend / infra / others）を区切る。
-`weight` / `share` / `editor_note` 等は必要になってから（[[feedback-simple-first]]）。
-
-# 注意
-- 既存 Skill (neta-trend-daily / url-digest) は触らない
-- 取得に失敗したジャンルはセクションごと省略
-````
-
----
-
-## 情報ソース
-
-各エントリ末尾の `[TAG]` が **最適フォーマット**: `[RSS]` / `[Atom]` / `[API]`（専用 JSON API） / `[JSON]`（末尾 `.json`） / `[HTML]`。
-
-**フォールバック方針**: 指定フォーマットで失敗 → 末尾 `.rss` を試す → `.json` を試す → 最終手段は HTML パース。3 日連続失敗で除外候補。
-
-### 日本 — テック
-- はてブ テクノロジー `[RSS]`: https://b.hatena.ne.jp/hotentry/it.rss
-- はてブ IT/AI・機械学習 `[RSS]`: https://b.hatena.ne.jp/hotentry/it/AI%E3%83%BB%E6%A9%9F%E6%A2%B0%E5%AD%A6%E7%BF%92.rss
-- はてブ IT/セキュリティ技術 `[RSS]`: https://b.hatena.ne.jp/hotentry/it/%E3%82%BB%E3%82%AD%E3%83%A5%E3%83%AA%E3%83%86%E3%82%A3%E6%8A%80%E8%A1%93.rss
-- Publickey `[Atom]`: https://www.publickey1.jp/atom.xml
-- Qiita 人気 `[RSS]`: https://qiita.com/popular-items/feed
-- Zenn `[RSS]`: https://zenn.dev/feed
-- ITmedia `[RSS]`: https://rss.itmedia.co.jp/rss/2.0/topstory.xml
-- @IT `[RSS]`: https://rss.itmedia.co.jp/rss/2.0/ait.xml
-- Gigazine `[RSS]`: https://gigazine.net/news/rss_2.0/
-- GIZMODO JP `[RSS]`: https://www.gizmodo.jp/index.xml
-- coliss `[RSS]`: https://coliss.com/feed/
-- Workship `[RSS]`: https://goworkship.com/magazine/feed/
-- Findy `[RSS]`: https://api.findy-code.io/rss/media/recent
-- LevTech `[RSS]`: https://levtech.jp/media/feed/
-- note magazine `[RSS]`: https://note.com/notemagazine/m/mf2e92ffd6658/rss
-- はてブ SRE 検索 `[RSS]`: https://b.hatena.ne.jp/q/sre?date_range=5y&sort=recent&target=all&users=3&mode=rss
-
-### 日本 — その他
-- はてブ 総合 `[RSS]`: https://b.hatena.ne.jp/hotentry/all.rss
-- はてブ 暮らし `[RSS]`: https://b.hatena.ne.jp/hotentry/life.rss
-- デイリーポータルZ `[RSS]`: https://dailyportalz.jp/feed/headline
-
-### 海外
-- Hacker News front page `[API]`: https://hn.algolia.com/api/v1/search?tags=front_page
-- TechCrunch `[RSS]`: https://techcrunch.com/feed/
-- Dev.to `[RSS]`: https://dev.to/feed/
-- HACKERNOON `[RSS]`: https://hackernoon.com/feed
-- Product Hunt `[RSS]`: https://www.producthunt.com/feed
-- GCP Release Notes `[Atom]`: https://cloud.google.com/feeds/gcp-release-notes.xml
-- Google Cloud (Medium) `[RSS]`: https://medium.com/feed/google-cloud
-- SRE Weekly `[RSS]`: https://sreweekly.com/feed/
-
-### Reddit
-- r/programming `[JSON]`: https://www.reddit.com/r/programming/hot/.json
-- r/sre `[JSON]`: https://www.reddit.com/r/sre/hot/.json
-- r/LocalLLaMA, r/ClaudeCode, r/webdev, r/netsec `[JSON]`（任意）
-
-### セキュリティ
-- IPA セキュリティアラート `[HTML]`: https://www.ipa.go.jp/security/security-alert/index.html
+各 Phase で追加する Skill も同様に `.claude/skills/<name>/SKILL.md` を唯一の真実とする。
 
 ---
 
