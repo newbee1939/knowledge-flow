@@ -99,19 +99,22 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 > **前提**: SSG は Astro（ARCHITECTURE.md「SSG の選定」節）。既製テーマは使わず HTML/CSS を自前で書く。**タイムラインは posts からビルド時に導出する**（Skill には生成させない = 設計原則 Derived-not-Generated）。
 
 ### P2-1. Astro プロジェクトの初期化
-- [ ] **やること**: `npm create astro@latest . -- --template minimal --typescript strict --no-git --no-install --yes`（`--yes` がないと「空でないディレクトリだが続行するか」で対話待ちになる）。その後 `npm install`。**依存はピン留めする**（`package.json` から `^` を外す）
+- [x] **やること**: `npm create astro@latest . -- --template minimal --typescript strict --no-git --no-install --yes`（`--yes` がないと「空でないディレクトリだが続行するか」で対話待ちになる）。その後 `npm install`。**依存はピン留めする**（`package.json` から `^` を外す）
 - **成果物**: `/package.json`、`/package-lock.json`、`/astro.config.mjs`、`/src/`
 - **DoD**: `npm run dev` で localhost が 200 で返る。`package.json` に `^` が 1 つもない
+- **実績**: Astro 7.0.7 をピン留め。**scaffold をそのままリポジトリで実行すると既存の `README.md` / `.gitignore` を上書きするため、別ディレクトリで生成して必要なファイルだけ持ち込んだ**（`AGENTS.md` / `.vscode/` は持ち込まない）
 
 ### P2-2. GitHub Pages 向けのパス設定（落とし穴 3）
-- [ ] **やること**: `astro.config.mjs` に `site: "https://<user>.github.io"` と `base: "/knowledge-flow"` を設定。サイト内リンクは `import.meta.env.BASE_URL` 経由で組む
+- [x] **やること**: `astro.config.mjs` に `site: "https://<user>.github.io"` と `base: "/knowledge-flow"` を設定。サイト内リンクは `import.meta.env.BASE_URL` 経由で組む
 - **成果物**: `astro.config.mjs`
 - **DoD**: `npm run build && npm run preview` で CSS が当たった状態で表示される（**ここを飛ばすと本番だけ真っ白になる**）
+- **実績**: `site: https://newbee1939.github.io` / `base: /knowledge-flow`。dev で `/` が 404、`/knowledge-flow/` が 200 を返すことを実測。生成 HTML のリンクも `/knowledge-flow/...` になっている
 
 ### P2-3. Content Collections で docs/ を読む
-- [ ] **やること**: `src/content.config.ts` に `glob()` ローダーで `docs/blog/posts/*.md` を読むコレクションを定義。スキーマは `date` / `title` の 2 フィールド（Zod）
+- [x] **やること**: `src/content.config.ts` に `glob()` ローダーで `docs/blog/posts/*.md` を読むコレクションを定義。スキーマは `date` / `title` の 2 フィールド（Zod）
 - **成果物**: `/src/content.config.ts`
 - **DoD**: `getCollection()` で既存の `2026-07-13.md` が型付きで取れる。frontmatter を壊すとビルドが落ちる
+- **実績**: 両方とも実測で確認。`date` を `not-a-date` に壊すと `InvalidContentEntryDataError` でビルドが失敗する
 
 ### P2-4. Mermaid をビルド時に SVG 化（落とし穴 4）
 - [ ] **やること**: `rehype-mermaid` 系で ` ```mermaid ` ブロックをビルド時に SVG へ変換する。**クライアント JS は入れない**。ヘッドレスブラウザが必要になるので、CI での実行コストを測る

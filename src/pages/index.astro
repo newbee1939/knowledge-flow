@@ -1,0 +1,33 @@
+---
+import { getCollection } from 'astro:content';
+
+// P2-3 の検証用の暫定リスト。年→月→日のタイムライン UI は P2-7 で作る。
+const posts = (await getCollection('posts')).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+---
+
+<html lang="ja">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}/favicon.svg`} />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>knowledge-flow</title>
+	</head>
+	<body>
+		<h1>knowledge-flow</h1>
+		<p>今日のテックを線で理解できる、一人運営のテックニュースメディア。</p>
+		<ul>
+			{
+				posts.map((post) => (
+					<li>
+						<time datetime={post.data.date.toISOString()}>{post.id}</time>
+						{' — '}
+						<a href={`${import.meta.env.BASE_URL}/blog/${post.id}/`}>{post.data.title}</a>
+					</li>
+				))
+			}
+		</ul>
+	</body>
+</html>
