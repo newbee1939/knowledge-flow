@@ -48,28 +48,28 @@ LLM を使った機能の品質を、人手レビューに頼らず CI で自動
 各行末尾の `[TAG]` が最適フォーマット: `[RSS]` / `[Atom]` / `[API]` / `[JSON]` / `[HTML]`。
 
 ## 日本 — テック
-- はてブ テクノロジー `[RSS]`: https://b.hatena.ne.jp/hotentry/it.rss
-- Publickey `[Atom]`: https://www.publickey1.jp/atom.xml
-- Qiita 人気 `[RSS]`: https://qiita.com/popular-items/feed
-- Zenn `[RSS]`: https://zenn.dev/feed
-- ITmedia `[RSS]`: https://rss.itmedia.co.jp/rss/2.0/topstory.xml
-- @IT `[RSS]`: https://rss.itmedia.co.jp/rss/2.0/ait.xml
-- Gigazine `[RSS]`: https://gigazine.net/news/rss_2.0/
-- GIZMODO JP `[RSS]`: https://www.gizmodo.jp/index.xml
-- coliss `[RSS]`: https://coliss.com/feed/
-- Findy `[RSS]`: https://api.findy-code.io/rss/media/recent
+- はてなブックマーク - 人気エントリー - テクノロジー `[RSS]`: https://b.hatena.ne.jp/hotentry/it.rss
+- Publickey 新着記事 `[Atom]`: https://www.publickey1.jp/atom.xml
+- Qiita 人気記事 `[RSS]`: https://qiita.com/popular-items/feed
+- Zenn トレンド記事 `[RSS]`: https://zenn.dev/feed
+- ITmedia 最新記事 `[RSS]`: https://rss.itmedia.co.jp/rss/2.0/topstory.xml
+- @IT 最新記事 `[RSS]`: https://rss.itmedia.co.jp/rss/2.0/ait.xml
+- Gigazine 最新記事 `[RSS]`: https://gigazine.net/news/rss_2.0/
+- Gizmodo JP 新着記事 `[RSS]`: https://www.gizmodo.jp/index.xml
+- coliss 新着記事 `[RSS]`: https://coliss.com/feed/
+- Findyメディア 新着記事 `[RSS]`: https://api.findy-code.io/rss/media/recent
 - はてブ SRE 検索 `[RSS]`: https://b.hatena.ne.jp/q/sre?date_range=5y&sort=recent&target=all&users=3&mode=rss
 
 ## 日本 — その他
-- はてブ 総合 `[RSS]`: https://b.hatena.ne.jp/hotentry/all.rss
-- はてブ 暮らし `[RSS]`: https://b.hatena.ne.jp/hotentry/life.rss
-- デイリーポータルZ `[RSS]`: https://dailyportalz.jp/feed/headline
+- はてなブックマーク - 人気エントリー - 総合 `[RSS]`: https://b.hatena.ne.jp/hotentry/all.rss
+- はてなブックマーク - 人気エントリー - 暮らし `[RSS]`: https://b.hatena.ne.jp/hotentry/life.rss
+- デイリーポータルZ 新着記事 `[RSS]`: https://dailyportalz.jp/feed/headline
 
 ## 海外
 - Hacker News front page `[API]`: https://hn.algolia.com/api/v1/search?tags=front_page
 - TechCrunch `[RSS]`: https://techcrunch.com/feed/
 - Dev.to `[RSS]`: https://dev.to/feed/
-- HACKERNOON `[RSS]`: https://hackernoon.com/feed
+- HackerNoon `[RSS]`: https://hackernoon.com/feed
 - Product Hunt `[RSS]`: https://www.producthunt.com/feed
 - Google Cloud Release Notes `[Atom]`: https://cloud.google.com/feeds/gcp-release-notes.xml
 - Google Cloud (Medium) `[RSS]`: https://medium.com/feed/google-cloud
@@ -90,6 +90,5 @@ LLM を使った機能の品質を、人手レビューに頼らず CI で自動
 # 注意
 
 - 既存 Skill（neta-trend-daily / url-digest）は触らない。
-- 取得に失敗したソース・ジャンルは省略する（失敗履歴の記録・連続失敗判定は P3 で追加）。
+- 取得に失敗したソース・ジャンルは省略する。
 - Reddit は WebFetch 不可（Claude Code がブロック）。`curl -s -H 'User-Agent: knowledge-flow/1.0' <URL>` で RSS を取得する。汎用 UA（`Mozilla/5.0` 等）や `.json` API は弾かれるので、固有 UA ＋ `.rss` を使う。レート制限で一時的に失敗することがあるが、その場合はスキップ。
-- index.md（タイムライン）更新は P2、英訳は P5 で追加する。
