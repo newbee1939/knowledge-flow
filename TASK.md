@@ -16,7 +16,7 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 
 ## P1 — Skill 化
 
-**Goal**: `daily-report.md` の手動実行で `docs/blog/posts/<DATE>.md` が 1 件できる
+**Goal**: `/daily-report` の手動実行で `docs/blog/posts/<DATE>.md` が 1 件できる
 
 ### P1-1. リポジトリ最小構造の作成
 - [x] **やること**: 以下のディレクトリを `mkdir -p` で作成
@@ -55,14 +55,16 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **DoD**: 同一記事が複数ソースで現れても 1 件に畳める指示が書かれている
 
 ### P1-7. 分類ルール（5 ジャンル）の定義
-- [x] **やること**: ai / frontend / backend / infra / others それぞれの判定基準（キーワード例・境界事例）を Skill に書く。各ジャンル上位 3 件まで
-- **成果物**: `daily-report.md` の「4. 分類」項
+- [x] **やること**: AI / Infra / Backend / Frontend / Others の判定基準を Skill に書く
+- **成果物**: `SKILL.md` の「4. 分類」項
 - **DoD**: 1 記事を読んだとき、どのジャンルに入るか Skill 指示だけで一意に決まる
+- **実績**: 当初「各ジャンル上位 3 件」としたが、実行して薄いと判断し **5 件**に変更
 
-### P1-8. 執筆フォーマット（300〜500 字／ジャンル）の固定
-- [x] **やること**: 「リード文 1 文 → 3 トピック箇条書き → 示唆 1〜2 文」の構造をテンプレ化。引用 URL は本文中にインライン Markdown リンクで埋め込む
-- **成果物**: `daily-report.md` の「5. 執筆」項に例文付きで記載
+### P1-8. 執筆フォーマットの固定
+- [x] **やること**: 各トピックを「H3 見出し（記事タイトルのインラインリンク）＋要約 4〜6 文（何が起きたか／技術的要点／なぜ重要か）」でテンプレ化
+- **成果物**: `SKILL.md` の「5. 執筆」項に例文付きで記載
 - **DoD**: テンプレに沿った 1 ジャンル分の見本が Skill 内にある
+- **実績**: 当初「300〜500 字／ジャンルの箇条書き」としたが、**初心者向けの平易な文体＋ Mermaid 図**のスタイルに変更（コミット 995b8f9）
 
 ### P1-9. レポート frontmatter スキーマの確定
 - [x] **やること**: `date`（ISO 8601）、`title`（一行ヘッドライン）だけに絞る。`weight` / `share` / `editor_note` は書かない（[[feedback-simple-first]]）
@@ -80,12 +82,13 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **DoD**: コミットメッセージのフォーマットが明示
 
 ### P1-12. 手動実行と検証（DoD ゲート）
-- [ ] **やること**: `claude` で `/daily-report` を 1 回実行し、`docs/blog/posts/<今日>.md` が生成されることを確認
+- [x] **やること**: `claude` で `/daily-report` を 1 回実行し、`docs/blog/posts/<今日>.md` が生成されることを確認
 - **成果物**: 実物の 1 ファイル＋初回コミット
 - **DoD**: 5 ジャンルのうち少なくとも 3 ジャンルが埋まっており、リンク切れがない
+- **実績**: 2026-07-13 実行。5 ジャンル × 5 件＋ Mermaid 図 4 点を生成（コミット aa827e7）
 
 ### P1-振り返り
-- [ ] 想定との差分・沼ったポイント・改善案を ARCHITECTURE.md か本ファイル末尾に追記
+- [x] 想定との差分・沼ったポイント・改善案を追記 → 下記「メモ・振り返り欄」の P1 節へ
 
 ---
 
@@ -96,42 +99,53 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 > **前提**: SSG は Astro（ARCHITECTURE.md「SSG の選定」節）。既製テーマは使わず HTML/CSS を自前で書く。**タイムラインは posts からビルド時に導出する**（Skill には生成させない = 設計原則 Derived-not-Generated）。
 
 ### P2-1. Astro プロジェクトの初期化
-- [ ] **やること**: `npm create astro@latest` で最小構成（テンプレートは empty、TypeScript 有効）。バージョンはピン留めする
-- **成果物**: `/package.json`、`/astro.config.mjs`、`/src/`
-- **DoD**: `npm run dev` で localhost が 200 で返る
+- [ ] **やること**: `npm create astro@latest . -- --template minimal --typescript strict --no-git --no-install`（対話プロンプトを避ける）。その後 `npm install`。**依存はピン留めする**（`package.json` から `^` を外す）
+- **成果物**: `/package.json`、`/package-lock.json`、`/astro.config.mjs`、`/src/`
+- **DoD**: `npm run dev` で localhost が 200 で返る。`package.json` に `^` が 1 つもない
 
-### P2-2. Content Collections で docs/ を読む
+### P2-2. GitHub Pages 向けのパス設定（落とし穴 3）
+- [ ] **やること**: `astro.config.mjs` に `site: "https://<user>.github.io"` と `base: "/knowledge-flow"` を設定。サイト内リンクは `import.meta.env.BASE_URL` 経由で組む
+- **成果物**: `astro.config.mjs`
+- **DoD**: `npm run build && npm run preview` で CSS が当たった状態で表示される（**ここを飛ばすと本番だけ真っ白になる**）
+
+### P2-3. Content Collections で docs/ を読む
 - [ ] **やること**: `src/content.config.ts` に `glob()` ローダーで `docs/blog/posts/*.md` を読むコレクションを定義。スキーマは `date` / `title` の 2 フィールド（Zod）
 - **成果物**: `/src/content.config.ts`
-- **DoD**: `getCollection()` で既存の `2026-07-13.md` が型付きで取れる
+- **DoD**: `getCollection()` で既存の `2026-07-13.md` が型付きで取れる。frontmatter を壊すとビルドが落ちる
 
-### P2-3. 日次レポートページ
-- [ ] **やること**: `src/pages/blog/[slug].astro` で posts を静的生成。Mermaid コードブロックの描画も通す
+### P2-4. Mermaid をビルド時に SVG 化（落とし穴 4）
+- [ ] **やること**: `rehype-mermaid` 系で ```mermaid ブロックをビルド時に SVG へ変換する。**クライアント JS は入れない**。ヘッドレスブラウザが必要になるので、CI での実行コストを測る
+- **成果物**: `astro.config.mjs` の `markdown.rehypePlugins`
+- **DoD**: `/blog/2026-07-13/` の 4 つの図が、JS 無効のブラウザでも表示される
+- **判断ポイント**: CI が重くなりすぎるなら「図は諦めてコードブロックのまま出す」も可（[[feedback-simple-first]]）。その場合は `SKILL.md` から Mermaid 指示を外す
+
+### P2-5. 日次レポートページ
+- [ ] **やること**: `src/pages/blog/[slug].astro` で posts を静的生成
 - **成果物**: `/src/pages/blog/[slug].astro`、`/src/layouts/`
-- **DoD**: `/blog/2026-07-13/` が表示され、Mermaid 図が描画される
+- **DoD**: `/blog/2026-07-13/` が表示される
 
-### P2-4. ベースのタイポグラフィと余白
+### P2-6. ベースのタイポグラフィと余白
 - [ ] **やること**: 本文 line-height、見出しサイズ階層、コンテナ最大幅、余白スケールを CSS 変数で定義。白黒＋極小アクセント。フォントは system-ui、等幅は SF Mono / Menlo
 - **成果物**: `/src/styles/`
 - **DoD**: 記事ページがデザイン方針（モノクロ・ミニマル・洗練）と一致
 
-### P2-5. タイムライン UI（posts から導出）
-- [ ] **やること**: `src/pages/index.astro` で `getCollection()` の結果を年→月→日に集約し、横スクロール領域に描画。**LLM に HTML を書かせない**
+### P2-7. タイムライン UI（posts から導出）
+- [ ] **やること**: `src/pages/index.astro` で `getCollection()` の結果を年 → 月 → 日に集約し、横スクロール領域に描画。**AI に HTML を書かせない**（設計原則 Derived-not-Generated）
 - **成果物**: `/src/pages/index.astro`＋タイムライン CSS
-- **DoD**: posts を 1 件足すだけで（コード変更なしに）タイムラインにカードが増える
+- **DoD**: `docs/blog/posts/` に md を 1 枚足すだけで、**コードを一切変えずに**タイムラインへカードが増える
 
-### P2-6. GitHub Actions ワークフロー（Pages）
-- [ ] **やること**: `npm ci` → `astro build` → `actions/deploy-pages` の構成。トリガーは `push: branches: [main]`
+### P2-8. GitHub Actions ワークフロー（Pages）
+- [ ] **やること**: `npm ci` → `astro build` → `actions/deploy-pages` の構成。トリガーは `push: branches: [main]` と `workflow_dispatch`
 - **成果物**: `/.github/workflows/pages.yml`
 - **DoD**: main への push でビルドが緑、Pages にデプロイされる
 
-### P2-7. GitHub Pages の有効化（リポジトリ設定）
-- [ ] **やること**: Settings → Pages → Source を「GitHub Actions」に。ユーザー操作なのでセッションで実行できない → ユーザー依頼タスクとして残す
+### P2-9. GitHub Pages の有効化（リポジトリ設定）
+- [ ] **やること**: Settings → Pages → Source を「GitHub Actions」に
 - **成果物**: リポジトリ設定の変更
 - **DoD**: 公開 URL が発行される
-- **注記**: AI 単独不可。ユーザーに依頼
+- **注記**: **AI 単独不可。ユーザーに依頼**
 
-### P2-8. 本番公開とレスポンシブ検証
+### P2-10. 本番公開とレスポンシブ検証
 - [ ] **やること**: 公開 URL で表示確認、コンソールエラーゼロ、320 / 768 / 1280 / 1920 px で目視
 - **成果物**: スクリーンショット or 確認メモ
 - **DoD**: 4 ブレークポイントで破綻なし
@@ -147,61 +161,66 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 
 > **前提**: 実行基盤は GitHub Actions + `CLAUDE_CODE_OAUTH_TOKEN`（ARCHITECTURE.md「AI の実行基盤」節）。API 従量課金ではなくサブスク枠で動かす。
 
-### P3-1. OAuth トークンの発行と登録
-- [ ] **やること**: ローカルで `claude setup-token` を実行し、GitHub Secrets に `CLAUDE_CODE_OAUTH_TOKEN` として登録。**トークン発行と Secrets 登録はユーザー操作**
-- **成果物**: リポジトリ Secrets
-- **DoD**: Secrets に登録済み
-- **注記**: AI 単独不可。ユーザーに依頼
+### P3-1. Claude GitHub App の導入と OAuth トークンの登録
+- [ ] **やること**: (1) [Claude GitHub App](https://github.com/apps/claude) をリポジトリにインストール（**落とし穴 1 の対策。これがないと bot のコミットで Pages がビルドされない**）。(2) ローカルで `claude setup-token` を実行し、GitHub Secrets に `CLAUDE_CODE_OAUTH_TOKEN` として登録
+- **成果物**: GitHub App のインストール＋リポジトリ Secrets
+- **DoD**: Secrets に登録済み、App がリポジトリに入っている
+- **注記**: **AI 単独不可。ユーザーに依頼**
 
 ### P3-2. 日次ワークフローの作成
-- [ ] **やること**: `anthropics/claude-code-action@v1` を使い、`prompt: /daily-report` で実行。`anthropic_api_key: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}` を渡す。`actions/checkout` を先に走らせて `.claude/skills/` を読ませる
+- [ ] **やること**: `anthropics/claude-code-action@v1` を使い、`prompt: "/daily-report"` で実行。`anthropic_api_key: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}` を渡す。`actions/checkout` を先に走らせて `.claude/skills/` を読ませる。`env: TZ: Asia/Tokyo` を設定（落とし穴 5）。**コミット範囲は `docs/` のみ**（落とし穴 2 の安全弁）
 - **成果物**: `/.github/workflows/daily-report.yml`
-- **DoD**: `workflow_dispatch` の手動実行で `docs/blog/posts/<DATE>.md` が commit される
+- **DoD**: `workflow_dispatch` の手動実行で `docs/blog/posts/<DATE>.md` が main にコミットされる
 
-### P3-3. JST 朝のスケジュール定義
-- [ ] **やること**: 毎朝 07:00 JST（= 22:00 UTC 前日）の cron を設定
+### P3-3. 「コミット → Pages 自動ビルド」の連鎖を検証（落とし穴 1）
+- [ ] **やること**: P3-2 を手動実行し、**その push によって `pages.yml` が自動で走ったか**を Actions のログで確認する。走っていなければ、Claude GitHub App のトークンで push できていない
+- **DoD**: 日次ワークフロー実行 → Pages ビルド → 公開サイトに当日分が出る、が**人手を介さず**通る
+- **重要**: ここが P3 の本当の DoD。「レポートがコミットされた」だけでは自動化は完成していない
+
+### P3-4. JST 朝のスケジュール定義
+- [ ] **やること**: 毎朝 07:00 JST（= 前日 22:00 UTC）の cron を設定。cron 式は **UTC で書く**
 - **成果物**: `daily-report.yml` の `schedule:` 節
-- **DoD**: 翌朝に実行ログが残る
+- **DoD**: 翌朝に実行ログが残り、サイトが更新されている
 
-### P3-3. 失敗時のリカバリ手順
-- [ ] **やること**: 取得失敗 → そのジャンル省略（ARCHITECTURE.md の注意事項どおり）。3 日連続失敗で除外候補マークを Skill 内のソースリストに追記する指示を書く
-- **成果物**: `daily-report.md` の「# 注意」拡張
-- **DoD**: 連続失敗で勝手に削除はせず、人間レビューに回す
+### P3-5. 失敗時のリカバリ手順
+- [ ] **やること**: 取得失敗 → そのソースを省略（SKILL.md の「注意」どおり）。3 日連続で失敗したソースには除外候補マークを付ける指示を書く
+- **成果物**: `.claude/skills/daily-report/SKILL.md` の「# 注意」拡張
+- **DoD**: 連続失敗でも勝手に削除はせず、人間レビューに回す
 
-### P3-4. 通知（任意・最小）
-- [ ] **やること**: 失敗時のみ何らかの通知（GitHub Issue 自動作成 or メール）。**痛みを感じてから**追加でも可（[[feedback-simple-first]]）
-- **成果物**: 通知設定 or 「不要」判断のメモ
-- **DoD**: 判断が記録されている
+### P3-6. 失敗通知
+- [ ] **やること**: ワークフロー失敗時に通知する。**トークン失効で cron が黙って落ちるのが最大のリスク**なので、これは「痛みを感じてから」の例外として最初から入れる
+- **成果物**: `daily-report.yml` の失敗時ステップ（GitHub Issue 自動作成が最小）
+- **DoD**: わざと失敗させると通知が来る
 
-### P3-5. 1 週間連続稼働確認
-- [ ] **やること**: 7 日連続で `docs/blog/posts/` に日次ファイルが追加されることを確認
-- **DoD**: 7 ファイル並ぶ
+### P3-7. 1 週間連続稼働確認
+- [ ] **やること**: 7 日連続で `docs/blog/posts/` に日次ファイルが追加され、**公開サイトにも反映される**ことを確認
+- **DoD**: 7 ファイル並び、サイトに 7 日分のカードが出る
 
 ---
 
 ## P4 — 月次・年次サマリ
 
-**Goal**: `monthly-summary.md` / `yearly-summary.md` を追加。月末・年末バッチ
+**Goal**: `monthly-summary` / `yearly-summary` Skill を追加。月末・年末バッチ
 
-### P4-1. monthly-summary.md スケルトン
+### P4-1. monthly-summary Skill のスケルトン
 - [ ] **やること**: 当月の `docs/blog/posts/YYYY-MM-*.md` を読み込んで主要トピックを抽出 → `docs/summaries/YYYY-MM.md` に書く
-- **成果物**: `.claude/skills/monthly-summary.md`
-- **DoD**: 過去 1 ヶ月のテストデータでサマリが 1 本生成
+- **成果物**: `.claude/skills/monthly-summary/SKILL.md`
+- **DoD**: 過去 1 ヶ月のデータでサマリが 1 本生成される
 
 ### P4-2. 月次サマリのスキーマ
-- [ ] **やること**: 「今月のヘッドライン 5 本 → ジャンル別ハイライト → 来月の注目点」構成
-- **成果物**: `monthly-summary.md` のスキーマ項
-- **DoD**: 構造が固定
+- [ ] **やること**: 「今月のヘッドライン 5 本 → ジャンル別ハイライト → 来月の注目点」構成。frontmatter は日次と同じ `date` / `title` の 2 フィールドに揃える
+- **成果物**: `monthly-summary/SKILL.md` のスキーマ項
+- **DoD**: 構造が固定され、Content Collections のスキーマに載る
 
-### P4-3. yearly-summary.md スケルトン
-- [ ] **やること**: 月次サマリ 12 本を素材に年次を組む。`docs/summaries/YYYY.md`
-- **成果物**: `.claude/skills/yearly-summary.md`
-- **DoD**: テストデータで 1 本生成
+### P4-3. yearly-summary Skill のスケルトン
+- [ ] **やること**: 月次サマリ 12 本を素材に年次を組む → `docs/summaries/YYYY.md`
+- **成果物**: `.claude/skills/yearly-summary/SKILL.md`
+- **DoD**: テストデータで 1 本生成される
 
 ### P4-4. 月末・年末バッチのスケジュール
-- [ ] **やること**: 月末日 09:00 JST に monthly、12/31 09:00 JST に yearly を発火
-- **成果物**: スケジュール定義
-- **DoD**: 翌月初に summaries が追加される
+- [ ] **やること**: 月末日 09:00 JST に monthly、12/31 09:00 JST に yearly を発火（cron は UTC で書く）
+- **成果物**: `.github/workflows/summary.yml`
+- **DoD**: 翌月初に `docs/summaries/` が追加され、サイトにも反映される
 
 ### P4-5. タイムライン UI への組み込み
 - [ ] **やること**: 年カードに「年次サマリへのリンク」、月カードに「月次サマリへのリンク」を追加
@@ -239,9 +258,9 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 
 **Goal**: X(JP/EN) 投稿 + Spotify 音声配信が回る
 
-### P6-1. publish.md スケルトン
-- [ ] **やること**: 「当日分レポート → 投稿用テキスト整形 → X API 投稿 → 音声生成 → RSS 更新」の流れを書く
-- **成果物**: `.claude/skills/publish.md`
+### P6-1. publish Skill のスケルトン
+- [ ] **やること**: 「当日分レポート → 投稿用テキスト整形 → X API 投稿 → 音声生成」の流れを書く（RSS はビルド時導出なので Skill の仕事ではない）
+- **成果物**: `.claude/skills/publish/SKILL.md`
 - **DoD**: スキル一覧に出る
 
 ### P6-2. X(Twitter) 投稿
@@ -273,9 +292,10 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 
 ## バックログ（Phase 未割当）
 
+- [ ] 読者向け RSS フィード（`/rss.xml`）— テックメディアなら欲しい。P2 の Astro エンドポイントで数行
 - [ ] OGP 画像自動生成（ヘッドライン → 画像）
 - [ ] サイト内検索（痛みを感じてから。Pagefind など静的検索を検討）
-- [ ] `CLAUDE_CODE_OAUTH_TOKEN` の失効監視（期限切れで P3 の cron が黙って落ちるため）
+- [ ] `CLAUDE_CODE_OAUTH_TOKEN` の失効監視（P3-6 の失敗通知でカバーできるか要検証）
 - [ ] 編集者ノート欄の追加（[[feedback-simple-first]] により「痛みを感じてから」）
 - [ ] アクセス解析（プライバシー配慮の軽量ツール）
 
@@ -283,4 +303,14 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 
 ## メモ・振り返り欄
 
-<!-- 各 Phase で気づいたことをここに追記。次回 Phase 計画の素材にする -->
+### P1 振り返り（2026-07-13）
+
+**想定と違ったこと**
+- **ARCHITECTURE.md と SKILL.md の二重管理が即ドリフトした。** 情報ソース一覧・件数・Reddit の取得方式・GCP のフィード URL がすべてズレた。→ ARCHITECTURE.md 側の転記を削除し、SKILL.md を唯一の真実にした
+- **執筆フォーマットが薄すぎた。** 当初の「3 件・箇条書き・300〜500 字」では読み物にならず、実行後に「5 件・4〜6 文の解説・Mermaid 図」に変更した
+- **Reddit は `www.reddit.com` + 固有 User-Agent + `.rss` でも安定しない。** 6 サブレディット中 5 つがレート制限で空を返した。スキップ扱いで運用する
+
+**設計の穴が 3 つ見つかった**（ARCHITECTURE.md「実装上の落とし穴」に反映済み）
+- `docs/index.md` を Skill に毎日再生成させる設計は、AI の出力揺れで過去分が壊れる → 設計原則 `Derived-not-Generated` を追加
+- SSG が mkdocs-material のままだと「テーマを入れて打ち消す」構図になる → Astro に変更
+- bot のコミットでは Pages が自動ビルドされない（`GITHUB_TOKEN` の仕様）→ Claude GitHub App のトークンを使う
