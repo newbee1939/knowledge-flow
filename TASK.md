@@ -31,8 +31,8 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **DoD**: GitHub のリポジトリトップで概要が読める内容
 
 ### P1-3. daily-report.md スケルトン作成
-- [x] **やること**: ARCHITECTURE.md「daily-report.md（Skill の骨組み）」節をベースに `.claude/skills/daily-report.md` を作成。frontmatter（`description`）、`# 手順`、`# レポートのスキーマ`、`# 注意` を含める
-- **成果物**: `.claude/skills/daily-report.md`
+- [x] **やること**: ARCHITECTURE.md「daily-report.md（Skill の骨組み）」節をベースに `.claude/skills/daily-report.md` を作成。frontmatter（`description`）、`# 手順`、`# レポートのスキーマ`、`# 注意` を含める（後日 `.claude/skills/daily-report/SKILL.md` に配置修正）
+- **成果物**: `.claude/skills/daily-report/SKILL.md`
 - **DoD**: `claude` 起動時に `/daily-report` がスキル一覧に出る
 
 ### P1-4. 情報ソース節を Skill に展開

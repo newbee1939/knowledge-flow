@@ -14,7 +14,7 @@
 
 ```
 毎朝（scheduled agent）
-  └─ .claude/skills/daily-report.md
+  └─ .claude/skills/daily-report/SKILL.md
        ├─ 情報ソース（下記）から記事取得 ─ WebFetch / curl
        ├─ ai / frontend / backend / infra / others に分類
        ├─ レポート本文を執筆（JP/EN を両方生成 ※P5）
@@ -50,10 +50,10 @@ GitHub Pages
 ```
 knowledge-flow/
 ├── .claude/skills/
-│   ├── daily-report.md              # 日次（メイン）
-│   ├── monthly-summary.md           # 月末バッチ（P4）
-│   ├── yearly-summary.md            # 年末バッチ（P4）
-│   └── publish.md                   # X / Spotify 配信（P6）
+│   ├── daily-report/SKILL.md        # 日次（メイン）
+│   ├── monthly-summary/SKILL.md     # 月末バッチ（P4）
+│   ├── yearly-summary/SKILL.md      # 年末バッチ（P4）
+│   └── publish/SKILL.md             # X / Spotify 配信（P6）
 ├── docs/
 │   ├── index.md                     # タイムライン UI（daily-report が再生成）
 │   ├── stylesheets/extra.css        # カスタム CSS（P2）
