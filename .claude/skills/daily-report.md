@@ -74,6 +74,8 @@ LLM を使った機能の品質を、人手レビューに頼らず CI で自動
 - Google Cloud Release Notes `[Atom]`: https://docs.cloud.google.com/feeds/gcp-release-notes.xml
 - Google Cloud (Medium) `[RSS]`: https://medium.com/feed/google-cloud
 - SRE Weekly `[RSS]`: https://sreweekly.com/feed/
+- Cloudflare Blog `[RSS]`: https://blog.cloudflare.com/rss/
+- CNCF Blog `[RSS]`: https://www.cncf.io/feed/
 
 ## Reddit
 取得方法は `# 注意` 参照（WebFetch 不可、curl で取る）。
