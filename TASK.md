@@ -167,32 +167,38 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **DoD**: Secrets に登録済み、App がリポジトリに入っている
 - **注記**: **AI 単独不可。ユーザーに依頼**
 
-### P3-2. 日次ワークフローの作成
-- [ ] **やること**: `anthropics/claude-code-action@v1` を使い、`prompt: "/daily-report"` で実行。`anthropic_api_key: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}` を渡す。`actions/checkout` を先に走らせて `.claude/skills/` を読ませる。`env: TZ: Asia/Tokyo` を設定（落とし穴 5）。**コミット範囲は `docs/` のみ**（落とし穴 2 の安全弁）
-- **成果物**: `/.github/workflows/daily-report.yml`
-- **DoD**: `workflow_dispatch` の手動実行で `docs/blog/posts/<DATE>.md` が main にコミットされる
+### P3-2. SKILL.md の commit 手順を push まで含める
+- [ ] **やること**: `SKILL.md` の手順 7 は現在 `git commit` までで「push は任意」となっている。**これは P1（手動確認したい）の前提であり、P3 では誰も push しないためレポートがランナー上で消える。** 手順 7 を `git push origin main` まで含める形に更新する
+- **成果物**: `.claude/skills/daily-report/SKILL.md` の手順 7
+- **DoD**: Skill 単体の実行で main まで反映される
+- **注意**: これは「commit と push は別物」という当たり前の話だが、P1 の DoD が commit 止まりだったので抜け落ちていた
 
-### P3-3. 「コミット → Pages 自動ビルド」の連鎖を検証（落とし穴 1）
-- [ ] **やること**: P3-2 を手動実行し、**その push によって `pages.yml` が自動で走ったか**を Actions のログで確認する。走っていなければ、Claude GitHub App のトークンで push できていない
+### P3-3. 日次ワークフローの作成
+- [ ] **やること**: `anthropics/claude-code-action@v1` を使い、`prompt: "/daily-report"` で実行。`anthropic_api_key: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}` を渡す。`actions/checkout` を先に走らせて `.claude/skills/` を読ませる。`env: TZ: Asia/Tokyo` を設定（落とし穴 5）。**書き込み範囲は `docs/` のみ**（落とし穴 2 の安全弁）
+- **成果物**: `/.github/workflows/daily-report.yml`
+- **DoD**: `workflow_dispatch` の手動実行で `docs/blog/posts/<DATE>.md` が **main に push される**（コミットされるだけでは不十分）
+
+### P3-4. 「push → Pages 自動ビルド」の連鎖を検証（落とし穴 1）
+- [ ] **やること**: P3-3 を手動実行し、**その push によって `pages.yml` が自動で走ったか**を Actions のログで確認する。走っていなければ、Claude GitHub App のトークンで push できていない
 - **DoD**: 日次ワークフロー実行 → Pages ビルド → 公開サイトに当日分が出る、が**人手を介さず**通る
 - **重要**: ここが P3 の本当の DoD。「レポートがコミットされた」だけでは自動化は完成していない
 
-### P3-4. JST 朝のスケジュール定義
+### P3-5. JST 朝のスケジュール定義
 - [ ] **やること**: 毎朝 07:00 JST（= 前日 22:00 UTC）の cron を設定。cron 式は **UTC で書く**
 - **成果物**: `daily-report.yml` の `schedule:` 節
 - **DoD**: 翌朝に実行ログが残り、サイトが更新されている
 
-### P3-5. 失敗時のリカバリ手順
+### P3-6. 失敗時のリカバリ手順
 - [ ] **やること**: 取得失敗 → そのソースを省略（SKILL.md の「注意」どおり）。3 日連続で失敗したソースには除外候補マークを付ける指示を書く
 - **成果物**: `.claude/skills/daily-report/SKILL.md` の「# 注意」拡張
 - **DoD**: 連続失敗でも勝手に削除はせず、人間レビューに回す
 
-### P3-6. 失敗通知
+### P3-7. 失敗通知
 - [ ] **やること**: ワークフロー失敗時に通知する。**トークン失効で cron が黙って落ちるのが最大のリスク**なので、これは「痛みを感じてから」の例外として最初から入れる
 - **成果物**: `daily-report.yml` の失敗時ステップ（GitHub Issue 自動作成が最小）
 - **DoD**: わざと失敗させると通知が来る
 
-### P3-7. 1 週間連続稼働確認
+### P3-8. 1 週間連続稼働確認
 - [ ] **やること**: 7 日連続で `docs/blog/posts/` に日次ファイルが追加され、**公開サイトにも反映される**ことを確認
 - **DoD**: 7 ファイル並び、サイトに 7 日分のカードが出る
 
@@ -218,9 +224,10 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **DoD**: テストデータで 1 本生成される
 
 ### P4-4. 月末・年末バッチのスケジュール
-- [ ] **やること**: 月末日 09:00 JST に monthly、12/31 09:00 JST に yearly を発火（cron は UTC で書く）
+- [ ] **やること**: 月末日 09:00 JST に monthly、12/31 09:00 JST に yearly を発火（cron は UTC で書く）。**日次（07:00 JST）より後に走らせ、当日分の posts を含められるようにする**
 - **成果物**: `.github/workflows/summary.yml`
 - **DoD**: 翌月初に `docs/summaries/` が追加され、サイトにも反映される
+- **注意**: 月末は日次と月次が同日に走る。両方が main に push するので、月次側は実行前に `git pull` すること（さもないと push が弾かれる）
 
 ### P4-5. タイムライン UI への組み込み
 - [ ] **やること**: 年カードに「年次サマリへのリンク」、月カードに「月次サマリへのリンク」を追加
@@ -293,6 +300,7 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 ## バックログ（Phase 未割当）
 
 - [ ] 読者向け RSS フィード（`/rss.xml`）— テックメディアなら欲しい。P2 の Astro エンドポイントで数行
+- [ ] リンク切れ検査の自動化 — 1 日 25 本の外部リンクを貼るメディアなので、リンクは必ず腐る。週次で全 posts の URL を `curl -o /dev/null -w '%{http_code}'` して 200 以外を Issue に立てる
 - [ ] OGP 画像自動生成（ヘッドライン → 画像）
 - [ ] サイト内検索（痛みを感じてから。Pagefind など静的検索を検討）
 - [ ] `CLAUDE_CODE_OAUTH_TOKEN` の失効監視（P3-6 の失敗通知でカバーできるか要検証）
