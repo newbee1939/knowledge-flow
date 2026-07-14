@@ -116,6 +116,8 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **成果物**: `/src/content.config.ts`
 - **DoD**: `getCollection()` で既存の `2026-07-13.md` が型付きで取れる。frontmatter を壊すとビルドが落ちる
 - **実績**: 両方とも実測で確認。`date` を `not-a-date` に壊すと `InvalidContentEntryDataError` でビルドが失敗する
+- **実績（追加）**: **Astro はコレクションが空でも警告だけでビルドを成功させ、記事ゼロのページを出力することが判明**（`docs/` のパスがずれると空のサイトが静かに公開される）。`src/lib/posts.ts` の `getPosts()` で **0 件ならビルドを止める**ガードを追加。loader のパスをわざとずらして、終了コード 1 で落ち `dist/` が生成されないことを実測
+- **注意**: コンテンツは `node_modules/.astro/data-store.json` にキャッシュされる。ローカルでは古いキャッシュのせいで異常に気づかず、**CI で初めて壊れる**ことがある。検証時は `rm -rf .astro node_modules/.astro` してから
 
 ### P2-4. Mermaid をビルド時に SVG 化（落とし穴 4）
 - [ ] **やること**: `rehype-mermaid` 系で ` ```mermaid ` ブロックをビルド時に SVG へ変換する。**クライアント JS は入れない**。ヘッドレスブラウザが必要になるので、CI での実行コストを測る
