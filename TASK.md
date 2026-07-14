@@ -99,25 +99,41 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 > **前提**: SSG は Astro（ARCHITECTURE.md「SSG の選定」節）。既製テーマは使わず HTML/CSS を自前で書く。**タイムラインは posts からビルド時に導出する**（Skill には生成させない = 設計原則 Derived-not-Generated）。
 
 ### P2-1. Astro プロジェクトの初期化
-- [ ] **やること**: `npm create astro@latest . -- --template minimal --typescript strict --no-git --no-install --yes`（`--yes` がないと「空でないディレクトリだが続行するか」で対話待ちになる）。その後 `npm install`。**依存はピン留めする**（`package.json` から `^` を外す）
+- [x] **やること**: `npm create astro@latest . -- --template minimal --typescript strict --no-git --no-install --yes`（`--yes` がないと「空でないディレクトリだが続行するか」で対話待ちになる）。その後 `npm install`。**依存はピン留めする**（`package.json` から `^` を外す）
 - **成果物**: `/package.json`、`/package-lock.json`、`/astro.config.mjs`、`/src/`
 - **DoD**: `npm run dev` で localhost が 200 で返る。`package.json` に `^` が 1 つもない
+- **実績**: Astro 7.0.7 をピン留め。**scaffold をそのままリポジトリで実行すると既存の `README.md` / `.gitignore` を上書きするため、別ディレクトリで生成して必要なファイルだけ持ち込んだ**（`AGENTS.md` / `.vscode/` は持ち込まない）
+- **実績（追加）**: scaffold が入れる `"astro": "astro"` スクリプトは削除（`npx astro` で同じことができ、抽象化として何も足していない）。`.github/dependabot.yml` を追加し、npm と GitHub Actions の更新を**月 1 回・1 本の PR にまとめる**設定にした（ARCHITECTURE.md「依存を膨らませないための約束」の実体化）
 
 ### P2-2. GitHub Pages 向けのパス設定（落とし穴 3）
-- [ ] **やること**: `astro.config.mjs` に `site: "https://<user>.github.io"` と `base: "/knowledge-flow"` を設定。サイト内リンクは `import.meta.env.BASE_URL` 経由で組む
+- [x] **やること**: `astro.config.mjs` に `site: "https://<user>.github.io"` と `base: "/knowledge-flow"` を設定。サイト内リンクは `import.meta.env.BASE_URL` 経由で組む
 - **成果物**: `astro.config.mjs`
 - **DoD**: `npm run build && npm run preview` で CSS が当たった状態で表示される（**ここを飛ばすと本番だけ真っ白になる**）
+- **実績**: `site: https://newbee1939.github.io` / `base: /knowledge-flow`。dev で `/` が 404、`/knowledge-flow/` が 200 を返すことを実測。生成 HTML のリンクも `/knowledge-flow/...` になっている
 
 ### P2-3. Content Collections で docs/ を読む
-- [ ] **やること**: `src/content.config.ts` に `glob()` ローダーで `docs/blog/posts/*.md` を読むコレクションを定義。スキーマは `date` / `title` の 2 フィールド（Zod）
+- [x] **やること**: `src/content.config.ts` に `glob()` ローダーで `docs/blog/posts/*.md` を読むコレクションを定義。スキーマは `date` / `title` の 2 フィールド（Zod）
 - **成果物**: `/src/content.config.ts`
 - **DoD**: `getCollection()` で既存の `2026-07-13.md` が型付きで取れる。frontmatter を壊すとビルドが落ちる
+- **実績**: 両方とも実測で確認。`date` を `not-a-date` に壊すと `InvalidContentEntryDataError` でビルドが失敗する
+- **実績（追加）**: **Astro はコレクションが空でも警告だけでビルドを成功させ、記事ゼロのページを出力することが判明**（`docs/` のパスがずれると空のサイトが静かに公開される）。`src/lib/posts.ts` の `getPosts()` で **0 件ならビルドを止める**ガードを追加。loader のパスをわざとずらして、終了コード 1 で落ち `dist/` が生成されないことを実測
+- **注意**: コンテンツは `node_modules/.astro/data-store.json` にキャッシュされる。ローカルでは古いキャッシュのせいで異常に気づかず、**CI で初めて壊れる**ことがある。検証時は `rm -rf .astro node_modules/.astro` してから
 
 ### P2-4. Mermaid をビルド時に SVG 化（落とし穴 4）
 - [ ] **やること**: `rehype-mermaid` 系で ` ```mermaid ` ブロックをビルド時に SVG へ変換する。**クライアント JS は入れない**。ヘッドレスブラウザが必要になるので、CI での実行コストを測る
 - **成果物**: `astro.config.mjs` の `markdown.rehypePlugins`
 - **DoD**: `/blog/2026-07-13/` の 4 つの図が、JS 無効のブラウザでも表示される
 - **判断ポイント**: CI が重くなりすぎるなら「図は諦めてコードブロックのまま出す」も可（[[feedback-simple-first]]）。その場合は `SKILL.md` から Mermaid 指示を外す
+
+### P2-4b. Lint / Format / テスト / CI の導入
+- [x] **やること**: Biome（Lint + Format）、Vitest（テスト）、CI ワークフローを入れる
+- **成果物**: `biome.json`、`vitest.config.ts`、`.github/workflows/ci.yml`、`.nvmrc`、`src/lib/*.test.ts`、`CLAUDE.md` にルール追記
+- **DoD**: PR で `npm run lint` / `npm test` / `npm run build` が CI で回り、違反時に落ちる
+- **選定理由（Biome）**: ESLint + Prettier + 各 Astro プラグイン（約 7 依存）に対し Biome は 1 依存で済む。**`prettier-plugin-astro` は最終更新が 2024-07-16 で 2 年放置**されており、「Prettier の方が Astro 対応が成熟」という一般論はもう成り立たない。Biome は 2.5.3（2026-07-08）と活発
+- **代償**: Biome の `.astro` 対応は**実験的**。`noUnusedVariables` / `noUnusedImports` / `useConst` は誤検知するため `overrides` で **`.astro` に限って**無効化（`.ts` では有効のまま）
+- **注意**: `package.json` は Biome の対象外にした（`npm install` がインデントを書き戻すたびに CI が落ちるため）
+- **Node のバージョン管理**: **`.tool-versions` を唯一の真実**にした（`node 24.18.0`）。**mise（ローカル）と `setup-node`（CI）の両方がこのファイルをそのまま読む**。当初 `.nvmrc` を置いたが、**mise は `.nvmrc` を既定で読まない**（idiomatic version files は既定で無効）ため、ローカルが Node 25.6.0・CI が 24 でズレていた。実測して発見し修正
+- **削ったもの**: Astro scaffold の `public/favicon.svg`（Astro のロゴであり、モノクロ・ミニマルの方針とも他人のブランドを載せない点とも矛盾する）、`biome.json` / `vitest.config.ts` の既定値と同じ記述
 
 ### P2-5. 日次レポートページ
 - [ ] **やること**: `src/pages/blog/[slug].astro` で posts を静的生成

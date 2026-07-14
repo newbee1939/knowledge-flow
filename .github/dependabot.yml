@@ -1,0 +1,33 @@
+version: 2
+
+# 依存はピン留めし、更新は月 1 回にまとめる（ARCHITECTURE.md「依存を膨らませないための約束」）。
+# 個人運営なので、PR が毎週飛んでくると読まなくなる。まとめて月 1 回、1 本の PR で見る。
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    # 全パッケージを 1 本の PR にまとめる（バラバラに来ると放置される）
+    groups:
+      npm:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 1
+    commit-message:
+      prefix: chore
+    labels:
+      - dependencies
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 1
+    commit-message:
+      prefix: ci
+    labels:
+      - dependencies
