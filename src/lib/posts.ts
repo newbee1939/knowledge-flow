@@ -9,16 +9,16 @@ import { getCollection } from 'astro:content';
  * 空のサイトを公開するくらいなら、ビルドを落として気づいたほうがいい。
  */
 export async function getPosts() {
-  const posts = await getCollection('posts');
+	const posts = await getCollection('posts');
 
-  if (posts.length === 0) {
-    throw new Error(
-      'posts が 0 件です。ビルドを中止しました。\n' +
-        '  - docs/blog/posts/ に .md があるか\n' +
-        '  - src/content.config.ts の loader の base パスが正しいか\n' +
-        '  - 古いキャッシュが悪さをしていないか（node_modules/.astro を消して再ビルド）',
-    );
-  }
+	if (posts.length === 0) {
+		throw new Error(
+			'posts が 0 件です。ビルドを中止しました。\n' +
+				'  - docs/blog/posts/ に .md があるか\n' +
+				'  - src/content.config.ts の loader の base パスが正しいか\n' +
+				'  - 古いキャッシュが悪さをしていないか（node_modules/.astro を消して再ビルド）',
+		);
+	}
 
-  return posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+	return posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 }

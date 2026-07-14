@@ -125,6 +125,14 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **DoD**: `/blog/2026-07-13/` の 4 つの図が、JS 無効のブラウザでも表示される
 - **判断ポイント**: CI が重くなりすぎるなら「図は諦めてコードブロックのまま出す」も可（[[feedback-simple-first]]）。その場合は `SKILL.md` から Mermaid 指示を外す
 
+### P2-4b. Lint / Format / テスト / CI の導入
+- [x] **やること**: Biome（Lint + Format）、Vitest（テスト）、CI ワークフローを入れる
+- **成果物**: `biome.json`、`vitest.config.ts`、`.github/workflows/ci.yml`、`.nvmrc`、`src/lib/*.test.ts`、`CLAUDE.md` にルール追記
+- **DoD**: PR で `npm run lint` / `npm test` / `npm run build` が CI で回り、違反時に落ちる
+- **選定理由（Biome）**: ESLint + Prettier + 各 Astro プラグイン（約 7 依存）に対し Biome は 1 依存で済む。**`prettier-plugin-astro` は最終更新が 2024-07-16 で 2 年放置**されており、「Prettier の方が Astro 対応が成熟」という一般論はもう成り立たない。Biome は 2.5.3（2026-07-08）と活発
+- **代償**: Biome の `.astro` 対応は**実験的**。`noUnusedVariables` / `noUnusedImports` / `useConst` は誤検知するため `overrides` で **`.astro` に限って**無効化（`.ts` では有効のまま）
+- **注意**: `package.json` は Biome の対象外にした（`npm install` がインデントを書き戻すたびに CI が落ちるため）
+
 ### P2-5. 日次レポートページ
 - [ ] **やること**: `src/pages/blog/[slug].astro` で posts を静的生成
 - **成果物**: `/src/pages/blog/[slug].astro`、`/src/layouts/`

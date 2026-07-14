@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# 同じブランチに続けて push したら、古い実行は打ち切る
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# 読み取りだけで足りる
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint & Format (Biome)
+        run: npm run lint
+
+      - name: Test (Vitest)
+        run: npm test
+
+      # ビルドはテストでもある。
+      # 日次レポートの frontmatter がスキーマに合わなければ InvalidContentEntryDataError で落ち、
+      # posts が 0 件なら getPosts() のガードで落ちる（空のサイトを公開しない）。
+      - name: Build (Astro)
+        run: npm run build
