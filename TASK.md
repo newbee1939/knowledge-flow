@@ -103,6 +103,7 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **成果物**: `/package.json`、`/package-lock.json`、`/astro.config.mjs`、`/src/`
 - **DoD**: `npm run dev` で localhost が 200 で返る。`package.json` に `^` が 1 つもない
 - **実績**: Astro 7.0.7 をピン留め。**scaffold をそのままリポジトリで実行すると既存の `README.md` / `.gitignore` を上書きするため、別ディレクトリで生成して必要なファイルだけ持ち込んだ**（`AGENTS.md` / `.vscode/` は持ち込まない）
+- **実績（追加）**: scaffold が入れる `"astro": "astro"` スクリプトは削除（`npx astro` で同じことができ、抽象化として何も足していない）。`.github/dependabot.yml` を追加し、npm と GitHub Actions の更新を**月 1 回・1 本の PR にまとめる**設定にした（ARCHITECTURE.md「依存を膨らませないための約束」の実体化）
 
 ### P2-2. GitHub Pages 向けのパス設定（落とし穴 3）
 - [x] **やること**: `astro.config.mjs` に `site: "https://<user>.github.io"` と `base: "/knowledge-flow"` を設定。サイト内リンクは `import.meta.env.BASE_URL` 経由で組む
