@@ -4,20 +4,12 @@
 		"includes": ["src/**", "*.ts", "*.mjs"]
 	},
 	"formatter": {
-		"enabled": true,
 		"indentStyle": "tab",
 		"lineWidth": 100
 	},
 	"javascript": {
 		"formatter": {
-			"quoteStyle": "single",
-			"semicolons": "always"
-		}
-	},
-	"linter": {
-		"enabled": true,
-		"rules": {
-			"preset": "recommended"
+			"quoteStyle": "single"
 		}
 	},
 	"overrides": [

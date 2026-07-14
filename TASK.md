@@ -132,6 +132,8 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **選定理由（Biome）**: ESLint + Prettier + 各 Astro プラグイン（約 7 依存）に対し Biome は 1 依存で済む。**`prettier-plugin-astro` は最終更新が 2024-07-16 で 2 年放置**されており、「Prettier の方が Astro 対応が成熟」という一般論はもう成り立たない。Biome は 2.5.3（2026-07-08）と活発
 - **代償**: Biome の `.astro` 対応は**実験的**。`noUnusedVariables` / `noUnusedImports` / `useConst` は誤検知するため `overrides` で **`.astro` に限って**無効化（`.ts` では有効のまま）
 - **注意**: `package.json` は Biome の対象外にした（`npm install` がインデントを書き戻すたびに CI が落ちるため）
+- **Node のバージョン管理**: **`.tool-versions` を唯一の真実**にした（`node 24.18.0`）。**mise（ローカル）と `setup-node`（CI）の両方がこのファイルをそのまま読む**。当初 `.nvmrc` を置いたが、**mise は `.nvmrc` を既定で読まない**（idiomatic version files は既定で無効）ため、ローカルが Node 25.6.0・CI が 24 でズレていた。実測して発見し修正
+- **削ったもの**: Astro scaffold の `public/favicon.svg`（Astro のロゴであり、モノクロ・ミニマルの方針とも他人のブランドを載せない点とも矛盾する）、`biome.json` / `vitest.config.ts` の既定値と同じ記述
 
 ### P2-5. 日次レポートページ
 - [ ] **やること**: `src/pages/blog/[slug].astro` で posts を静的生成

@@ -1,10 +1,5 @@
-/// <reference types="vitest" />
 import { getViteConfig } from 'astro/config';
 
-// getViteConfig() を使うと、Astro の解決設定（エイリアス等）をそのままテストに引き継げる。
+// getViteConfig() で Astro の解決設定（import.meta.env.BASE_URL 等）をテストに引き継ぐ。
 // https://docs.astro.build/en/guides/testing/
-export default getViteConfig({
-	test: {
-		include: ['src/**/*.test.ts'],
-	},
-});
+export default getViteConfig({});
