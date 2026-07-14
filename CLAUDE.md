@@ -16,7 +16,18 @@
 ## Lint / Format
 
 - **Biome**（`npm run lint` / `npm run lint:fix`）。ESLint + Prettier は使わない（依存を増やさない）
-- CI で `biome ci` が回る。フォーマット差分があれば落ちる
+- CI で `npm run lint` が回る。フォーマット差分があれば落ちる
+
+## GitHub Actions
+
+- **Action はタグではなくコミットハッシュで固定する。** タグは書き換え可能なので、リポジトリが乗っ取られれば `@v7` が別のコミットを指しうる（サプライチェーン攻撃）
+- 末尾に `# v7.0.0` のようにバージョンをコメントで残す。Dependabot はこれを見て更新 PR を出す
+
+```yaml
+- uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+```
+
+- ワークフローで**信用できない入力**（issue タイトル、PR 本文、コミットメッセージ等）を `run:` に直接埋め込まない。`env:` 経由で渡す（コマンドインジェクション対策）
 
 ## ブランチ・PR ワークフロー
 
