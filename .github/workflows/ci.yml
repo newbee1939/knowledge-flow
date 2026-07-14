@@ -32,14 +32,16 @@ jobs:
 
       - run: npm ci
 
-      - name: Lint & Format (Biome)
-        run: npm run lint
-
-      - name: Test (Vitest)
-        run: npm test
-
+      # Lint / Test / Build は互いに依存しないので並列実行する（steps-level parallel、2026-06-25〜）。
       # ビルドはテストでもある。
       # 日次レポートの frontmatter がスキーマに合わなければ InvalidContentEntryDataError で落ち、
       # posts が 0 件なら getPosts() のガードで落ちる（空のサイトを公開しない）。
-      - name: Build (Astro)
-        run: npm run build
+      - parallel:
+          - name: Lint & Format (Biome)
+            run: npm run lint
+
+          - name: Test (Vitest)
+            run: npm test
+
+          - name: Build (Astro)
+            run: npm run build
