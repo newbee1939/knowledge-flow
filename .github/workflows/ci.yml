@@ -30,22 +30,19 @@ jobs:
           node-version-file: .tool-versions
           cache: npm
 
-      - run: npm ci
-
       # rehype-mermaid はビルド時に Playwright Chromium で mermaid 図をインライン SVG に変換する
-      # （ARCHITECTURE.md の落とし穴 4）。ブラウザバイナリは ~/.cache/ms-playwright にキャッシュし、
-      # キャッシュヒット時はダウンロードをスキップする。OS の依存パッケージはランナーが毎回使い捨てなので
-      # キャッシュの有無にかかわらず入れ直す（apt のみでダウンロードは発生しない）。
+      # （ARCHITECTURE.md の落とし穴 4）。ブラウザバイナリは ~/.cache/ms-playwright にキャッシュする。
+      # npm の postinstall（`playwright install --no-shell chromium`）が実際のダウンロードを担当し、
+      # キャッシュヒット時はダウンロード済みと判定してスキップする。npm ci より前にキャッシュを復元する。
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
           key: playwright-chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
-      - name: Install Playwright Chromium
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --no-shell chromium
+      - run: npm ci
 
+      # OS の依存パッケージ（apt）はランナーが毎回使い捨てなのでキャッシュの有無にかかわらず入れ直す。
+      # ブラウザ本体と違って大きなダウンロードは発生しない。
       - name: Install Playwright Chromium OS deps
         run: npx playwright install-deps chromium
 

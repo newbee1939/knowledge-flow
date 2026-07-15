@@ -15,7 +15,8 @@ export default defineConfig({
 		// rehype-mermaid が `language-mermaid` を検出できなくなるため、mermaid だけ除外する。
 		syntaxHighlight: {
 			type: 'shiki',
-			excludeLangs: ['mermaid'],
+			// excludeLangs は既定値（['math']）を丸ごと上書きするため、既定の除外も明示的に残す。
+			excludeLangs: ['math', 'mermaid'],
 		},
 		processor: unified({ rehypePlugins: [rehypeMermaid] }),
 	},

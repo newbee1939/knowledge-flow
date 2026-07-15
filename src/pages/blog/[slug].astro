@@ -1,6 +1,7 @@
 ---
 import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { formatDate } from '../../lib/date';
 import { getPosts } from '../../lib/posts';
 
 export async function getStaticPaths() {
@@ -12,11 +13,23 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
+
+// rehype-mermaid の描画に失敗すると、Astro の glob loader はエラーをログに出すだけで
+// 本文を空のまま握りつぶし、ビルドは exit 0 で成功してしまう（Mermaid 構文エラーなどが
+// 人間のレビュー無しで main に push される P3 の運用では、誰も気づけないまま空記事が
+// 公開されかねない）。posts.ts の「0 件ならビルドを止める」ガードと同じ思想で、
+// ここでも壊れた記事を検知したらビルドを止める。
+if (!post.rendered?.html) {
+	throw new Error(
+		`記事 ${post.id} の本文レンダリングに失敗しました。Mermaid 図などの構文エラーがないか確認してください。`,
+	);
+}
+
 const { Content } = await render(post);
 ---
 
 <BaseLayout title={post.data.title}>
 	<h1>{post.data.title}</h1>
-	<time datetime={post.data.date.toISOString()}>{post.data.date.toISOString().split('T')[0]}</time>
+	<time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
 	<Content />
 </BaseLayout>
