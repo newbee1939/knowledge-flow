@@ -129,6 +129,8 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **実績（つまずき2）**: Shiki のシンタックスハイライトが `rehype-mermaid` より先に走り、` ```mermaid ` コードブロックを `<pre class="astro-code" data-language="mermaid">` に作り替えてしまうため、`language-mermaid` クラスが失われて変換対象として認識されなかった。`markdown.syntaxHighlight.excludeLangs: ['mermaid']` で Shiki 側から除外して解決
 - **CI コスト実測**: mermaid 変換自体のビルド時間への影響は誤差レベル（8 図込みで 4 ページ合計ビルド 1 秒未満）。重いのは Playwright Chromium のダウンロードのみ（Linux で数十〜百数十 MB）。`actions/cache` で `~/.cache/ms-playwright` をキャッシュし、2 回目以降の CI 実行ではダウンロードをスキップするようにした。**「重すぎるので諦める」の閾値には達しなかった**ため、コードブロックへのフォールバックは不採用
 - JS 無効の Chromium でスクリーンショットを撮り、4 図が実際に SVG として描画されることを目視確認済み
+- **実績（セルフレビューで発覚した重大な欠陥）**: 8 観点でこの PR 自身をレビューしたところ、**Mermaid の描画に失敗しても `npm run build` が exit 0 で成功し、記事本文が空のまま公開される**欠陥が見つかった。Astro の glob loader は Markdown レンダリング時の例外を catch してログに出すだけで処理を続行し、`entry.rendered` は `undefined` のまま保存される（`node_modules/astro/dist/content/loaders/glob.js`）。Chromium 不在の環境で実際にビルドし、本文が空のページが exit 0 で生成されることを再現した。P3 は人間レビュー無しで main に push する設計（[[project_knowledge_flow_p2_decisions]]）なので、これを見逃すと Mermaid 構文が壊れた瞬間に誰も気づけないまま空記事が公開されるところだった。`posts.ts` の「0 件ならビルドを止める」ガードと同じ思想で `[slug].astro` に `post.rendered?.html` の有無をチェックするガードを追加して解決（コミット ad031b5）
+- **実績（同時に発覚した副次的な問題）**: `excludeLangs: ['mermaid']` が Astro の既定値 `['math']` を配列ごと上書きしていた／`BaseLayout.astro` を導入したのに `index.astro` が未移行で `<head>` が重複／日付表示ロジックが 2 ページで二重管理／ローカルの `npm run build` に Playwright 導入手順が無く CLAUDE.md のセルフレビュー手順が機能しない、の 4 件もあわせて修正（`src/lib/date.ts` を新設、`package.json` に `postinstall` を追加）
 
 ### P2-4b. Lint / Format / テスト / CI の導入
 - [x] **やること**: Biome（Lint + Format）、Vitest（テスト）、CI ワークフローを入れる
