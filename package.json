@@ -15,7 +15,10 @@
     "lint:fix": "biome check --write ."
   },
   "dependencies": {
-    "astro": "7.0.9"
+    "@astrojs/markdown-remark": "7.2.1",
+    "astro": "7.0.9",
+    "playwright": "1.61.1",
+    "rehype-mermaid": "3.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.3",

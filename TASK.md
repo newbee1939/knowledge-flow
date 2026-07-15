@@ -120,10 +120,15 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **注意**: コンテンツは `node_modules/.astro/data-store.json` にキャッシュされる。ローカルでは古いキャッシュのせいで異常に気づかず、**CI で初めて壊れる**ことがある。検証時は `rm -rf .astro node_modules/.astro` してから
 
 ### P2-4. Mermaid をビルド時に SVG 化（落とし穴 4）
-- [ ] **やること**: `rehype-mermaid` 系で ` ```mermaid ` ブロックをビルド時に SVG へ変換する。**クライアント JS は入れない**。ヘッドレスブラウザが必要になるので、CI での実行コストを測る
+- [x] **やること**: `rehype-mermaid` 系で ` ```mermaid ` ブロックをビルド時に SVG へ変換する。**クライアント JS は入れない**。ヘッドレスブラウザが必要になるので、CI での実行コストを測る
 - **成果物**: `astro.config.mjs` の `markdown.rehypePlugins`
 - **DoD**: `/blog/2026-07-13/` の 4 つの図が、JS 無効のブラウザでも表示される
 - **判断ポイント**: CI が重くなりすぎるなら「図は諦めてコードブロックのまま出す」も可（[[feedback-simple-first]]）。その場合は `SKILL.md` から Mermaid 指示を外す
+- **実績**: `rehype-mermaid`（既定の `inline-svg` 戦略）+ `playwright` + `@astrojs/markdown-remark` を採用。DoD 検証のため `src/pages/blog/[slug].astro` と `src/layouts/BaseLayout.astro`（P2-5 の最小実装）も本 PR に含めた — mermaid の SVG 化は記事詳細ページが無いと目視確認できず、単体では DoD を満たせないため
+- **実績（つまずき）**: このリポジトリの Astro は Markdown の既定処理系が「Sätteri」に変わっており、`markdown.rehypePlugins` を指定しただけでは非推奨警告が出るだけで実際には無視される。`@astrojs/markdown-remark` を追加インストールし、`markdown.processor: unified({ rehypePlugins: [...] })` で明示的に指定する必要があった
+- **実績（つまずき2）**: Shiki のシンタックスハイライトが `rehype-mermaid` より先に走り、` ```mermaid ` コードブロックを `<pre class="astro-code" data-language="mermaid">` に作り替えてしまうため、`language-mermaid` クラスが失われて変換対象として認識されなかった。`markdown.syntaxHighlight.excludeLangs: ['mermaid']` で Shiki 側から除外して解決
+- **CI コスト実測**: mermaid 変換自体のビルド時間への影響は誤差レベル（8 図込みで 4 ページ合計ビルド 1 秒未満）。重いのは Playwright Chromium のダウンロードのみ（Linux で数十〜百数十 MB）。`actions/cache` で `~/.cache/ms-playwright` をキャッシュし、2 回目以降の CI 実行ではダウンロードをスキップするようにした。**「重すぎるので諦める」の閾値には達しなかった**ため、コードブロックへのフォールバックは不採用
+- JS 無効の Chromium でスクリーンショットを撮り、4 図が実際に SVG として描画されることを目視確認済み
 
 ### P2-4b. Lint / Format / テスト / CI の導入
 - [x] **やること**: Biome（Lint + Format）、Vitest（テスト）、CI ワークフローを入れる
@@ -136,9 +141,10 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **削ったもの**: Astro scaffold の `public/favicon.svg`（Astro のロゴであり、モノクロ・ミニマルの方針とも他人のブランドを載せない点とも矛盾する）、`biome.json` / `vitest.config.ts` の既定値と同じ記述
 
 ### P2-5. 日次レポートページ
-- [ ] **やること**: `src/pages/blog/[slug].astro` で posts を静的生成
+- [x] **やること**: `src/pages/blog/[slug].astro` で posts を静的生成
 - **成果物**: `/src/pages/blog/[slug].astro`、`/src/layouts/`
 - **DoD**: `/blog/2026-07-13/` が表示される
+- **実績**: P2-4（Mermaid の SVG 化）の DoD 検証に記事詳細ページが必須だったため、P2-4 と同じ PR で前倒しして最小実装。`render(post)`（`astro:content`）で本文を描画するだけの素の `BaseLayout.astro`。タイポグラフィ・余白は P2-6 で別途
 
 ### P2-6. ベースのタイポグラフィと余白
 - [ ] **やること**: 本文 line-height、見出しサイズ階層、コンテナ最大幅、余白スケールを CSS 変数で定義。白黒＋極小アクセント。フォントは system-ui、等幅は SF Mono / Menlo
