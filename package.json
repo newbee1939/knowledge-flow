@@ -13,7 +13,7 @@
     "test": "vitest run",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "postinstall": "playwright install --no-shell chromium"
+    "postinstall": "playwright install --only-shell chromium"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "7.2.1",

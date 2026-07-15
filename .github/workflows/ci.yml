@@ -32,7 +32,7 @@ jobs:
 
       # rehype-mermaid はビルド時に Playwright Chromium で mermaid 図をインライン SVG に変換する
       # （ARCHITECTURE.md の落とし穴 4）。ブラウザバイナリは ~/.cache/ms-playwright にキャッシュする。
-      # npm の postinstall（`playwright install --no-shell chromium`）が実際のダウンロードを担当し、
+      # npm の postinstall（`playwright install --only-shell chromium`）が実際のダウンロードを担当し、
       # キャッシュヒット時はダウンロード済みと判定してスキップする。npm ci より前にキャッシュを復元する。
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
