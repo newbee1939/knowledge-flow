@@ -28,4 +28,15 @@ describe('getPosts', () => {
 		getCollection.mockReturnValue([post('2026-07-14')]);
 		await expect(getPosts()).resolves.toHaveLength(1);
 	});
+
+	// post.id（ファイル名）と frontmatter date は運用上一致する想定でしかなく、スキーマは
+	// 検証しない。ずれると一覧・詳細ページで違う日付が出るため、ビルド時に検知する。
+	it('post.id と frontmatter date が食い違うとビルドを止める', async () => {
+		getCollection.mockReturnValue([
+			{ id: '2026-07-14', data: { date: new Date('2026-07-15'), title: 't' } },
+		]);
+		await expect(getPosts()).rejects.toThrow(
+			'2026-07-14 のファイル名と frontmatter date（2026-07-15）が一致しません',
+		);
+	});
 });

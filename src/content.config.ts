@@ -7,7 +7,8 @@ import { z } from 'astro/zod';
 //
 // ファイル名（post.id、例: "2026-07-17"）と frontmatter の date は運用上一致する想定だが、
 // このスキーマは一致まで検証しない。表示には post.id ではなく、必ずこの date を使うこと
-// （src/lib/date.ts の formatDate 経由）。
+// （src/lib/date.ts の formatDate 経由）。一致しない場合は src/lib/posts.ts の getPosts() が
+// ビルドを止める。
 const posts = defineCollection({
 	loader: glob({ base: './docs/blog/posts', pattern: '*.md' }),
 	schema: z.object({
