@@ -1,0 +1,59 @@
+name: Daily Report
+
+# 毎朝 07:00 JST に /daily-report Skill を実行し、当日のレポートを main へ push する（P3）。
+# その push が pages.yml を発火させ、サイトが自動更新される（P3-4 の連鎖）。
+on:
+  schedule:
+    # 07:00 JST = 前日 22:00 UTC。cron は UTC で書く（ARCHITECTURE.md の落とし穴 5）
+    - cron: '0 22 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write # 失敗通知の Issue 作成（P3-7）
+  id-token: write # Claude GitHub App トークンの取得（OIDC 交換）に必要
+
+concurrency:
+  group: daily-report
+  cancel-in-progress: false
+
+jobs:
+  daily-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      TZ: Asia/Tokyo # SKILL.md の「今日を JST で確定」を実行環境でも保証する（落とし穴 5）
+    steps:
+      # .claude/skills/ を Claude に読ませるため、先に checkout する
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      # push は claude-code-action の内側（Claude GitHub App のトークン）で行わせる。
+      # ワークフロー側に `- run: git push` を足すと GITHUB_TOKEN での push になり、
+      # pages.yml が発火せずサイトが更新されない（落とし穴 1・6）。
+      # SKILL.md 自体は commit 止まりで固定し、push はこのプロンプトだけで指示する。
+      # ローカルで /daily-report を手動実行しても main へ push されないようにするため（落とし穴 6）。
+      - uses: anthropics/claude-code-action@700e7f8316990de46bed556429765647af760efc # v1.0.176
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            /daily-report を実行してください。
+            完了したら、生成されたコミットを main ブランチへ直接 push してください（git push origin main）。
+            claude/ プレフィックスのブランチは作らないでください。
+            書き込み・コミットしてよいのは docs/ 配下のみです。src/ や .github/ など他の場所は変更しないでください。
+          claude_args: |
+            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
+
+      # トークン失効などで cron が黙って落ち続けるのが最大のリスク（ARCHITECTURE.md「AI の実行基盤」）。
+      # 失敗したら Issue を立てて気づけるようにする（P3-7）
+      - name: Notify failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue create \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "daily-report failed: $(date +%Y-%m-%d)" \
+            --body "日次レポートのワークフローが失敗しました。ログ: $RUN_URL
+
+          まず CLAUDE_CODE_OAUTH_TOKEN の失効を疑う（\`claude setup-token\` で再発行 → リポジトリ Secrets を更新）。"
