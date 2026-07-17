@@ -125,7 +125,7 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **DoD**: `/blog/2026-07-13/` の 4 つの図が、JS 無効のブラウザでも表示される
 - **判断ポイント**: CI が重くなりすぎるなら「図は諦めてコードブロックのまま出す」も可（[[feedback-simple-first]]）。その場合は `SKILL.md` から Mermaid 指示を外す
 - **実績**: `rehype-mermaid`（既定の `inline-svg` 戦略）+ `playwright` + `@astrojs/markdown-remark` を採用。DoD 検証のため `src/pages/blog/[slug].astro` と `src/layouts/BaseLayout.astro`（P2-5 の最小実装）も本 PR に含めた — mermaid の SVG 化は記事詳細ページが無いと目視確認できず、単体では DoD を満たせないため
-- **実績（つまずき）**: このリポジトリの Astro は Markdown の既定処理系が「Sätteri」に変わっており、`markdown.rehypePlugins` を指定しただけでは非推奨警告が出るだけで実際には無視される。`@astrojs/markdown-remark` を追加インストールし、`markdown.processor: unified({ rehypePlugins: [...] })` で明示的に指定する必要があった
+- **実績（つまずき）**: このリポジトリの Astro は Markdown の既定処理系が変わっており、`markdown.rehypePlugins` を指定しただけでは非推奨警告が出るだけで実際には無視される。`@astrojs/markdown-remark` を追加インストールし、`markdown.processor: unified({ rehypePlugins: [...] })` で明示的に指定する必要があった
 - **実績（つまずき2）**: Shiki のシンタックスハイライトが `rehype-mermaid` より先に走り、` ```mermaid ` コードブロックを `<pre class="astro-code" data-language="mermaid">` に作り替えてしまうため、`language-mermaid` クラスが失われて変換対象として認識されなかった。`markdown.syntaxHighlight.excludeLangs: ['mermaid']` で Shiki 側から除外して解決
 - **CI コスト実測**: mermaid 変換自体のビルド時間への影響は誤差レベル（8 図込みで 4 ページ合計ビルド 1 秒未満）。重いのは Playwright Chromium のダウンロードのみ（Linux で数十〜百数十 MB）。`actions/cache` で `~/.cache/ms-playwright` をキャッシュし、2 回目以降の CI 実行ではダウンロードをスキップするようにした。**「重すぎるので諦める」の閾値には達しなかった**ため、コードブロックへのフォールバックは不採用
 - JS 無効の Chromium でスクリーンショットを撮り、4 図が実際に SVG として描画されることを目視確認済み
@@ -134,7 +134,7 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 
 ### P2-4b. Lint / Format / テスト / CI の導入
 - [x] **やること**: Biome（Lint + Format）、Vitest（テスト）、CI ワークフローを入れる
-- **成果物**: `biome.json`、`vitest.config.ts`、`.github/workflows/ci.yml`、`.nvmrc`、`src/lib/*.test.ts`、`CLAUDE.md` にルール追記
+- **成果物**: `biome.json`、`vitest.config.ts`、`.github/workflows/ci.yml`、`.tool-versions`、`src/lib/*.test.ts`、`CLAUDE.md` にルール追記
 - **DoD**: PR で `npm run lint` / `npm test` / `npm run build` が CI で回り、違反時に落ちる
 - **選定理由（Biome）**: ESLint + Prettier + 各 Astro プラグイン（約 7 依存）に対し Biome は 1 依存で済む。**`prettier-plugin-astro` は最終更新が 2024-07-16 で 2 年放置**されており、「Prettier の方が Astro 対応が成熟」という一般論はもう成り立たない。Biome は 2.5.3（2026-07-08）と活発
 - **代償**: Biome の `.astro` 対応は**実験的**。`noUnusedVariables` / `noUnusedImports` / `useConst` は誤検知するため `overrides` で **`.astro` に限って**無効化（`.ts` では有効のまま）

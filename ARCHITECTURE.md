@@ -82,6 +82,7 @@ knowledge-flow/
 ├── astro.config.mjs
 ├── package.json / package-lock.json
 ├── .github/workflows/
+│   ├── ci.yml                       # Lint / Test / Build（P2）
 │   ├── pages.yml                    # Astro ビルド → Pages デプロイ（P2）
 │   └── daily-report.yml             # cron で Skill 実行（P3）
 ├── ARCHITECTURE.md
