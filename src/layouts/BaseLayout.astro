@@ -1,19 +1,76 @@
 ---
+import { withBase } from '../lib/url';
+import '../styles/global.css';
+
 interface Props {
 	title: string;
+	description?: string;
 }
 
-const { title } = Astro.props;
+const { title, description = '今日のテックを線で理解できる、一人運営のテックニュースメディア。' } =
+	Astro.props;
 ---
 
 <html lang="ja">
 	<head>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
+		<meta name="description" content={description} />
 		<title>{title}</title>
 	</head>
 	<body>
-		<slot />
+		<header class="site-header">
+			<a class="site-name" href={withBase('/')}>knowledge-flow</a>
+		</header>
+		<main>
+			<slot />
+		</main>
+		<footer class="site-footer">
+			<p>© {new Date().getFullYear()} knowledge-flow — 毎朝 AI が生成する日次テックレポート</p>
+		</footer>
 	</body>
 </html>
+
+<style>
+	.site-header {
+		max-width: var(--container-wide);
+		margin-inline: auto;
+		padding: var(--space-md) var(--space-lg);
+	}
+
+	.site-name {
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		font-weight: 600;
+		letter-spacing: 0.02em;
+		text-decoration: none;
+	}
+
+	.site-name:hover {
+		color: var(--color-accent);
+	}
+
+	main {
+		max-width: var(--container-wide);
+		margin-inline: auto;
+		padding: 0 var(--space-lg) var(--space-2xl);
+	}
+
+	.site-footer {
+		max-width: var(--container-wide);
+		margin-inline: auto;
+		padding: var(--space-md) var(--space-lg);
+		border-top: 1px solid var(--color-border);
+		color: var(--color-text-muted);
+		font-size: var(--text-xs);
+	}
+
+	@media (max-width: 40rem) {
+		.site-header,
+		main,
+		.site-footer {
+			padding-inline: var(--space-md);
+		}
+	}
+</style>
