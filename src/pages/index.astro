@@ -1,4 +1,6 @@
 ---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { formatDate } from '../lib/date';
 import { getPosts } from '../lib/posts';
 import { withBase } from '../lib/url';
 
@@ -6,26 +8,18 @@ import { withBase } from '../lib/url';
 const posts = await getPosts();
 ---
 
-<html lang="ja">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>knowledge-flow</title>
-	</head>
-	<body>
-		<h1>knowledge-flow</h1>
-		<p>今日のテックを線で理解できる、一人運営のテックニュースメディア。</p>
-		<ul>
-			{
-				posts.map((post) => (
-					<li>
-						<time datetime={post.data.date.toISOString()}>{post.id}</time>
-						{' — '}
-						<a href={withBase(`blog/${post.id}/`)}>{post.data.title}</a>
-					</li>
-				))
-			}
-		</ul>
-	</body>
-</html>
+<BaseLayout title="knowledge-flow">
+	<h1>knowledge-flow</h1>
+	<p>今日のテックを線で理解できる、一人運営のテックニュースメディア。</p>
+	<ul>
+		{
+			posts.map((post) => (
+				<li>
+					<time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+					{' — '}
+					<a href={withBase(`blog/${post.id}/`)}>{post.data.title}</a>
+				</li>
+			))
+		}
+	</ul>
+</BaseLayout>

@@ -30,12 +30,28 @@ jobs:
           node-version-file: .tool-versions
           cache: npm
 
+      # rehype-mermaid はビルド時に Playwright Chromium で mermaid 図をインライン SVG に変換する
+      # （ARCHITECTURE.md の落とし穴 4）。ブラウザバイナリは ~/.cache/ms-playwright にキャッシュする。
+      # npm の postinstall（`playwright install --only-shell chromium`）が実際のダウンロードを担当し、
+      # キャッシュヒット時はダウンロード済みと判定してスキップする。npm ci より前にキャッシュを復元する。
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
       - run: npm ci
 
+      # OS の依存パッケージ（apt）はランナーが毎回使い捨てなのでキャッシュの有無にかかわらず入れ直す。
+      # ブラウザ本体と違って大きなダウンロードは発生しない。
+      - name: Install Playwright Chromium OS deps
+        run: npx playwright install-deps chromium
+
       # Lint / Test / Build は互いに依存しないので並列実行する（steps-level parallel、2026-06-25〜）。
-      # ビルドはテストでもある。
-      # 日次レポートの frontmatter がスキーマに合わなければ InvalidContentEntryDataError で落ち、
-      # posts が 0 件なら getPosts() のガードで落ちる（空のサイトを公開しない）。
+      # ビルドはテストでもある。以下はいずれも意図した安全装置で、ビルド失敗はバグではない。
+      #   - frontmatter がスキーマに合わない → InvalidContentEntryDataError
+      #   - posts が 0 件 → getPosts() のガード（空のサイトを公開しない）
+      #   - post.id と frontmatter date が食い違う → getPosts() のガード
+      #   - Mermaid 描画に失敗し本文が空になる → [slug].astro のガード
       - parallel:
           - name: Lint & Format (Biome)
             run: npm run lint

@@ -12,10 +12,14 @@
     "preview": "astro preview",
     "test": "vitest run",
     "lint": "biome check .",
-    "lint:fix": "biome check --write ."
+    "lint:fix": "biome check --write .",
+    "postinstall": "playwright install --only-shell chromium"
   },
   "dependencies": {
-    "astro": "7.0.9"
+    "@astrojs/markdown-remark": "7.2.1",
+    "astro": "7.0.9",
+    "playwright": "1.61.1",
+    "rehype-mermaid": "3.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.3",

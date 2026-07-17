@@ -79,7 +79,7 @@ AIが生み出す文章や返答の「できばえ」を、人がいちいち目
 - Hacker News front page `[API]`: https://hn.algolia.com/api/v1/search?tags=front_page
 - TechCrunch `[RSS]`: https://techcrunch.com/feed/
 - Dev.to `[RSS]`: https://dev.to/feed/
-- HackerNoon `[RSS]`: https://hackernoon.com/feed
+- HackerNoon `[RSS]`: https://hackernoon.com/feed （WebFetch 不可、`# 注意` 参照）
 - Product Hunt `[RSS]`: https://www.producthunt.com/feed
 - Google Cloud Release Notes `[Atom]`: https://docs.cloud.google.com/feeds/gcp-release-notes.xml
 - Google Cloud (Medium) `[RSS]`: https://medium.com/feed/google-cloud
@@ -88,13 +88,8 @@ AIが生み出す文章や返答の「できばえ」を、人がいちいち目
 - CNCF Blog `[RSS]`: https://www.cncf.io/feed/
 
 ## Reddit
-取得方法は `# 注意` 参照（WebFetch 不可、curl で取る）。
-- r/programming `[RSS]`: https://www.reddit.com/r/programming/.rss
-- r/ExperiencedDevs `[RSS]`: https://www.reddit.com/r/ExperiencedDevs/.rss
-- r/MachineLearning `[RSS]`: https://www.reddit.com/r/MachineLearning/.rss
-- r/LocalLLaMA `[RSS]`: https://www.reddit.com/r/LocalLLaMA/.rss
-- r/sre `[RSS]`: https://www.reddit.com/r/sre/.rss
-- r/devops `[RSS]`: https://www.reddit.com/r/devops/.rss
+取得方法は `# 注意` 参照（WebFetch 不可、curl で取る）。6 サブレディットを `+` で連結した合成フィードを **1 リクエスト**で取る（個別に叩くと 2 本目以降がレート制限で 429 になる）。
+- r/programming + r/ExperiencedDevs + r/MachineLearning + r/LocalLLaMA + r/sre + r/devops `[RSS]`: https://www.reddit.com/r/programming+ExperiencedDevs+MachineLearning+LocalLLaMA+sre+devops/.rss?limit=60
 
 ## セキュリティ
 - IPA セキュリティアラート `[HTML]`: https://www.ipa.go.jp/security/security-alert/index.html
@@ -102,4 +97,5 @@ AIが生み出す文章や返答の「できばえ」を、人がいちいち目
 # 注意
 
 - 取得に失敗したソース・ジャンルは省略する。
-- Reddit は WebFetch 不可（Claude Code がブロック）。`curl -s -H 'User-Agent: knowledge-flow/1.0' <URL>` で RSS を取得する。汎用 UA（`Mozilla/5.0` 等）や `.json` API は弾かれるので、固有 UA ＋ `.rss` を使う。レート制限で一時的に失敗することがあるが、その場合はスキップ。
+- Reddit は WebFetch 不可（Claude Code がブロック）。`curl -s --retry 3 --retry-delay 10 -H 'User-Agent: knowledge-flow/1.0' <合成フィードURL>` で 1 リクエストで取得する（curl は 429 を自動リトライする）。汎用 UA（`Mozilla/5.0` 等）や `.json` API は弾かれるので、固有 UA ＋ `.rss` を使う。各 entry の `category` 要素の `label` 属性がサブレディット名。それでも失敗したらスキップ。
+- HackerNoon は WebFetch がサイト側に 403 で弾かれる。`curl -s -H 'User-Agent: knowledge-flow/1.0' https://hackernoon.com/feed` で RSS を取得する（UA は何でも通る）。

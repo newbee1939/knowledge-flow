@@ -1,4 +1,5 @@
 import { getCollection } from 'astro:content';
+import { formatDate } from './date';
 
 /**
  * 日次レポートを新しい順に返す。
@@ -7,6 +8,9 @@ import { getCollection } from 'astro:content';
  * 記事ゼロのページを平然と出力する。docs/ のパスがずれたり content.config.ts が壊れたりすると、
  * 空のサイトが静かに公開されてしまう（毎朝の自動更新では誰も気づかない）。
  * 空のサイトを公開するくらいなら、ビルドを落として気づいたほうがいい。
+ *
+ * **post.id と frontmatter date の食い違いもビルドを止める。** 一致は運用上の想定でしかなく、
+ * スキーマは検証しない（content.config.ts 参照）。放置すると一覧・詳細ページで違う日付が出る。
  */
 export async function getPosts() {
 	const posts = await getCollection('posts');
@@ -18,6 +22,16 @@ export async function getPosts() {
 				'  - src/content.config.ts の loader の base パスが正しいか\n' +
 				'  - 古いキャッシュが悪さをしていないか（node_modules/.astro を消して再ビルド）',
 		);
+	}
+
+	for (const post of posts) {
+		const expected = formatDate(post.data.date);
+		if (post.id !== expected) {
+			throw new Error(
+				`記事 ${post.id} のファイル名と frontmatter date（${expected}）が一致しません。\n` +
+					`  - docs/blog/posts/${post.id}.md の date を確認してください。`,
+			);
+		}
 	}
 
 	return posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
