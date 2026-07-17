@@ -2,6 +2,7 @@
 import { unified } from '@astrojs/markdown-remark';
 import { defineConfig } from 'astro/config';
 import rehypeMermaid from 'rehype-mermaid';
+import { rehypeExternalLinks } from './src/lib/rehypeExternalLinks.ts';
 
 // GitHub Pages はプロジェクトページとして https://<user>.github.io/<repo>/ で公開される。
 // site と base を設定しないと、本番だけ CSS と画像が 404 になる（ARCHITECTURE.md の落とし穴 3）。
@@ -18,6 +19,8 @@ export default defineConfig({
 			// excludeLangs は既定値（['math']）を丸ごと上書きするため、既定の除外も明示的に残す。
 			excludeLangs: ['math', 'mermaid'],
 		},
-		processor: unified({ rehypePlugins: [rehypeMermaid] }),
+		// 記事内の外部リンク（元記事へのリンクなど）は新しいタブで開く。
+		// サイト内リンクは対象外。rehypeExternalLinks の詳細は src/lib/rehypeExternalLinks.ts
+		processor: unified({ rehypePlugins: [rehypeMermaid, rehypeExternalLinks] }),
 	},
 });
