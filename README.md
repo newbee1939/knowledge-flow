@@ -9,10 +9,10 @@
 ## 開発
 
 ```sh
-npm install
+npm ci
 npm run dev
 ```
 
 - `npm run lint` — Biome によるフォーマット・静的解析
-- `npm test` — Vitest
+- `npm run test` — Vitest
 - `npm run build` — Astro ビルド
