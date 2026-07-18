@@ -8,12 +8,20 @@ import { withBase } from '../lib/url';
 // タイムラインは posts からビルド時に導出する（設計原則 Derived-not-Generated）。
 // docs/blog/posts/ に md を 1 枚足すだけで、コードを変えずにカードが増える。
 const posts = await getPosts();
+const latestPost = posts[0];
 const timeline = buildTimeline(
 	posts.map((post) => ({ id: post.id, date: post.data.date, title: post.data.title })),
 );
 ---
 
 <BaseLayout title="knowledge-flow">
+	<a class="latest" href={withBase(`blog/${latestPost.id}/`)}>
+		<span class="latest-label">今日の記事</span>
+		<h1 class="latest-title">{latestPost.data.title}</h1>
+		<time class="latest-date" datetime={latestPost.data.date.toISOString()}>
+			{formatDate(latestPost.data.date)}
+		</time>
+	</a>
 	{
 		timeline.map(({ year, months }) => (
 			<section class="year">
@@ -39,21 +47,43 @@ const timeline = buildTimeline(
 </BaseLayout>
 
 <style>
-	.hero {
-		padding-block: var(--space-xl) var(--space-lg);
+	.latest {
+		display: block;
+		margin-top: var(--space-lg);
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		padding: var(--space-lg);
+		text-decoration: none;
+		transition:
+			border-color 0.15s ease,
+			background-color 0.15s ease;
 	}
 
-	.hero h1 {
-		margin: 0;
+	.latest:hover {
+		border-color: var(--color-accent);
+		background: var(--color-surface);
+	}
+
+	.latest-label {
+		display: inline-block;
+		color: var(--color-accent);
 		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		font-weight: 600;
+		letter-spacing: 0.08em;
+	}
+
+	.latest-title {
+		margin: var(--space-xs) 0 0;
 		font-size: var(--text-2xl);
 		font-weight: 700;
 		letter-spacing: -0.02em;
-		line-height: 1.2;
+		line-height: 1.3;
 	}
 
-	.hero p {
-		margin: var(--space-xs) 0 0;
+	.latest-date {
+		display: block;
+		margin-top: var(--space-xs);
 		color: var(--color-text-muted);
 		font-size: var(--text-sm);
 	}
