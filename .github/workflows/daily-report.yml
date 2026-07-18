@@ -1,11 +1,11 @@
 name: Daily Report
 
-# 毎朝 07:00 JST に /daily-report Skill を実行し、当日のレポートを main へ push する（P3）。
+# 毎日深夜 02:00 JST に /daily-report Skill を実行し、当日のレポートを main へ push する（P3）。
 # その push が pages.yml を発火させ、サイトが自動更新される（P3-4 の連鎖）。
 on:
   schedule:
-    # 07:00 JST = 前日 22:00 UTC。cron は UTC で書く（ARCHITECTURE.md の落とし穴 5）
-    - cron: '0 22 * * *'
+    # 02:00 JST = 前日 17:00 UTC。cron は UTC で書く（ARCHITECTURE.md の落とし穴 5）
+    - cron: '0 17 * * *'
   workflow_dispatch:
 
 permissions:
