@@ -29,7 +29,8 @@ const toTextContent = (rawHeading: string): string =>
  * 日次レポートの本文（raw markdown）から記事一覧を抽出する。
  *
  * - `## <ジャンル>` 配下の `### [タイトル](URL)` を 1 記事として拾う
- * - 見出し直後の `<!-- categories: A, B -->` コメントをカテゴリとして読む（無ければジャンルのみ）
+ * - 見出し直後（空行のみ挟んでよい）の `<!-- categories: A, B -->` コメントをカテゴリとして読む
+ *   （無ければジャンルのみ）。本文が始まった後のコメントは誤爆防止のため無視する
  * - `anchor` は Astro の見出し ID 生成（@astrojs/markdown-remark の rehypeHeadingIds）と同じく、
  *   **すべての見出しを文書順に** github-slugger へ通して算出する。H2 も消費しないと
  *   重複見出しの連番（`-1` サフィックス）がズレるので、記事以外の見出しもスキップしない
@@ -47,6 +48,7 @@ export function extractArticles(post: { postId: string; date: Date; body: string
 		(state, line) => {
 			if (FENCE.test(line)) {
 				state.inFence = !state.inFence;
+				state.current = undefined;
 				return state;
 			}
 			if (state.inFence) {
@@ -91,6 +93,11 @@ export function extractArticles(post: { postId: string; date: Date; body: string
 					.map((name) => name.trim())
 					.filter(Boolean);
 				state.current.categories = [...new Set([state.current.genre, ...explicit])].filter(Boolean);
+				state.current = undefined;
+			} else if (line.trim() !== '') {
+				// 本文が始まったら categories コメントの受け付けを打ち切る。
+				// 本文中に紛れ込んだ（あるいは引用された）コメントを誤って拾わないため、
+				// コメントは「見出しの直後（空行のみ挟んでよい）」に限定する
 				state.current = undefined;
 			}
 

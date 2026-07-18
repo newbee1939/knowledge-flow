@@ -21,7 +21,12 @@ export interface Category {
 export function collectCategories(articles: PostArticle[]): Category[] {
 	const byName = articles.reduce<Map<string, PostArticle[]>>((map, article) => {
 		article.categories.forEach((name) => {
-			map.set(name, [...(map.get(name) ?? []), article]);
+			const list = map.get(name);
+			if (list) {
+				list.push(article);
+			} else {
+				map.set(name, [article]);
+			}
 		});
 		return map;
 	}, new Map());

@@ -119,6 +119,30 @@ describe('extractArticles', () => {
 		expect(articles[0].categories).toEqual(['AI']);
 	});
 
+	it('categories コメントは見出し直後のみ有効（本文開始後は無視、空行は挟んでよい）', () => {
+		const articles = extractArticles(
+			post(
+				[
+					'## AI',
+					'',
+					'### [本文中にコメント](https://example.com/a)',
+					'',
+					'本文が始まった。',
+					'<!-- categories: TooLate -->',
+					'',
+					'### [空行を挟んだコメント](https://example.com/b)',
+					'',
+					'<!-- categories: StillOk -->',
+					'',
+					'本文。',
+				].join('\n'),
+			),
+		);
+
+		expect(articles[0].categories).toEqual(['AI']);
+		expect(articles[1].categories).toEqual(['AI', 'StillOk']);
+	});
+
 	it('リンクでない H3 は記事として扱わないが、slug の連番は消費する', () => {
 		const articles = extractArticles(
 			post(
