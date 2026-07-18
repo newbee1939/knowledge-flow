@@ -41,6 +41,7 @@ GitHub Pages（main への push で自動ビルド）
   └─ Astro の Content Collections が docs/ 配下の markdown を読む
        ├─ /                  … タイムライン（posts から自動導出、JP/EN 切替）
        ├─ /blog/YYYY-MM-DD/  … 日次レポート
+       ├─ /categories/...    … カテゴリ別タイムライン（本文の categories コメントから導出）
        ├─ /summaries/...     … 月次・年次サマリ（P4）
        └─ /podcast.xml       … Spotify 用 RSS（P6）
 
@@ -82,6 +83,7 @@ knowledge-flow/
 │   ├── pages/                       # ファイル名がそのまま URL になる
 │   │   ├── index.astro              # → /          タイムライン（posts から導出）
 │   │   ├── blog/[slug].astro        # → /blog/<日付>/  日次レポート
+│   │   ├── categories/              # → /categories/…  カテゴリ一覧・カテゴリ別タイムライン
 │   │   └── podcast.xml.ts           # → /podcast.xml   Spotify 用 RSS（P6）
 │   ├── layouts/
 │   └── styles/                      # モノクロ・ミニマルの CSS（自前）
