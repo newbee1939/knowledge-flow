@@ -11,4 +11,8 @@
     - いいねが多い記事を表示
 - 高速化
 - ツイート機能
+- Vite+ (https://viteplus.dev/) の導入検討
+    - vite/vitest/oxlint/oxfmt/rolldownの統合ツールチェーン。まだbeta版
+    - 導入するとBiomeの置き換えになる。oxfmtは`--migrate=biome`でBiome設定を引き継げるらしいので、そこから試す
+    - 正式版が出てから再検討でよさそう
 - //
