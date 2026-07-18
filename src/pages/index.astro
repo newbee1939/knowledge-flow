@@ -24,7 +24,7 @@ const timeline = buildTimeline(
 						<ol class="day-strip">
 							{entries.map((entry) => (
 								<li class="day-card">
-									<a href={withBase(`blog/${entry.id}/`)}>
+									<a href={withBase(`blog/${entry.id}/`)} title={entry.title}>
 										<time datetime={entry.date.toISOString()}>{formatDate(entry.date)}</time>
 										<span class="day-title">{entry.title}</span>
 									</a>
