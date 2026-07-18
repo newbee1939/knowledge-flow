@@ -149,19 +149,22 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **実績**: P2-4（Mermaid の SVG 化）の DoD 検証に記事詳細ページが必須だったため、P2-4 と同じ PR で前倒しして最小実装。`render(post)`（`astro:content`）で本文を描画するだけの素の `BaseLayout.astro`。タイポグラフィ・余白は P2-6 で別途
 
 ### P2-6. ベースのタイポグラフィと余白
-- [ ] **やること**: 本文 line-height、見出しサイズ階層、コンテナ最大幅、余白スケールを CSS 変数で定義。白黒＋極小アクセント。フォントは system-ui、等幅は SF Mono / Menlo
+- [x] **やること**: 本文 line-height、見出しサイズ階層、コンテナ最大幅、余白スケールを CSS 変数で定義。白黒＋極小アクセント。フォントは system-ui、等幅は SF Mono / Menlo
 - **成果物**: `/src/styles/`
 - **DoD**: 記事ページがデザイン方針（モノクロ・ミニマル・洗練）と一致
+- **実績**: `src/styles/global.css` にデザイントークン（色・タイポグラフィ・余白スケール・コンテナ幅）を定義。`BaseLayout.astro` にヘッダー／フッターを追加し、記事ページは `[slug].astro` の `:global()` セレクタで Markdown 本文（見出し・リンク・コードブロック・Mermaid SVG・引用）を整えた。アクセント色（`--color-accent`）はリンクホバーのみに限定
 
 ### P2-7. タイムライン UI（posts から導出）
-- [ ] **やること**: `src/pages/index.astro` で `getCollection()` の結果を年 → 月 → 日に集約し、横スクロール領域に描画。**AI に HTML を書かせない**（設計原則 Derived-not-Generated）
+- [x] **やること**: `src/pages/index.astro` で `getCollection()` の結果を年 → 月 → 日に集約し、横スクロール領域に描画。**AI に HTML を書かせない**（設計原則 Derived-not-Generated）
 - **成果物**: `/src/pages/index.astro`＋タイムライン CSS
 - **DoD**: `docs/blog/posts/` に md を 1 枚足すだけで、**コードを一切変えずに**タイムラインへカードが増える
+- **実績**: 集約ロジックは純粋関数 `src/lib/timeline.ts`（`buildTimeline`）に切り出してテスト（`timeline.test.ts`）を併設。`index.astro` は年見出し → 月ラベル → 日カードの横スクロール（`overflow-x: auto` + scroll-snap）を描画するだけ
 
 ### P2-8. GitHub Actions ワークフロー（Pages）
 - [ ] **やること**: `npm ci` → `astro build` → `actions/deploy-pages` の構成。トリガーは `push: branches: [main]` と `workflow_dispatch`
 - **成果物**: `/.github/workflows/pages.yml`
 - **DoD**: main への push でビルドが緑、Pages にデプロイされる
+- **実績**: `pages.yml` を実装済み（公式スターターワークフローと同じ configure-pages → build → upload-pages-artifact → deploy-pages 構成。Playwright キャッシュは ci.yml と共通）。**DoD の検証は P2-9（Pages 有効化、ユーザー操作）が済んでから**
 
 ### P2-9. GitHub Pages の有効化（リポジトリ設定）
 - [ ] **やること**: Settings → Pages → Source を「GitHub Actions」に
@@ -192,9 +195,10 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **注記**: **AI 単独不可。ユーザーに依頼**
 
 ### P3-2. SKILL.md は commit までで据え置く（落とし穴 6）
-- [ ] **やること**: **何も変えない、という判断を記録する。** `SKILL.md` に `git push origin main` を足したくなるが、**足してはいけない**。ローカルで手動実行したときにも main へ直接 push してしまい、「main への手動 push 禁止」ルールを破る。push は P3-3 のワークフロー側プロンプトで指示する
+- [x] **やること**: **何も変えない、という判断を記録する。** `SKILL.md` に `git push origin main` を足したくなるが、**足してはいけない**。ローカルで手動実行したときにも main へ直接 push してしまい、「main への手動 push 禁止」ルールを破る。push は P3-3 のワークフロー側プロンプトで指示する
 - **成果物**: 判断のメモ（本タスクのチェックのみ）
 - **DoD**: `SKILL.md` の手順 7 が commit 止まりのままであることを確認
+- **実績**: SKILL.md は変更せず、push の指示は `daily-report.yml` のプロンプトにのみ書いた（2026-07-17 確認）
 
 ### P3-3. 日次ワークフローの作成（落とし穴 5・6・7）
 - [ ] **やること**: `anthropics/claude-code-action@v1` を使う
@@ -206,6 +210,7 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **成果物**: `/.github/workflows/daily-report.yml`
 - **DoD**: `workflow_dispatch` の手動実行で `docs/blog/posts/<DATE>.md` が **main に push される**
 - **注意**: このアクションの**既定挙動は「`claude/` ブランチを作って push」**で、main には push しない（落とし穴 7）。プロンプトでの指示だけで main 直 push になるかは**やってみないと分からない**。ならなければ代替案（`claude/` ブランチ → `gh pr merge --auto --squash`）に切り替える。**ワークフローに `- run: git push` ステップを足すのは NG**（`GITHUB_TOKEN` になり Pages が起動しない）
+- **実績**: `daily-report.yml` を実装済み。`anthropics/claude-code-action` v1.0.176（コミットハッシュでピン留め）、認証は公式入力の `claude_code_oauth_token`（ARCHITECTURE.md 記載の `anthropic_api_key` 渡しではなく、action.yml が定義する専用入力を使用）。プロンプトで main 直 push と `docs/` 限定を指示、`claude_args: --allowedTools` で Bash / WebFetch 等を許可。**DoD の検証（workflow_dispatch 実行）は P3-1（Secrets 登録、ユーザー操作）が済んでから**
 
 ### P3-4. 「push → Pages 自動ビルド」の連鎖を検証（落とし穴 1）
 - [ ] **やること**: P3-3 を手動実行し、**その push によって `pages.yml` が自動で走ったか**を Actions のログで確認する。走っていなければ、Claude GitHub App のトークンで push できていない
@@ -216,6 +221,7 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - [ ] **やること**: 毎朝 07:00 JST（= 前日 22:00 UTC）の cron を設定。cron 式は **UTC で書く**
 - **成果物**: `daily-report.yml` の `schedule:` 節
 - **DoD**: 翌朝に実行ログが残り、サイトが更新されている
+- **実績**: `cron: '0 22 * * *'`（UTC）と `TZ: Asia/Tokyo` を `daily-report.yml` に定義済み。DoD の確認は P3-1 完了後の翌朝
 
 ### P3-6. 失敗時のリカバリ手順
 - [ ] **やること**: 取得失敗 → そのソースを省略（SKILL.md の「注意」どおり）。3 日連続で失敗したソースには除外候補マークを付ける指示を書く
@@ -223,9 +229,10 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - **DoD**: 連続失敗でも勝手に削除はせず、人間レビューに回す
 
 ### P3-7. 失敗通知
-- [ ] **やること**: ワークフロー失敗時に通知する。**トークン失効で cron が黙って落ちるのが最大のリスク**なので、これは「痛みを感じてから」の例外として最初から入れる
+- [~] **やること**: ワークフロー失敗時に通知する。**トークン失効で cron が黙って落ちるのが最大のリスク**なので、これは「痛みを感じてから」の例外として最初から入れる
 - **成果物**: `daily-report.yml` の失敗時ステップ（GitHub Issue 自動作成が最小）
 - **DoD**: わざと失敗させると通知が来る
+- **スキップ理由（2026-07-18）**: 一度 `if: failure()` で `gh issue create` するステップを実装したが、「失敗したら記事が増えない、それで気づける」という判断でユーザーが不要と判断し削除した。個人開発規模では毎日サイトを見に行く運用でカバーする想定。もし「気づかず数週間止まっていた」が実際に起きたら、そのとき改めて追加する（[[feedback-simple-first]]）
 
 ### P3-8. 1 週間連続稼働確認
 - [ ] **やること**: 7 日連続で `docs/blog/posts/` に日次ファイルが追加され、**公開サイトにも反映される**ことを確認
@@ -332,7 +339,7 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 - [ ] リンク切れ検査の自動化 — 1 日 25 本の外部リンクを貼るメディアなので、リンクは必ず腐る。週次で全 posts の URL を `curl -o /dev/null -w '%{http_code}'` して 200 以外を Issue に立てる
 - [ ] OGP 画像自動生成（ヘッドライン → 画像）
 - [ ] サイト内検索（痛みを感じてから。Pagefind など静的検索を検討）
-- [ ] `CLAUDE_CODE_OAUTH_TOKEN` の失効監視（P3-7 の失敗通知でカバーできるか要検証）
+- [ ] `CLAUDE_CODE_OAUTH_TOKEN` の失効監視（P3-7 の失敗通知は削除済みなので未カバー。しばらく運用して実際に気づけないことがあれば検討）
 - [ ] 編集者ノート欄の追加（[[feedback-simple-first]] により「痛みを感じてから」）
 - [ ] アクセス解析（プライバシー配慮の軽量ツール）
 

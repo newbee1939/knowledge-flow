@@ -24,14 +24,12 @@ export async function getPosts() {
 		);
 	}
 
-	for (const post of posts) {
-		const expected = formatDate(post.data.date);
-		if (post.id !== expected) {
-			throw new Error(
-				`記事 ${post.id} のファイル名と frontmatter date（${expected}）が一致しません。\n` +
-					`  - docs/blog/posts/${post.id}.md の date を確認してください。`,
-			);
-		}
+	const mismatched = posts.find((post) => post.id !== formatDate(post.data.date));
+	if (mismatched) {
+		throw new Error(
+			`記事 ${mismatched.id} のファイル名と frontmatter date（${formatDate(mismatched.data.date)}）が一致しません。\n` +
+				`  - docs/blog/posts/${mismatched.id}.md の date を確認してください。`,
+		);
 	}
 
 	return posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());

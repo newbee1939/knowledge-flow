@@ -29,7 +29,114 @@ const { Content } = await render(post);
 ---
 
 <BaseLayout title={post.data.title}>
-	<h1>{post.data.title}</h1>
-	<time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
-	<Content />
+	<article class="post">
+		<header class="post-header">
+			<time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+			<h1>{post.data.title}</h1>
+		</header>
+		<div class="post-body">
+			<Content />
+		</div>
+	</article>
 </BaseLayout>
+
+<style>
+	.post {
+		max-width: var(--container-article);
+		margin-inline: auto;
+		padding-top: var(--space-xl);
+	}
+
+	.post-header time {
+		color: var(--color-text-muted);
+		font-size: var(--text-sm);
+	}
+
+	.post-header h1 {
+		margin: var(--space-xs) 0 0;
+		font-size: var(--text-xl);
+		font-weight: 700;
+		line-height: 1.4;
+		letter-spacing: -0.01em;
+	}
+
+	.post-body {
+		margin-top: var(--space-lg);
+	}
+
+	/* Markdown から生成される本文にはクラスを振れないので :global で当てる。
+	 * 適用範囲は .post-body 配下に限定する。 */
+	.post-body :global(h2) {
+		margin: var(--space-xl) 0 var(--space-md);
+		border-bottom: 1px solid var(--color-border);
+		padding-bottom: var(--space-xs);
+		font-size: var(--text-lg);
+		font-weight: 700;
+		line-height: 1.4;
+	}
+
+	.post-body :global(h3) {
+		margin: var(--space-lg) 0 var(--space-sm);
+		font-size: 1.0625rem;
+		font-weight: 600;
+		line-height: 1.5;
+	}
+
+	.post-body :global(p),
+	.post-body :global(ul),
+	.post-body :global(ol) {
+		margin: var(--space-sm) 0;
+	}
+
+	.post-body :global(li) {
+		margin-block: var(--space-2xs);
+	}
+
+	.post-body :global(a) {
+		color: inherit;
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+		text-decoration-color: var(--color-text-muted);
+	}
+
+	.post-body :global(a:hover) {
+		color: var(--color-accent);
+		text-decoration-color: var(--color-accent);
+	}
+
+	.post-body :global(pre) {
+		border: 1px solid var(--color-border);
+		border-radius: 6px;
+		padding: var(--space-md);
+		overflow-x: auto;
+		font-size: var(--text-sm);
+		line-height: 1.6;
+	}
+
+	.post-body :global(:not(pre) > code) {
+		background: var(--color-surface);
+		border-radius: 4px;
+		padding: 0.1em 0.35em;
+		font-size: 0.875em;
+	}
+
+	/* Mermaid はビルド時にインライン SVG になる（ARCHITECTURE.md の落とし穴 4）。
+	 * 幅の広い図でもページを横に破綻させない。 */
+	.post-body :global(svg) {
+		max-width: 100%;
+		height: auto;
+	}
+
+	.post-body :global(blockquote) {
+		margin: var(--space-md) 0;
+		border-left: 3px solid var(--color-border);
+		padding-left: var(--space-md);
+		color: var(--color-text-muted);
+	}
+
+	.post-body :global(hr) {
+		margin: var(--space-xl) 0;
+		border: 0;
+		border-top: 1px solid var(--color-border);
+	}
+</style>

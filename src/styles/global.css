@@ -1,0 +1,72 @@
+/* デザイントークンとベーススタイル（P2-6）。
+ * 方針: モノクロ・ミニマル。装飾を足さず、余白とタイポグラフィの精度で勝負する。
+ * アクセント色はリンクのホバーなど、ごく小さな箇所だけに使う。 */
+:root {
+	--color-bg: #ffffff;
+	--color-text: #1a1c1e;
+	--color-text-muted: #6e7175;
+	--color-border: #e4e5e7;
+	--color-surface: #f6f7f8;
+	--color-accent: #2557d6;
+
+	--font-sans: system-ui, -apple-system, sans-serif;
+	--font-mono: "SF Mono", Menlo, Consolas, monospace;
+
+	--text-xs: 0.75rem;
+	--text-sm: 0.875rem;
+	--text-lg: 1.25rem;
+	--text-xl: 1.625rem;
+	--text-2xl: 2.125rem;
+
+	--space-2xs: 0.25rem;
+	--space-xs: 0.5rem;
+	--space-sm: 0.75rem;
+	--space-md: 1rem;
+	--space-lg: 1.75rem;
+	--space-xl: 3rem;
+	--space-2xl: 5rem;
+
+	--container-article: 44rem;
+	--container-wide: 72rem;
+}
+
+/* OS のダークモード設定に追従する。トグル UI は持たない。
+ * 色トークンだけ上書きすれば、参照側（各ページ・レイアウト）は無改修で追従する。 */
+@media (prefers-color-scheme: dark) {
+	:root {
+		--color-bg: #141416;
+		--color-text: #e6e6e6;
+		--color-text-muted: #8b8b8f;
+		--color-border: #2a2a2d;
+		--color-surface: #1a1a1c;
+		--color-accent: #5b8dfb;
+	}
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	background: var(--color-bg);
+	color: var(--color-text);
+	font-family: var(--font-sans);
+	line-height: 1.8;
+}
+
+a {
+	color: inherit;
+}
+
+code,
+pre,
+time {
+	font-family: var(--font-mono);
+}
