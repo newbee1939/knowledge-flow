@@ -30,6 +30,19 @@
 	--container-wide: 72rem;
 }
 
+/* OS のダークモード設定に追従する。トグル UI は持たない。
+ * 色トークンだけ上書きすれば、参照側（各ページ・レイアウト）は無改修で追従する。 */
+@media (prefers-color-scheme: dark) {
+	:root {
+		--color-bg: #141416;
+		--color-text: #e6e6e6;
+		--color-text-muted: #8b8b8f;
+		--color-border: #2a2a2d;
+		--color-surface: #1a1a1c;
+		--color-accent: #5b8dfb;
+	}
+}
+
 *,
 *::before,
 *::after {
