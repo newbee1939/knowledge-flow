@@ -25,24 +25,23 @@ export interface TimelineYear {
 export function buildTimeline(entries: TimelineEntry[]): TimelineYear[] {
 	const sorted = [...entries].sort((a, b) => b.date.getTime() - a.date.getTime());
 
-	const years: TimelineYear[] = [];
-	for (const entry of sorted) {
-		const y = entry.date.getUTCFullYear();
-		const m = entry.date.getUTCMonth() + 1;
+	return sorted.reduce<TimelineYear[]>((years, entry) => {
+		const entryYear = entry.date.getUTCFullYear();
+		const entryMonth = entry.date.getUTCMonth() + 1;
 
-		let year = years.at(-1);
-		if (!year || year.year !== y) {
-			year = { year: y, months: [] };
-			years.push(year);
+		const lastYearGroup = years.at(-1);
+		if (lastYearGroup?.year !== entryYear) {
+			years.push({ year: entryYear, months: [{ month: entryMonth, entries: [entry] }] });
+			return years;
 		}
 
-		let month = year.months.at(-1);
-		if (!month || month.month !== m) {
-			month = { month: m, entries: [] };
-			year.months.push(month);
+		const lastMonthGroup = lastYearGroup.months.at(-1);
+		if (lastMonthGroup?.month !== entryMonth) {
+			lastYearGroup.months.push({ month: entryMonth, entries: [entry] });
+			return years;
 		}
 
-		month.entries.push(entry);
-	}
-	return years;
+		lastMonthGroup.entries.push(entry);
+		return years;
+	}, []);
 }

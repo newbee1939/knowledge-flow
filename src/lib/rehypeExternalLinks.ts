@@ -24,9 +24,7 @@ export function addExternalLinkAttributes(node: HastNode): void {
 			};
 		}
 	}
-	for (const child of node.children ?? []) {
-		addExternalLinkAttributes(child);
-	}
+	(node.children ?? []).forEach(addExternalLinkAttributes);
 }
 
 export function rehypeExternalLinks() {
