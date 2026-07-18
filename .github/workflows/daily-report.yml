@@ -10,7 +10,6 @@ on:
 
 permissions:
   contents: write
-  issues: write # 失敗通知の Issue 作成（P3-7）
   id-token: write # Claude GitHub App トークンの取得（OIDC 交換）に必要
 
 concurrency:
@@ -42,18 +41,3 @@ jobs:
             書き込み・コミットしてよいのは docs/ 配下のみです。src/ や .github/ など他の場所は変更しないでください。
           claude_args: |
             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
-
-      # トークン失効などで cron が黙って落ち続けるのが最大のリスク（ARCHITECTURE.md「AI の実行基盤」）。
-      # 失敗したら Issue を立てて気づけるようにする（P3-7）
-      - name: Notify failure
-        if: failure()
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          gh issue create \
-            --repo "$GITHUB_REPOSITORY" \
-            --title "daily-report failed: $(date +%Y-%m-%d)" \
-            --body "日次レポートのワークフローが失敗しました。ログ: $RUN_URL
-
-          まず CLAUDE_CODE_OAUTH_TOKEN の失効を疑う（\`claude setup-token\` で再発行 → リポジトリ Secrets を更新）。"
