@@ -16,7 +16,7 @@ const timeline = buildTimeline(
 
 <BaseLayout title="knowledge-flow">
 	<a class="latest" href={withBase(`blog/${latestPost.id}/`)}>
-		<span class="latest-label">今日の記事</span>
+		<span class="latest-label">Latest Post</span>
 		<h1 class="latest-title">{latestPost.data.title}</h1>
 		<time class="latest-date" datetime={latestPost.data.date.toISOString()}>
 			{formatDate(latestPost.data.date)}
