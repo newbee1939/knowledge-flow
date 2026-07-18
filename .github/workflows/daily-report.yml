@@ -41,4 +41,4 @@ jobs:
             書き込み・コミットしてよいのは docs/ 配下のみです。src/ や .github/ など他の場所は変更しないでください。
           claude_args: |
             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
-            --model sonnet
+            --model opus
