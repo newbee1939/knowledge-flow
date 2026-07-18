@@ -21,6 +21,9 @@ const { title, description = 'Daily Tech Report' } = Astro.props;
 	<body>
 		<header class="site-header">
 			<a class="site-name" href={withBase('/')}>knowledge-flow</a>
+			<nav class="site-nav">
+				<a href={withBase('categories/')}>Categories</a>
+			</nav>
 		</header>
 		<main>
 			<slot />
@@ -33,9 +36,23 @@ const { title, description = 'Daily Tech Report' } = Astro.props;
 
 <style>
 	.site-header {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
 		max-width: var(--container-wide);
 		margin-inline: auto;
 		padding: var(--space-md) var(--space-lg);
+	}
+
+	.site-nav a {
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		text-decoration: none;
+	}
+
+	.site-nav a:hover {
+		color: var(--color-accent);
 	}
 
 	.site-name {

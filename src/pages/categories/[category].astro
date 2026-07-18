@@ -1,0 +1,160 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { extractArticles } from '../../lib/articles';
+import { collectCategories } from '../../lib/categories';
+import { formatDate } from '../../lib/date';
+import { getPosts } from '../../lib/posts';
+import { buildTimeline } from '../../lib/timeline';
+import { withBase } from '../../lib/url';
+
+export async function getStaticPaths() {
+	const posts = await getPosts();
+	const articles = posts.flatMap((post) =>
+		extractArticles({ postId: post.id, date: post.data.date, body: post.body ?? '' }),
+	);
+	return collectCategories(articles).map((category) => ({
+		params: { category: category.slug },
+		props: { category },
+	}));
+}
+
+const { category } = Astro.props;
+
+// トップページと同じ年 → 月構造で「その技術単一の歴史」を縦に辿る
+const timeline = buildTimeline(category.articles);
+---
+
+<BaseLayout
+	title={`${category.name} | knowledge-flow`}
+	description={`${category.name} のニュースを時系列で辿る`}
+>
+	<header class="page-header">
+		<a class="back-link" href={withBase('categories/')}>← Categories</a>
+		<h1 class="page-title">{category.name}</h1>
+		<p class="page-description">{category.articles.length} 件の記事</p>
+	</header>
+	{
+		timeline.map(({ year, months }) => (
+			<section class="year">
+				<h2 class="year-label">{year}</h2>
+				{months.map(({ month, entries }) => (
+					<section class="month">
+						<h3 class="month-label">{String(month).padStart(2, '0')}</h3>
+						<ol class="article-list">
+							{entries.map((article) => (
+								<li class="article-item">
+									<a href={withBase(`blog/${article.postId}/#${article.anchor}`)}>
+										<time datetime={article.date.toISOString()}>{formatDate(article.date)}</time>
+										<span class="article-title">{article.title}</span>
+									</a>
+								</li>
+							))}
+						</ol>
+					</section>
+				))}
+			</section>
+		))
+	}
+</BaseLayout>
+
+<style>
+	.page-header {
+		margin-top: var(--space-lg);
+	}
+
+	.back-link {
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		text-decoration: none;
+	}
+
+	.back-link:hover {
+		color: var(--color-accent);
+	}
+
+	.page-title {
+		margin: var(--space-xs) 0 0;
+		font-family: var(--font-mono);
+		font-size: var(--text-2xl);
+		font-weight: 700;
+		letter-spacing: -0.02em;
+	}
+
+	.page-description {
+		margin: var(--space-xs) 0 0;
+		color: var(--color-text-muted);
+		font-size: var(--text-sm);
+	}
+
+	.year {
+		margin-top: var(--space-xl);
+	}
+
+	.year-label {
+		margin: 0;
+		border-bottom: 1px solid var(--color-border);
+		padding-bottom: var(--space-xs);
+		font-family: var(--font-mono);
+		font-size: var(--text-xl);
+		font-weight: 600;
+		letter-spacing: 0.04em;
+	}
+
+	.month {
+		margin-top: var(--space-lg);
+	}
+
+	.month-label {
+		margin: 0 0 var(--space-sm);
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		font-weight: 500;
+		letter-spacing: 0.08em;
+	}
+
+	.article-list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.article-item a {
+		display: flex;
+		align-items: baseline;
+		gap: var(--space-md);
+		border-bottom: 1px solid var(--color-border);
+		padding: var(--space-sm) var(--space-2xs);
+		text-decoration: none;
+		transition: background-color 0.15s ease;
+	}
+
+	.article-item a:hover {
+		background: var(--color-surface);
+	}
+
+	.article-item a:hover .article-title {
+		color: var(--color-accent);
+	}
+
+	.article-item time {
+		flex-shrink: 0;
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+	}
+
+	.article-title {
+		font-size: var(--text-sm);
+		font-weight: 500;
+		line-height: 1.6;
+	}
+
+	@media (max-width: 40rem) {
+		.article-item a {
+			flex-direction: column;
+			gap: var(--space-2xs);
+		}
+	}
+</style>
