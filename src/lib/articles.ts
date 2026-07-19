@@ -26,94 +26,87 @@ const toTextContent = (rawHeading: string): string =>
 	rawHeading.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
 
 /**
+ * コードフェンス内（Mermaid 図など）の行を空行に置き換える。
+ * フェンス内の `##` や `<!-- -->` を見出し・コメントと誤検知しないための前処理。
+ * 区切りの ``` 行自体は残す（見出しにもコメントにもマッチしないので無害で、
+ * readExplicitCategories の先読みを止める役割がある）。
+ */
+const maskFencedLines = (lines: string[]): string[] =>
+	lines.reduce<{ masked: string[]; inFence: boolean }>(
+		(state, line) => {
+			if (FENCE.test(line)) {
+				state.inFence = !state.inFence;
+				state.masked.push(line);
+			} else {
+				state.masked.push(state.inFence ? '' : line);
+			}
+			return state;
+		},
+		{ masked: [], inFence: false },
+	).masked;
+
+/**
+ * from 行以降を先読みし、見出し直後の categories コメントを読む。
+ * 空行だけは読み飛ばし、最初の空行でない行がコメントでなければ「無し」（空配列）。
+ * 本文開始後のコメントを誤って拾わないための制約（見出し直後・空行のみ挟んでよい）。
+ */
+const readExplicitCategories = (lines: string[], from: number): string[] => {
+	const firstContent = lines.slice(from).find((line) => line.trim() !== '');
+	const comment = firstContent?.match(CATEGORIES_COMMENT);
+	if (!comment) {
+		return [];
+	}
+	return comment[1]
+		.split(',')
+		.map((name) => name.trim())
+		.filter(Boolean);
+};
+
+/**
  * 日次レポートの本文（raw markdown）から記事一覧を抽出する。
  *
  * - `## <ジャンル>` 配下の `### [タイトル](URL)` を 1 記事として拾う
  * - 見出し直後（空行のみ挟んでよい）の `<!-- categories: A, B -->` コメントをカテゴリとして読む
- *   （無ければジャンルのみ）。本文が始まった後のコメントは誤爆防止のため無視する
+ *   （無ければジャンルのみ）
  * - `anchor` は Astro の見出し ID 生成（@astrojs/markdown-remark の rehypeHeadingIds）と同じく、
  *   **すべての見出しを文書順に** github-slugger へ通して算出する。H2 も消費しないと
  *   重複見出しの連番（`-1` サフィックス）がズレるので、記事以外の見出しもスキップしない
- * - コードフェンス内（Mermaid 図など）の `##` や `<!-- -->` は見出し・コメントとして扱わない
  */
 export function extractArticles(post: { postId: string; date: Date; body: string }): PostArticle[] {
+	const lines = maskFencedLines(post.body.split('\n'));
 	const slugger = new GithubSlugger();
 
-	const { articles } = post.body.split('\n').reduce<{
-		articles: PostArticle[];
-		genre: string;
-		current: PostArticle | undefined;
-		inFence: boolean;
-	}>(
-		// bodyの中身を1行ずつ処理する
-		// stateの初期値は{ articles: [], genre: '', current: undefined, inFence: false }
-		(state, line) => {
-			// コードフェンス内の場合はinFenceをtrueにして処理をスキップする
-			// e.g. mermaidの図など
-			if (FENCE.test(line)) {
-				state.inFence = !state.inFence;
-				state.current = undefined;
-				return state;
-			}
-			// コードフェンス内の場合は処理をスキップする
-			if (state.inFence) {
-				return state;
-			}
-
+	return lines.reduce<{ articles: PostArticle[]; genre: string }>(
+		(state, line, index) => {
 			const heading = line.match(HEADING);
-			// 見出しの場合はgenreを設定する
-			if (heading) {
-				const [, hashes, rawText] = heading;
-				const text = toTextContent(rawText);
-				const anchor = slugger.slug(text);
-				state.current = undefined;
+			if (!heading) {
+				return state;
+			}
 
-				// H2の場合はgenreを設定する
-				if (hashes.length === 2) {
-					state.genre = text;
-					return state;
-				}
+			const [, hashes, rawText] = heading;
+			const text = toTextContent(rawText);
+			const anchor = slugger.slug(text);
 
-				// H3の場合は記事を追加する
-				const link = hashes.length === 3 ? rawText.match(LINK_HEADING) : null;
-				if (!link) {
-					return state;
-				}
+			if (hashes.length === 2) {
+				state.genre = text;
+				return state;
+			}
 
-				const article: PostArticle = {
+			const link = hashes.length === 3 ? rawText.match(LINK_HEADING) : null;
+			if (link) {
+				const categories = [state.genre, ...readExplicitCategories(lines, index + 1)];
+				state.articles.push({
 					postId: post.postId,
 					date: post.date,
 					genre: state.genre,
 					title: link[1],
 					url: link[2],
 					anchor,
-					categories: [state.genre].filter(Boolean),
-				};
-				state.articles.push(article);
-				state.current = article;
-				return state;
+					categories: [...new Set(categories)].filter(Boolean),
+				});
 			}
-
-			const comment = line.match(CATEGORIES_COMMENT);
-			// categoriesコメントの場合はcategoriesを設定する
-			if (comment && state.current) {
-				const explicit = comment[1]
-					.split(',')
-					.map((name) => name.trim())
-					.filter(Boolean);
-				state.current.categories = [...new Set([state.current.genre, ...explicit])].filter(Boolean);
-				state.current = undefined;
-			} else if (line.trim() !== '') {
-				// 本文が始まったら categories コメントの受け付けを打ち切る。
-				// 本文中に紛れ込んだ（あるいは引用された）コメントを誤って拾わないため、
-				// コメントは「見出しの直後（空行のみ挟んでよい）」に限定する
-				state.current = undefined;
-			}
-
 			return state;
 		},
-		{ articles: [], genre: '', current: undefined, inFence: false },
-	);
-
-	return articles;
+		{ articles: [], genre: '' },
+	).articles;
 }
