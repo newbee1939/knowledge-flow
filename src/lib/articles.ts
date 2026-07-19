@@ -49,6 +49,7 @@ export function extractArticles(post: { postId: string; date: Date; body: string
 		// stateの初期値は{ articles: [], genre: '', current: undefined, inFence: false }
 		(state, line) => {
 			// コードフェンス内の場合はinFenceをtrueにして処理をスキップする
+			// e.g. mermaidの図など
 			if (FENCE.test(line)) {
 				state.inFence = !state.inFence;
 				state.current = undefined;
@@ -60,17 +61,20 @@ export function extractArticles(post: { postId: string; date: Date; body: string
 			}
 
 			const heading = line.match(HEADING);
+			// 見出しの場合はgenreを設定する
 			if (heading) {
 				const [, hashes, rawText] = heading;
 				const text = toTextContent(rawText);
 				const anchor = slugger.slug(text);
 				state.current = undefined;
 
+				// H2の場合はgenreを設定する
 				if (hashes.length === 2) {
 					state.genre = text;
 					return state;
 				}
 
+				// H3の場合は記事を追加する
 				const link = hashes.length === 3 ? rawText.match(LINK_HEADING) : null;
 				if (!link) {
 					return state;
