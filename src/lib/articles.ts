@@ -32,6 +32,7 @@ const toTextContent = (rawHeading: string): string =>
  * readExplicitCategories の先読みを止める役割がある）。
  */
 const maskFencedLines = (lines: string[]): string[] =>
+	// body の各行を先頭から順に処理する
 	lines.reduce<{ masked: string[]; inFence: boolean }>(
 		(state, line) => {
 			if (FENCE.test(line)) {
