@@ -4,13 +4,13 @@ export interface TimelineEntry {
 	title: string;
 }
 
-export interface TimelineMonth<T = TimelineEntry> {
+interface TimelineMonth<T = TimelineEntry> {
 	/** 1〜12 */
 	month: number;
 	entries: T[];
 }
 
-export interface TimelineYear<T = TimelineEntry> {
+interface TimelineYear<T = TimelineEntry> {
 	year: number;
 	months: TimelineMonth<T>[];
 }
