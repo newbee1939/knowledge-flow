@@ -28,9 +28,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       # push はこのプロンプト経由でのみ行わせる。SKILL.md 自体は commit 止まりで固定し、
-      # ローカルで /daily-report を手動実行しても main へ push されないようにする（落とし穴 6）。
+      # ローカルで /daily-report を手動実行しても main へ push されないようにする。
       # この push は GITHUB_TOKEN で行われるため push イベントとしては pages.yml を起動できないが、
-      # pages.yml 側が workflow_run でこのワークフローの完了を直接受けて起動するため問題ない（落とし穴 1）。
+      # pages.yml 側が workflow_run でこのワークフローの完了を直接受けて起動するため問題ない。
       - uses: anthropics/claude-code-action@700e7f8316990de46bed556429765647af760efc # v1.0.176
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
