@@ -32,11 +32,11 @@ jobs:
     # workflow_run 起動時は Daily Report が成功した場合だけビルドする（失敗コミットで壊れたサイトを公開しない）
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     steps:
-      # workflow_run 起動時は Daily Report が完了した時点の HEAD（head_sha）を明示的に checkout する。
-      # ref を省略すると pages.yml 自身が置かれた HEAD になり、レポートのコミットを取り損なう。
+      # workflow_run 起動時の既定の checkout 対象（GITHUB_SHA）はデフォルトブランチの最新コミット。
+      # Daily Report 完了後に発火するため、run の途中で push されたレポートコミットを含む。
+      # `ref: workflow_run.head_sha` を指定してはいけない。head_sha は Daily Report の
+      # run 作成時点の main の tip で固定されており、レポートのコミットを含まない。
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       # Node のバージョンは .tool-versions が唯一の真実（ci.yml と同じ）
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
