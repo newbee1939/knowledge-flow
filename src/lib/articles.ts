@@ -95,6 +95,7 @@ export function extractArticles(post: { postId: string; date: Date; body: string
 			}
 
 			const comment = line.match(CATEGORIES_COMMENT);
+			// categoriesコメントの場合はcategoriesを設定する
 			if (comment && state.current) {
 				const explicit = comment[1]
 					.split(',')
