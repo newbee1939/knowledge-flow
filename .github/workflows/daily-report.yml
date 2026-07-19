@@ -36,8 +36,10 @@ jobs:
       #      github_token 入力を渡さない標準構成では、claude-code-action が起動時に App から OIDC 交換で取得する。
       #      App 未インストールだとこの取得に失敗し、claude-code-action 自体が起動しない（起動の関門）
       #   3. GITHUB_TOKEN … GitHub がジョブごとに全ワークフローへ自動支給するトークン。
-      #      actions/checkout が git 設定に認証情報として埋め込むため、
-      #      Claude が Bash で実行する git push は（App のトークンではなく）これを使う
+      #      actions/checkout が既定（persist-credentials: true）で git 設定に認証情報として埋め込む。
+      #      git push は GitHub API ではなく git プロトコルの通信で、git は git 設定の認証情報を
+      #      機械的に使うため、Claude が Bash で実行する git push はこれを使う
+      #      （2 の App トークンは claude-code-action のプロセス内にあるだけで、git からは見えない）
       #
       # つまり「App を入れたから push も App のトークンのはず」は誤り。push は 3 の GITHUB_TOKEN で行われ、
       # GITHUB_TOKEN による push は無限ループ防止の GitHub 仕様により他ワークフローの push トリガーを発火しない。
