@@ -30,11 +30,11 @@ jobs:
       # push はこのプロンプト経由でのみ行わせる。SKILL.md 自体は commit 止まりで固定し、
       # ローカルで /daily-report を手動実行しても main へ push されないようにする。
       #
-      # 【この action に登場する 3 つのトークンの整理】役割は完全に別物で、混同しやすい:
+      # 【claude-code-action に登場する 3 つのトークンの整理】役割は完全に別物で、混同しやすい:
       #   1. CLAUDE_CODE_OAUTH_TOKEN … Anthropic への認証。Claude（AI）を使う許可で、GitHub とは無関係
-      #   2. Claude GitHub App のトークン … action が GitHub API を叩くための許可証（コメント投稿など）。
-      #      github_token 入力を渡さない標準構成では、起動時に App から OIDC 交換で取得する。
-      #      App 未インストールだとこの取得に失敗し、action 自体が起動しない（起動の関門）
+      #   2. Claude GitHub App のトークン … claude-code-action が GitHub API を叩くための許可証（コメント投稿など）。
+      #      github_token 入力を渡さない標準構成では、claude-code-action が起動時に App から OIDC 交換で取得する。
+      #      App 未インストールだとこの取得に失敗し、claude-code-action 自体が起動しない（起動の関門）
       #   3. GITHUB_TOKEN … GitHub がジョブごとに全ワークフローへ自動支給するトークン。
       #      actions/checkout が git 設定に認証情報として埋め込むため、
       #      Claude が Bash で実行する git push は（App のトークンではなく）これを使う
