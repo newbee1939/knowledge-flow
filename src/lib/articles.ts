@@ -71,9 +71,13 @@ const readExplicitCategories = (lines: string[], from: number): string[] => {
  * <!-- categories: TypeScript, Go -->   ← 任意。無ければジャンルのみ
  * ```
  *
- * anchor は「Astro が見出しに付ける id」と一致して初めてリンクとして機能する。
- * そのため Astro と同じ github-slugger で、H2 も含む全見出しを文書順に slug 化する
- * （対象や順序を変えると、同名見出しの連番 `-1` がズレてリンク切れになる）。
+ * anchor は「Astro がビルド時に各見出しへ自動付与する id」の予測値で、
+ * 一致して初めてカテゴリページからのリンクとして機能する。Astro は全見出しを
+ * 文書順に github-slugger へ通し、同名見出しには -1, -2 と連番を付けるため、
+ * こちらも「同じ対象を・同じ順で・全部」slug 化してカウンタを同期させる。
+ * 例: `## AI` の後に `### [AI](…)` が来ると id は ai / ai-1 になる。もし H2 を
+ * 飛ばして数えると記事の anchor を ai と誤予測し、リンクは記事ではなく
+ * ジャンル見出しに着地してしまう。
  */
 export function extractArticles(post: { postId: string; date: Date; body: string }): PostArticle[] {
 	// コードフェンス内の行を空行に置き換える
