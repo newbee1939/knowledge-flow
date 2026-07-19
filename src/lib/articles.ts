@@ -35,6 +35,7 @@ const maskFencedLines = (lines: string[]): string[] =>
 	// body の各行を先頭から順に処理する
 	lines.reduce<{ masked: string[]; inFence: boolean }>(
 		(state, line) => {
+			// ``` か ~~~ の行の場合
 			if (FENCE.test(line)) {
 				state.inFence = !state.inFence;
 				state.masked.push(line);
