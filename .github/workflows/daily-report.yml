@@ -11,7 +11,7 @@ on:
 
 permissions:
   contents: write
-  id-token: write # Claude GitHub App トークンの取得（OIDC 交換）に必要
+  id-token: write # Claude GitHub App トークンの OIDC 交換に必要（下の claude-code-action のコメント参照）
 
 concurrency:
   group: daily-report
@@ -29,8 +29,19 @@ jobs:
 
       # push はこのプロンプト経由でのみ行わせる。SKILL.md 自体は commit 止まりで固定し、
       # ローカルで /daily-report を手動実行しても main へ push されないようにする。
-      # この push は GITHUB_TOKEN で行われるため push イベントとしては pages.yml を起動できないが、
-      # pages.yml 側が workflow_run でこのワークフローの完了を直接受けて起動するため問題ない。
+      #
+      # 【この action に登場する 3 つのトークンの整理】役割は完全に別物で、混同しやすい:
+      #   1. CLAUDE_CODE_OAUTH_TOKEN … Anthropic への認証。Claude（AI）を使う許可で、GitHub とは無関係
+      #   2. Claude GitHub App のトークン … action が GitHub API を叩くための許可証（コメント投稿など）。
+      #      github_token 入力を渡さない標準構成では、起動時に App から OIDC 交換で取得する。
+      #      App 未インストールだとこの取得に失敗し、action 自体が起動しない（起動の関門）
+      #   3. GITHUB_TOKEN … GitHub がジョブごとに全ワークフローへ自動支給するトークン。
+      #      actions/checkout が git 設定に認証情報として埋め込むため、
+      #      Claude が Bash で実行する git push は（App のトークンではなく）これを使う
+      #
+      # つまり「App を入れたから push も App のトークンのはず」は誤り。push は 3 の GITHUB_TOKEN で行われ、
+      # GITHUB_TOKEN による push は無限ループ防止の GitHub 仕様により他ワークフローの push トリガーを発火しない。
+      # そのため pages.yml は on: push ではなく workflow_run で本ワークフローの完了を直接受けて起動する。
       - uses: anthropics/claude-code-action@700e7f8316990de46bed556429765647af760efc # v1.0.176
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
