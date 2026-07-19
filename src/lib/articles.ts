@@ -63,14 +63,17 @@ const readExplicitCategories = (lines: string[], from: number): string[] => {
 };
 
 /**
- * 日次レポートの本文（raw markdown）から記事一覧を抽出する。
+ * 日次レポートの本文（raw markdown）から記事一覧を抽出する。想定する形:
  *
- * - `## <ジャンル>` 配下の `### [タイトル](URL)` を 1 記事として拾う
- * - 見出し直後（空行のみ挟んでよい）の `<!-- categories: A, B -->` コメントをカテゴリとして読む
- *   （無ければジャンルのみ）
- * - `anchor` は Astro の見出し ID 生成（@astrojs/markdown-remark の rehypeHeadingIds）と同じく、
- *   **すべての見出しを文書順に** github-slugger へ通して算出する。H2 も消費しないと
- *   重複見出しの連番（`-1` サフィックス）がズレるので、記事以外の見出しもスキップしない
+ * ```markdown
+ * ## ジャンル
+ * ### [記事タイトル](元記事URL)
+ * <!-- categories: TypeScript, Go -->   ← 任意。無ければジャンルのみ
+ * ```
+ *
+ * anchor は「Astro が見出しに付ける id」と一致して初めてリンクとして機能する。
+ * そのため Astro と同じ github-slugger で、H2 も含む全見出しを文書順に slug 化する
+ * （対象や順序を変えると、同名見出しの連番 `-1` がズレてリンク切れになる）。
  */
 export function extractArticles(post: { postId: string; date: Date; body: string }): PostArticle[] {
 	const lines = maskFencedLines(post.body.split('\n'));
