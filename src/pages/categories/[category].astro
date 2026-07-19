@@ -7,6 +7,11 @@ import { getPosts } from '../../lib/posts';
 import { buildTimeline } from '../../lib/timeline';
 import { withBase } from '../../lib/url';
 
+// ファイル名の [category] は動的ルート。静的ビルドでは「どの URL を何ページ作るか」を
+// ビルド時に確定させる必要があり、その一覧を Astro に教えるのが getStaticPaths。
+// 返す配列の 1 要素 = 生成される 1 ページ。params.category が URL の [category] 部分を
+// 埋め（/categories/typescript/ など）、props はそのページの Astro.props にそのまま渡る。
+// つまりこのテンプレートは「雛形」で、カテゴリの数（1 要素 = 1 カテゴリ）だけ実行される。
 export async function getStaticPaths() {
 	const posts = await getPosts();
 	const articles = posts.flatMap((post) =>
