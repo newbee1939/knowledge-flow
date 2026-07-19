@@ -45,12 +45,16 @@ export function extractArticles(post: { postId: string; date: Date; body: string
 		current: PostArticle | undefined;
 		inFence: boolean;
 	}>(
+		// bodyの中身を1行ずつ処理する
+		// stateの初期値は{ articles: [], genre: '', current: undefined, inFence: false }
 		(state, line) => {
+			// コードフェンス内の場合はinFenceをtrueにして処理をスキップする
 			if (FENCE.test(line)) {
 				state.inFence = !state.inFence;
 				state.current = undefined;
 				return state;
 			}
+			// コードフェンス内の場合は処理をスキップする
 			if (state.inFence) {
 				return state;
 			}
