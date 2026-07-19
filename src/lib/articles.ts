@@ -99,11 +99,13 @@ export function extractArticles(post: { postId: string; date: Date; body: string
 			const text = toTextContent(rawText);
 			const anchor = slugger.slug(text);
 
+			// H2見出しの場合はジャンルだけ設定してreturn
 			if (hashes.length === 2) {
 				state.genre = text;
 				return state;
 			}
 
+			// H3見出しかつリンクの場合はcategoriesなどを設定して最後にreturn
 			const link = hashes.length === 3 ? rawText.match(LINK_HEADING) : null;
 			if (link) {
 				const categories = [state.genre, ...readExplicitCategories(lines, index + 1)];
