@@ -17,7 +17,6 @@ const categories = collectCategories(articles);
 <BaseLayout title="Categories | knowledge-flow" description="技術カテゴリごとにニュースを時系列で辿る">
 	<header class="page-header">
 		<h1 class="page-title">Categories</h1>
-		<p class="page-description">技術ごとの「横糸」。カテゴリを選ぶと、その技術のニュースを時系列で辿れる。</p>
 	</header>
 	<ul class="category-list">
 		{
@@ -44,12 +43,6 @@ const categories = collectCategories(articles);
 		font-size: var(--text-2xl);
 		font-weight: 700;
 		letter-spacing: -0.02em;
-	}
-
-	.page-description {
-		margin: var(--space-xs) 0 0;
-		color: var(--color-text-muted);
-		font-size: var(--text-sm);
 	}
 
 	.category-list {
