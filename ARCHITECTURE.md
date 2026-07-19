@@ -35,7 +35,7 @@
        ├─ docs/blog/posts/YYYY-MM-DD.md (.en.md) を書く
        └─ main に直接コミット & push  ← 一覧やタイムラインには触らない
                 │
-                │ ※ Claude GitHub App のトークンで push する（後述の落とし穴 1）
+                │ ※ push は GITHUB_TOKEN。pages.yml は workflow_run で起動を受ける（後述の落とし穴 1）
                 ▼
 GitHub Pages（main への push で自動ビルド）
   └─ Astro の Content Collections が docs/ 配下の markdown を読む
@@ -147,9 +147,9 @@ knowledge-flow/
 
 GitHub は**無限ループを防ぐため、`GITHUB_TOKEN` で push されたコミットでは他のワークフローを起動しない**（[公式ドキュメント](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow)）。つまり素朴に組むと、毎朝レポートがコミットされてもサイトが永遠に更新されない。
 
-**対策**: push は **Claude GitHub App のトークン**で行う。claude-code-action の中で Claude 自身が push すれば、このトークンが使われて push イベントが正常に発火し、`pages.yml` が動く。
+**対策**: `pages.yml` 側で `daily-report.yml` の完了を `workflow_run` イベントで直接受けて起動する（失敗時のビルドを防ぐため、`conclusion == 'success'` の場合のみ実行する）。push イベント経由に頼らないため、daily-report.yml がどのトークンで push するかに関係なく確実に起動する。
 
-**ここで間違えやすいこと**: 「ワークフローの最後に `- run: git push` ステップを足せばいい」と考えると失敗する。そのステップが使う認証情報は `actions/checkout` が仕込んだ `GITHUB_TOKEN` なので、**push はできるがワークフローは起動しない**（サイトは更新されない）。push は必ず action の内側で行わせること。
+**ここで間違えやすいこと**: 「push を Claude GitHub App のトークンで行わせれば push イベントとして発火する」と考えると失敗する。claude-code-action に `github_token` を明示的に渡さない限り、内部の git 操作は既定の `GITHUB_TOKEN` を使う。実際に運用してみると、日次レポートの push では一度も `pages.yml` が自動発火せず、都度手動で `workflow_dispatch` していた（実行履歴で確認済み）。`workflow_run` で受ける方式なら、この落とし穴自体を踏まずに済む。
 
 ### 2. main への直接コミットは、この bot に限って許可する
 
