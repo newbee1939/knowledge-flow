@@ -4,28 +4,29 @@ export interface TimelineEntry {
 	title: string;
 }
 
-export interface TimelineMonth {
+interface TimelineMonth<T = TimelineEntry> {
 	/** 1〜12 */
 	month: number;
-	entries: TimelineEntry[];
+	entries: T[];
 }
 
-export interface TimelineYear {
+interface TimelineYear<T = TimelineEntry> {
 	year: number;
-	months: TimelineMonth[];
+	months: TimelineMonth<T>[];
 }
 
 /**
- * posts を年 → 月 → 日のタイムライン構造に集約する（P2-7）。
+ * date を持つ要素の列を年 → 月のタイムライン構造に集約する（P2-7）。
  *
- * 年・月・記事のすべてが新しい順。日付は formatDate（src/lib/date.ts）と同じく
+ * トップページ（posts）とカテゴリページ（記事）で共用するためジェネリクスにしている。
+ * 年・月・要素のすべてが新しい順。日付は formatDate（src/lib/date.ts）と同じく
  * UTC で解釈する。frontmatter の date は日付のみ（時刻なし）で UTC 深夜 0 時として
  * パースされるため、ローカルタイムゾーンで読むと日付がずれる。
  */
-export function buildTimeline(entries: TimelineEntry[]): TimelineYear[] {
+export function buildTimeline<T extends { date: Date }>(entries: T[]): TimelineYear<T>[] {
 	const sorted = [...entries].sort((a, b) => b.date.getTime() - a.date.getTime());
 
-	return sorted.reduce<TimelineYear[]>((years, entry) => {
+	return sorted.reduce<TimelineYear<T>[]>((years, entry) => {
 		const entryYear = entry.date.getUTCFullYear();
 		const entryMonth = entry.date.getUTCMonth() + 1;
 

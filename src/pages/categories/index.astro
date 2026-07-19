@@ -1,0 +1,85 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { extractArticles } from '../../lib/articles';
+import { collectCategories } from '../../lib/categories';
+import { getPosts } from '../../lib/posts';
+import { withBase } from '../../lib/url';
+
+// カテゴリは posts の本文からビルド時に導出する（設計原則 Derived-not-Generated）。
+// getPosts() は新しい順なので、flatMap した記事列もカテゴリ内で新しい順になる。
+const posts = await getPosts();
+const articles = posts.flatMap((post) =>
+	extractArticles({ postId: post.id, date: post.data.date, body: post.body ?? '' }),
+);
+const categories = collectCategories(articles);
+---
+
+<BaseLayout title="Categories | knowledge-flow" description="Browse tech news by category in chronological order">
+	<header class="page-header">
+		<h1 class="page-title">Categories</h1>
+	</header>
+	<ul class="category-list">
+		{
+			categories.map((category) => (
+				<li>
+					<a class="category-chip" href={withBase(`categories/${category.slug}/`)}>
+						<span class="category-name">{category.name}</span>
+						<span class="category-count">{category.articles.length}</span>
+					</a>
+				</li>
+			))
+		}
+	</ul>
+</BaseLayout>
+
+<style>
+	.page-header {
+		margin-top: var(--space-lg);
+	}
+
+	.page-title {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: var(--text-2xl);
+		font-weight: 700;
+		letter-spacing: -0.02em;
+	}
+
+	.category-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm);
+		margin: var(--space-lg) 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.category-chip {
+		display: inline-flex;
+		align-items: baseline;
+		gap: var(--space-xs);
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		padding: var(--space-xs) var(--space-md);
+		text-decoration: none;
+		transition:
+			border-color 0.15s ease,
+			background-color 0.15s ease;
+	}
+
+	.category-chip:hover {
+		border-color: var(--color-accent);
+		background: var(--color-surface);
+	}
+
+	.category-name {
+		font-size: var(--text-sm);
+		font-weight: 500;
+	}
+
+	.category-count {
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+	}
+</style>
