@@ -76,12 +76,15 @@ const readExplicitCategories = (lines: string[], from: number): string[] => {
  * （対象や順序を変えると、同名見出しの連番 `-1` がズレてリンク切れになる）。
  */
 export function extractArticles(post: { postId: string; date: Date; body: string }): PostArticle[] {
+	// コードフェンス内の行を空行に置き換える
 	const lines = maskFencedLines(post.body.split('\n'));
 	const slugger = new GithubSlugger();
 
+	// bodyの中身を1行ずつ処理する
 	return lines.reduce<{ articles: PostArticle[]; genre: string }>(
 		(state, line, index) => {
 			const heading = line.match(HEADING);
+			// 見出し行でない場合はスキップする
 			if (!heading) {
 				return state;
 			}
