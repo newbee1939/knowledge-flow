@@ -336,7 +336,8 @@ ARCHITECTURE.md のロードマップ（P1〜P6）を、Claude Code が自律的
 
 ## バックログ（Phase 未割当）
 
-- [ ] 読者向け RSS フィード（`/rss.xml`）— テックメディアなら欲しい。P2 の Astro エンドポイントで数行
+- [x] 読者向け RSS フィード（`/rss.xml`）— テックメディアなら欲しい。P2 の Astro エンドポイントで数行
+  - **実績**: `src/pages/rss.xml.ts` を追加（`@astrojs/rss` 4.0.19 をピン留め）。XML エスケープを自前で書かないために公式パッケージを採用した（記事タイトルに `&` や `<` が入ると手書きでは壊れる）。`site` は `base` 配下（`https://newbee1939.github.io/knowledge-flow/`）を指すようにし、各 item のリンクは `withBase()` 経由。`BaseLayout.astro` に `<link rel="alternate">` とヘッダーの RSS リンクも追加
 - [ ] リンク切れ検査の自動化 — 1 日 25 本の外部リンクを貼るメディアなので、リンクは必ず腐る。週次で全 posts の URL を `curl -o /dev/null -w '%{http_code}'` して 200 以外を Issue に立てる
 - [ ] OGP 画像自動生成（ヘッドライン → 画像）
 - [ ] サイト内検索（痛みを感じてから。Pagefind など静的検索を検討）
