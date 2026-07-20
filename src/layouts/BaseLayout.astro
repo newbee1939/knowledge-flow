@@ -16,12 +16,6 @@ const { title, description = 'Daily Tech Report' } = Astro.props;
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
 		<meta name="description" content={description} />
-		<link
-			rel="alternate"
-			type="application/rss+xml"
-			title="knowledge-flow"
-			href={withBase('rss.xml')}
-		/>
 		<title>{title}</title>
 	</head>
 	<body>
@@ -29,14 +23,13 @@ const { title, description = 'Daily Tech Report' } = Astro.props;
 			<a class="site-name" href={withBase('/')}>knowledge-flow</a>
 			<nav class="site-nav">
 				<a href={withBase('categories/')}>Categories</a>
-				<a href={withBase('rss.xml')}>RSS</a>
 			</nav>
 		</header>
 		<main>
 			<slot />
 		</main>
 		<footer class="site-footer">
-			<p>© {new Date().getFullYear()} knowledge-flow — Daily Tech Report</p>
+			<p>© {new Date().getFullYear()} knowledge-flow</p>
 		</footer>
 	</body>
 </html>
@@ -49,11 +42,6 @@ const { title, description = 'Daily Tech Report' } = Astro.props;
 		max-width: var(--container-wide);
 		margin-inline: auto;
 		padding: var(--space-md) var(--space-lg);
-	}
-
-	.site-nav {
-		display: flex;
-		gap: var(--space-md);
 	}
 
 	.site-nav a {
