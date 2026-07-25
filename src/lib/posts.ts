@@ -53,10 +53,7 @@ export async function getArticles(): Promise<PostArticle[]> {
 		extractArticles({ postId: post.id, date: post.data.date, body: post.body ?? '' }),
 	);
 
-	const byUrl = articles.reduce<Map<string, PostArticle[]>>((map, article) => {
-		map.set(article.url, [...(map.get(article.url) ?? []), article]);
-		return map;
-	}, new Map());
+	const byUrl = Map.groupBy(articles, (article) => article.url);
 	const duplicated = [...byUrl.values()].filter((group) => group.length > 1);
 
 	if (duplicated.length > 0) {
