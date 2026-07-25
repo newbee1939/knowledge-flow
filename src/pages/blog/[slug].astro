@@ -47,11 +47,6 @@ const { Content } = await render(post);
 		padding-top: var(--space-xl);
 	}
 
-	.post-header {
-		border-bottom: 1px solid var(--color-border);
-		padding-bottom: var(--space-lg);
-	}
-
 	.post-header time {
 		color: var(--color-text-muted);
 		font-size: var(--text-xs);
@@ -88,9 +83,8 @@ const { Content } = await render(post);
 		text-transform: uppercase;
 	}
 
-	/* 先頭だけは直前がタイトル下の罫線なので上の余白を詰める */
 	.post-body > :global(h2:first-child) {
-		margin-top: var(--space-lg);
+		margin-top: var(--space-xl);
 	}
 
 	.post-body :global(h2)::after {

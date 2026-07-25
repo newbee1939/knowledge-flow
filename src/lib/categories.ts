@@ -10,6 +10,12 @@ export interface Category {
 }
 
 /**
+ * 並び替え用のキー。先頭の記号を落として字面で比較するため、`.NET` は N の位置に並ぶ。
+ * 記号のまま比較すると、探している文字の場所に無い項目が一覧の先頭に居座ってしまう。
+ */
+const sortKey = (name: string): string => name.replace(/^[^\p{L}\p{N}]+/u, '');
+
+/**
  * 記事一覧をカテゴリ別に集約する。
  *
  * - カテゴリの並びは名前順（カテゴリ一覧ページの表示順）。スマホでも目的のカテゴリを
@@ -34,7 +40,7 @@ export function collectCategories(articles: PostArticle[]): Category[] {
 
 	const slugger = new GithubSlugger();
 	return [...byName.entries()]
-		.sort(([aName], [bName]) => aName.localeCompare(bName, 'en'))
+		.sort(([aName], [bName]) => sortKey(aName).localeCompare(sortKey(bName), 'en'))
 		.map(([name, categoryArticles]) => ({
 			name,
 			slug: slugger.slug(name),

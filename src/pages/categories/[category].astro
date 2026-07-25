@@ -93,9 +93,7 @@ const timeline = buildTimeline(category.articles);
 	.page-description {
 		margin: var(--space-2xs) 0 0;
 		color: var(--color-text-muted);
-		font-family: var(--font-mono);
 		font-size: var(--text-xs);
-		letter-spacing: 0.02em;
 	}
 
 	.year {
@@ -148,13 +146,10 @@ const timeline = buildTimeline(category.articles);
 		border-bottom: 1px solid var(--color-border);
 		padding: var(--space-sm) var(--space-2xs);
 		text-decoration: none;
-		transition: border-color 0.2s ease;
 	}
 
-	.article-item a:hover {
-		border-bottom-color: var(--color-text);
-	}
-
+	/* hover の合図はタイトルの下線だけにする。行の区切り線も動かすと、
+	 * 下線と区切り線が縦に並んで二重線に見える。 */
 	.article-item a:hover .article-title {
 		text-decoration: underline;
 		text-decoration-color: var(--color-accent);
