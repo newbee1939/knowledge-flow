@@ -2,21 +2,25 @@
  * 方針: モノクロ・ミニマル。装飾を足さず、余白とタイポグラフィの精度で勝負する。
  * アクセント色はリンクのホバーなど、ごく小さな箇所だけに使う。 */
 :root {
-	--color-bg: #ffffff;
-	--color-text: #1a1c1e;
-	--color-text-muted: #6e7175;
-	--color-border: #e4e5e7;
-	--color-surface: #f6f7f8;
-	--color-accent: #2557d6;
+	--color-bg: #fdfdfc;
+	--color-text: #1b1a18;
+	--color-text-muted: #6d6a64;
+	--color-border: #e2e0dc;
+	--color-surface: #f4f3f0;
+	--color-accent: #a63d2a;
 
-	--font-sans: system-ui, -apple-system, sans-serif;
-	--font-mono: "SF Mono", Menlo, Consolas, monospace;
+	/* 和文フォントは明示する。system-ui 任せだと OS ごとに字面の大きさがぶれる。 */
+	--font-sans:
+		-apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP",
+		"Segoe UI", Roboto, sans-serif;
+	--font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 
 	--text-xs: 0.75rem;
 	--text-sm: 0.875rem;
-	--text-lg: 1.25rem;
-	--text-xl: 1.625rem;
-	--text-2xl: 2.125rem;
+	--text-lg: 1.1875rem;
+	/* 大きい見出しは固定値だとスマホで和文タイトルが 4〜5 行に折り返すため可変にする */
+	--text-xl: clamp(1.3rem, 1.15rem + 0.6vw, 1.5rem);
+	--text-2xl: clamp(1.5rem, 1.1rem + 1.8vw, 2rem);
 
 	--space-2xs: 0.25rem;
 	--space-xs: 0.5rem;
@@ -26,6 +30,8 @@
 	--space-xl: 3rem;
 	--space-2xl: 5rem;
 
+	--radius: 3px;
+
 	--container-article: 44rem;
 	--container-wide: 72rem;
 }
@@ -34,12 +40,12 @@
  * 色トークンだけ上書きすれば、参照側（各ページ・レイアウト）は無改修で追従する。 */
 @media (prefers-color-scheme: dark) {
 	:root {
-		--color-bg: #141416;
-		--color-text: #e6e6e6;
-		--color-text-muted: #8b8b8f;
-		--color-border: #2a2a2d;
-		--color-surface: #1a1a1c;
-		--color-accent: #5b8dfb;
+		--color-bg: #141312;
+		--color-text: #e8e6e1;
+		--color-text-muted: #918d85;
+		--color-border: #2b2926;
+		--color-surface: #1c1b19;
+		--color-accent: #e08a6f;
 	}
 }
 
@@ -51,6 +57,8 @@
 
 html {
 	-webkit-text-size-adjust: 100%;
+	/* アンカー遷移で見出しが画面上端に貼りつかないよう余白を残す */
+	scroll-padding-top: var(--space-lg);
 }
 
 body {
@@ -58,7 +66,11 @@ body {
 	background: var(--color-bg);
 	color: var(--color-text);
 	font-family: var(--font-sans);
-	line-height: 1.8;
+	line-height: 1.85;
+	/* palt: OpenType の字幅ツメ。「」や、。の余分な空白が詰まり和文の行が締まる */
+	font-feature-settings: "palt" 1;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
 }
 
 a {
@@ -69,4 +81,23 @@ code,
 pre,
 time {
 	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+	/* body の palt を打ち消す。等幅フォントに字幅ツメを効かせない */
+	font-feature-settings: normal;
+}
+
+h1,
+h2,
+h3 {
+	text-wrap: balance;
+}
+
+:focus-visible {
+	outline: 2px solid var(--color-accent);
+	outline-offset: 3px;
+	border-radius: 1px;
+}
+
+::selection {
+	background: color-mix(in srgb, var(--color-accent) 22%, transparent);
 }

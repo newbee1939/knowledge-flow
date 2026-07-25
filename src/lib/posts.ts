@@ -1,4 +1,5 @@
 import { getCollection } from 'astro:content';
+import { extractArticles, type PostArticle } from './articles';
 import { formatDate } from './date';
 
 /**
@@ -33,4 +34,43 @@ export async function getPosts() {
 	}
 
 	return posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+}
+
+/**
+ * 全レポートを横断して記事一覧を返す（新しい順）。
+ *
+ * **同じ URL が 2 記事以上に付いていたらビルドを止める。** この誤りは HTTP 的には
+ * 正常に見えるため、リンク切れ検査では捕まえられない。実際に 2 種類の壊れ方をしていた。
+ *
+ * - 別記事の URL が紛れ込む: 07-20 の「Windows 11 の不具合」に「Gemma 4」の URL が付き、
+ *   リンク先は 200 を返すのに中身は別の記事だった
+ * - 同じニュースが日付違いで何度も載る: のべ 40 件。カテゴリページは「その技術単一の
+ *   歴史を縦に辿る」ためのものなので、同じ記事が並ぶと用をなさなくなる
+ */
+export async function getArticles(): Promise<PostArticle[]> {
+	const posts = await getPosts();
+	const articles = posts.flatMap((post) =>
+		extractArticles({ postId: post.id, date: post.data.date, body: post.body ?? '' }),
+	);
+
+	const byUrl = Map.groupBy(articles, (article) => article.url);
+	const duplicated = [...byUrl.values()].filter((group) => group.length > 1);
+
+	if (duplicated.length > 0) {
+		const detail = duplicated
+			.map(
+				(group) =>
+					`  ${group[0].url}\n` +
+					group.map((article) => `    - ${article.postId}: ${article.title}`).join('\n'),
+			)
+			.join('\n');
+		throw new Error(
+			`同じ URL が複数の記事に付いています（${duplicated.length} 件）。ビルドを中止しました。\n` +
+				`${detail}\n` +
+				'  - 別々のニュースなら、どちらかの URL が誤っています\n' +
+				'  - 同じニュースなら、日付・内容の良い方を残して片方を削除してください',
+		);
+	}
+
+	return articles;
 }

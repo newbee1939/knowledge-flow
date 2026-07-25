@@ -30,6 +30,15 @@ describe('collectCategories', () => {
 		]);
 	});
 
+	it('先頭の記号は並び替えで無視する（.NET は N の位置に並ぶ）', () => {
+		const categories = collectCategories([
+			article({ categories: ['.NET', 'Next.js', 'Meta', 'AWS'] }),
+		]);
+
+		// 記号のまま比較すると .NET が AWS より前に来てしまう
+		expect(categories.map((c) => c.name)).toEqual(['AWS', 'Meta', '.NET', 'Next.js']);
+	});
+
 	it('カテゴリ内の記事は入力順を保つ（新しい順で渡せば新しい順のまま）', () => {
 		const categories = collectCategories([
 			article({ title: 'newest', date: new Date('2026-07-18'), categories: ['AWS'] }),

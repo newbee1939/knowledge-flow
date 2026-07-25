@@ -36,7 +36,7 @@ const { title, description = 'Daily Tech Report' } = Astro.props;
 				The articles on this site are automatically generated: an AI summarizes publicly available
 				articles. Accuracy is not guaranteed — please read the original source linked in each item.
 			</p>
-			<p>© {new Date().getFullYear()} knowledge-flow</p>
+			<p class="copyright">© {new Date().getFullYear()} knowledge-flow</p>
 		</footer>
 	</body>
 </html>
@@ -48,30 +48,29 @@ const { title, description = 'Daily Tech Report' } = Astro.props;
 		justify-content: space-between;
 		max-width: var(--container-wide);
 		margin-inline: auto;
-		padding: var(--space-md) var(--space-lg);
+		padding: var(--space-lg) var(--space-lg) var(--space-md);
+	}
+
+	.site-header a {
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		text-decoration: none;
+		text-underline-offset: 0.35em;
+		text-decoration-thickness: 1px;
+	}
+
+	.site-header a:hover {
+		color: var(--color-accent);
+		text-decoration: underline;
 	}
 
 	.site-nav a {
 		color: var(--color-text-muted);
-		font-family: var(--font-mono);
-		font-size: var(--text-sm);
-		text-decoration: none;
-	}
-
-	.site-nav a:hover {
-		color: var(--color-accent);
 	}
 
 	.site-name {
-		font-family: var(--font-mono);
-		font-size: var(--text-sm);
 		font-weight: 600;
-		letter-spacing: 0.02em;
-		text-decoration: none;
-	}
-
-	.site-name:hover {
-		color: var(--color-accent);
+		letter-spacing: -0.01em;
 	}
 
 	main {
@@ -83,7 +82,7 @@ const { title, description = 'Daily Tech Report' } = Astro.props;
 	.site-footer {
 		max-width: var(--container-wide);
 		margin-inline: auto;
-		padding: var(--space-md) var(--space-lg);
+		padding: var(--space-lg) var(--space-lg) var(--space-xl);
 		border-top: 1px solid var(--color-border);
 		color: var(--color-text-muted);
 		font-size: var(--text-xs);
@@ -94,9 +93,15 @@ const { title, description = 'Daily Tech Report' } = Astro.props;
 	}
 
 	.disclosure {
-		max-width: 60ch;
-		margin-bottom: var(--space-xs);
-		line-height: 1.7;
+		max-width: 58ch;
+		margin-bottom: var(--space-sm);
+		line-height: 1.9;
+	}
+
+	.copyright {
+		margin-top: var(--space-md);
+		font-family: var(--font-mono);
+		letter-spacing: 0.02em;
 	}
 
 	@media (max-width: 40rem) {

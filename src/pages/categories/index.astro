@@ -1,17 +1,12 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { extractArticles } from '../../lib/articles';
 import { collectCategories } from '../../lib/categories';
-import { getPosts } from '../../lib/posts';
+import { getArticles } from '../../lib/posts';
 import { withBase } from '../../lib/url';
 
 // カテゴリは posts の本文からビルド時に導出する（設計原則 Derived-not-Generated）。
-// getPosts() は新しい順なので、flatMap した記事列もカテゴリ内で新しい順になる。
-const posts = await getPosts();
-const articles = posts.flatMap((post) =>
-	extractArticles({ postId: post.id, date: post.data.date, body: post.body ?? '' }),
-);
-const categories = collectCategories(articles);
+// getArticles() は新しい順なので、カテゴリ内の記事もそのまま新しい順になる。
+const categories = collectCategories(await getArticles());
 ---
 
 <BaseLayout title="Categories | knowledge-flow" description="Browse tech news by category in chronological order">
@@ -44,17 +39,16 @@ const categories = collectCategories(articles);
 		align-items: baseline;
 		gap: var(--space-xs);
 		border: 1px solid var(--color-border);
-		border-radius: 999px;
-		padding: var(--space-xs) var(--space-md);
+		border-radius: var(--radius);
+		padding: var(--space-2xs) var(--space-sm);
 		text-decoration: none;
 		transition:
-			border-color 0.15s ease,
-			background-color 0.15s ease;
+			border-color 0.2s ease,
+			color 0.2s ease;
 	}
 
 	.category-chip:hover {
-		border-color: var(--color-accent);
-		background: var(--color-surface);
+		border-color: var(--color-text);
 	}
 
 	.category-name {
