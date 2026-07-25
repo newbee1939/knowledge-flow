@@ -12,7 +12,8 @@ export interface Category {
 /**
  * 記事一覧をカテゴリ別に集約する。
  *
- * - カテゴリの並びは記事数の多い順 → 名前順（カテゴリ一覧ページの表示順）
+ * - カテゴリの並びは名前順（カテゴリ一覧ページの表示順）。スマホでも目的のカテゴリを
+ *   予測しながら追えるよう、記事数ではなくアルファベット順で固定する
  * - 各カテゴリ内の記事順は入力順を保つ。getPosts()（新しい順）を flatMap した結果を
  *   そのまま渡せば、新しい順のまま集約される
  * - slug は並び確定後に採番する。名前が異なっても slug が衝突した場合は
@@ -33,10 +34,7 @@ export function collectCategories(articles: PostArticle[]): Category[] {
 
 	const slugger = new GithubSlugger();
 	return [...byName.entries()]
-		.sort(
-			([aName, aArticles], [bName, bArticles]) =>
-				bArticles.length - aArticles.length || aName.localeCompare(bName, 'en'),
-		)
+		.sort(([aName], [bName]) => aName.localeCompare(bName, 'en'))
 		.map(([name, categoryArticles]) => ({
 			name,
 			slug: slugger.slug(name),

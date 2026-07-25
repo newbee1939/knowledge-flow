@@ -14,15 +14,20 @@ const article = (overrides: Partial<PostArticle>): PostArticle => ({
 });
 
 describe('collectCategories', () => {
-	it('記事をカテゴリ別に集約し、記事数の多い順 → 名前順で返す', () => {
+	it('記事をカテゴリ別に集約し、記事数によらず名前順（アルファベット順）で返す', () => {
 		const categories = collectCategories([
-			article({ title: 'a', categories: ['Backend', 'TypeScript'] }),
-			article({ title: 'b', categories: ['Backend', 'AWS'] }),
-			article({ title: 'c', categories: ['AWS'] }),
+			article({ title: 'a', categories: ['Zebra', 'TypeScript'] }),
+			article({ title: 'b', categories: ['Zebra', 'AWS'] }),
+			article({ title: 'c', categories: ['Zebra'] }),
 		]);
 
-		expect(categories.map((c) => c.name)).toEqual(['AWS', 'Backend', 'TypeScript']);
-		expect(categories[0].articles.map((a) => a.title)).toEqual(['b', 'c']);
+		// Zebra は 3 記事で最多だが、記事数順ではなく名前順なので末尾に並ぶ
+		expect(categories.map((c) => c.name)).toEqual(['AWS', 'TypeScript', 'Zebra']);
+		expect(categories.find((c) => c.name === 'Zebra')?.articles.map((a) => a.title)).toEqual([
+			'a',
+			'b',
+			'c',
+		]);
 	});
 
 	it('カテゴリ内の記事は入力順を保つ（新しい順で渡せば新しい順のまま）', () => {
