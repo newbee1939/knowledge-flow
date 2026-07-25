@@ -39,22 +39,23 @@ const categories = collectCategories(articles);
 		list-style: none;
 	}
 
+	/* 丸いピルではなく角の立ったタグ。既製テンプレート感が出るのは形が丸いときで、
+	 * 同じ情報量でも角を落とす程度に留めるほうが落ち着いて見える。 */
 	.category-chip {
 		display: inline-flex;
 		align-items: baseline;
 		gap: var(--space-xs);
 		border: 1px solid var(--color-border);
-		border-radius: 999px;
-		padding: var(--space-xs) var(--space-md);
+		border-radius: var(--radius);
+		padding: var(--space-2xs) var(--space-sm);
 		text-decoration: none;
 		transition:
-			border-color 0.15s ease,
-			background-color 0.15s ease;
+			border-color 0.2s ease,
+			color 0.2s ease;
 	}
 
 	.category-chip:hover {
-		border-color: var(--color-accent);
-		background: var(--color-surface);
+		border-color: var(--color-text);
 	}
 
 	.category-name {
