@@ -2,19 +2,14 @@
  * 方針: モノクロ・ミニマル。装飾を足さず、余白とタイポグラフィの精度で勝負する。
  * アクセント色はリンクのホバーなど、ごく小さな箇所だけに使う。 */
 :root {
-	/* 純白・純黒を避け、わずかに暖色へ寄せる。紙とインクの関係に近づけると、
-	 * 同じレイアウトでも画面のギラつきが減って読み口が落ち着く。 */
 	--color-bg: #fdfdfc;
 	--color-text: #1b1a18;
 	--color-text-muted: #6d6a64;
 	--color-border: #e2e0dc;
 	--color-surface: #f4f3f0;
-	/* アクセントは青ではなく朱。リンクの hover と最小限の強調にしか使わないので、
-	 * 彩度より「本文の黒と喧嘩しないこと」を優先している。 */
 	--color-accent: #a63d2a;
 
-	/* 日本語フォントを明示する。system-ui 任せだと OS ごとに和文の当たり方が変わり、
-	 * 字面の大きさ（＝行の詰まり具合）が環境間でぶれる。 */
+	/* 和文フォントは明示する。system-ui 任せだと OS ごとに字面の大きさがぶれる。 */
 	--font-sans:
 		-apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP",
 		"Segoe UI", Roboto, sans-serif;
@@ -23,8 +18,7 @@
 	--text-xs: 0.75rem;
 	--text-sm: 0.875rem;
 	--text-lg: 1.1875rem;
-	/* 大きい見出しだけ画面幅に連動させる。固定値だとスマホで和文タイトルが 4〜5 行に
-	 * 折り返して圧迫感が出るため、上限・下限を決めたうえで滑らかに縮める。 */
+	/* 大きい見出しは固定値だとスマホで和文タイトルが 4〜5 行に折り返すため可変にする */
 	--text-xl: clamp(1.3rem, 1.15rem + 0.6vw, 1.5rem);
 	--text-2xl: clamp(1.5rem, 1.1rem + 1.8vw, 2rem);
 
@@ -36,7 +30,6 @@
 	--space-xl: 3rem;
 	--space-2xl: 5rem;
 
-	/* 角は落とすが丸めない。半径を大きくするほど既製テンプレートの顔になる。 */
 	--radius: 3px;
 
 	--container-article: 44rem;
@@ -64,7 +57,7 @@
 
 html {
 	-webkit-text-size-adjust: 100%;
-	/* カテゴリ一覧から記事内の見出しへ飛ぶとき、見出しが画面上端に貼りつかないよう余白を残す */
+	/* アンカー遷移で見出しが画面上端に貼りつかないよう余白を残す */
 	scroll-padding-top: var(--space-lg);
 }
 
@@ -74,9 +67,7 @@ body {
 	color: var(--color-text);
 	font-family: var(--font-sans);
 	line-height: 1.85;
-	/* palt = Proportional Alternate Widths（OpenType の字幅ツメ機能）。
-	 * 「」や、。が持つ余分な空白が詰まり、和文の行が締まって見える。
-	 * 和文サイトで「作り込まれている」印象を一番安く出せる指定。 */
+	/* palt: OpenType の字幅ツメ。「」や、。の余分な空白が詰まり和文の行が締まる */
 	font-feature-settings: "palt" 1;
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
@@ -90,12 +81,11 @@ code,
 pre,
 time {
 	font-family: var(--font-mono);
-	/* 日付や件数が縦に並ぶ画面なので、数字の字幅を揃えて桁をそろえる */
 	font-variant-numeric: tabular-nums;
+	/* body の palt を打ち消す。等幅フォントに字幅ツメを効かせない */
 	font-feature-settings: normal;
 }
 
-/* 見出しは折り返し位置を均等に。1 行目だけ長く2行目が数文字、という不格好を防ぐ */
 h1,
 h2,
 h3 {

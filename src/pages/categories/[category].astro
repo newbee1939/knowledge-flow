@@ -102,7 +102,7 @@ const timeline = buildTimeline(category.articles);
 		margin-top: var(--space-xl);
 	}
 
-	/* 年の下に罫線は引かない。直後の月ラベルが罫線を持つため、二重線になって煩くなる。 */
+	/* 年の下に罫線は引かない。直後の月ラベルが罫線を持つため二重線になる。 */
 	.year-label {
 		margin: 0;
 		font-family: var(--font-mono);
@@ -115,7 +115,6 @@ const timeline = buildTimeline(category.articles);
 		margin-top: var(--space-lg);
 	}
 
-	/* 月ラベルの右側に罫線を伸ばす（トップページと同じ扱い） */
 	.month-label {
 		display: flex;
 		align-items: center;
@@ -140,8 +139,7 @@ const timeline = buildTimeline(category.articles);
 		list-style: none;
 	}
 
-	/* 日付を固定幅の 1 段目に置いて、タイトルの頭を縦に揃える。行ごとに開始位置が
-	 * ずれないだけで、長い一覧はかなり読みやすくなる。 */
+	/* 日付を固定幅の 1 段目に置き、タイトルの頭を縦に揃える */
 	.article-item a {
 		display: grid;
 		grid-template-columns: 6.5rem 1fr;

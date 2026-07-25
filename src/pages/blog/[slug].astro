@@ -72,9 +72,8 @@ const { Content } = await render(post);
 
 	/* Markdown から生成される本文にはクラスを振れないので :global で当てる。
 	 * 適用範囲は .post-body 配下に限定する。 */
-	/* h2 はジャンル名（AI・セキュリティなど）、h3 は個々の記事タイトル。
-	 * 以前は両者のサイズが近く、どちらが上位か目で追えなかった。h2 を小さな
-	 * ラベル＋罫線に振り切ることで、大きさではなく「形」で階層を分ける。 */
+	/* h2 はジャンル名、h3 は記事タイトル。サイズが近いと階層が読めないので、
+	 * h2 はラベル＋罫線にして大きさではなく形で分ける。 */
 	.post-body :global(h2) {
 		display: flex;
 		align-items: center;
@@ -89,7 +88,7 @@ const { Content } = await render(post);
 		text-transform: uppercase;
 	}
 
-	/* 先頭のジャンル見出しは、直前がタイトル下の罫線なので上の余白を詰める */
+	/* 先頭だけは直前がタイトル下の罫線なので上の余白を詰める */
 	.post-body > :global(h2:first-child) {
 		margin-top: var(--space-lg);
 	}
@@ -107,7 +106,6 @@ const { Content } = await render(post);
 		line-height: 1.6;
 	}
 
-	/* 記事タイトルのリンクは下線が太いと紙面が黒ずむ。細く・離して引く。 */
 	.post-body :global(h3 a) {
 		text-decoration-color: var(--color-border);
 		text-decoration-thickness: 1px;

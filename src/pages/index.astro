@@ -47,8 +47,6 @@ const timeline = buildTimeline(
 </BaseLayout>
 
 <style>
-	/* 最新号は「一面のトップ記事」として扱う。囲みカードではなく、上に太めの罫、
-	 * 下にヘアラインを引くだけにして、紙面のような静けさを出す。 */
 	.latest {
 		display: block;
 		margin-top: var(--space-md);
@@ -94,7 +92,7 @@ const timeline = buildTimeline(
 		margin-top: var(--space-xl);
 	}
 
-	/* 年の下に罫線は引かない。直後の月ラベルが罫線を持つため、二重線になって煩くなる。 */
+	/* 年の下に罫線は引かない。直後の月ラベルが罫線を持つため二重線になる。 */
 	.year-label {
 		margin: 0;
 		font-family: var(--font-mono);
@@ -107,8 +105,6 @@ const timeline = buildTimeline(
 		margin-top: var(--space-lg);
 	}
 
-	/* 月ラベルの右側に罫線を伸ばして、区切りであることを線そのもので示す。
-	 * 見出しの下に一本引くより、横スクロール領域の始まりが分かりやすい。 */
 	.month-label {
 		display: flex;
 		align-items: center;
@@ -144,8 +140,6 @@ const timeline = buildTimeline(
 		scroll-snap-align: start;
 	}
 
-	/* 囲みカードをやめ、左の縦罫だけで列を区切る（新聞の段組と同じ考え方）。
-	 * 枠と角丸が消えるぶん、並んだ見出しそのものが視線の主役になる。 */
 	.day-card a {
 		display: flex;
 		flex-direction: column;
