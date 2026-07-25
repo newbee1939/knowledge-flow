@@ -1,9 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { extractArticles } from '../../lib/articles';
 import { collectCategories } from '../../lib/categories';
 import { formatDate } from '../../lib/date';
-import { getPosts } from '../../lib/posts';
+import { getArticles } from '../../lib/posts';
 import { buildTimeline } from '../../lib/timeline';
 import { withBase } from '../../lib/url';
 
@@ -13,11 +12,7 @@ import { withBase } from '../../lib/url';
 // 埋め（/categories/typescript/ など）、props はそのページの Astro.props にそのまま渡る。
 // つまりこのテンプレートは「雛形」で、カテゴリの数（1 要素 = 1 カテゴリ）だけ実行される。
 export async function getStaticPaths() {
-	const posts = await getPosts();
-	const articles = posts.flatMap((post) =>
-		extractArticles({ postId: post.id, date: post.data.date, body: post.body ?? '' }),
-	);
-	return collectCategories(articles).map((category) => ({
+	return collectCategories(await getArticles()).map((category) => ({
 		params: { category: category.slug },
 		props: { category },
 	}));
