@@ -38,6 +38,12 @@
 - **Biome**（`npm run lint` / `npm run lint:fix`）。ESLint + Prettier は使わない（依存を増やさない）
 - CI で `npm run lint` が回る。フォーマット差分があれば落ちる
 
+## 依存パッケージの install スクリプト
+
+- **未承認の install スクリプトは実行させない。** `.npmrc` の `strict-allow-scripts=true` で、`package.json` の `allowScripts` に無いものは警告ではなく**エラー**になる（インストール時に任意のコードが走るのは、サプライチェーン攻撃の典型的な侵入口）
+- 依存を足して `npm install` が落ちたら、そのスクリプトの中身を読んでから `npm approve-scripts <pkg>`（許可）か `npm deny-scripts <pkg>`（拒否）で明示する。判断が package.json に残る
+- 拒否して動かなくなる場合だけ許可する。`esbuild` / `fsevents` は拒否済み（前者の install は起動を速くする最適化、後者はプリビルド同梱で、どちらも無くても動く）
+
 ## GitHub Actions
 
 - **Action はタグではなくコミットハッシュで固定する。** タグは書き換え可能なので、リポジトリが乗っ取られれば `@v7` が別のコミットを指しうる（サプライチェーン攻撃）
