@@ -1,9 +1,8 @@
 ---
-import DayStrip from '../../components/DayStrip.astro';
+import Timeline from '../../components/Timeline.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { collectCategories } from '../../lib/categories';
 import { getArticles } from '../../lib/posts';
-import { buildTimeline } from '../../lib/timeline';
 import { withBase } from '../../lib/url';
 
 // ファイル名の [category] は動的ルート。静的ビルドでは「どの URL を何ページ作るか」を
@@ -19,9 +18,6 @@ export async function getStaticPaths() {
 }
 
 const { category } = Astro.props;
-
-// トップページと同じ年 → 月構造で「その技術単一の歴史」を辿る
-const timeline = buildTimeline(category.articles);
 ---
 
 <BaseLayout
@@ -33,25 +29,14 @@ const timeline = buildTimeline(category.articles);
 		<h1 class="page-title">{category.name}</h1>
 		<p class="page-description">{category.articles.length} 件の記事</p>
 	</header>
-	{
-		timeline.map(({ year, months }) => (
-			<section class="year">
-				<h2 class="year-label">{year}</h2>
-				{months.map(({ month, entries }) => (
-					<section class="month">
-						<h3 class="month-label">{String(month).padStart(2, '0')}</h3>
-						<DayStrip
-							items={entries.map((article) => ({
-								href: withBase(`blog/${article.postId}/#${article.anchor}`),
-								date: article.date,
-								title: article.title,
-							}))}
-						/>
-					</section>
-				))}
-			</section>
-		))
-	}
+	<Timeline
+		category={category.name}
+		items={category.articles.map((article) => ({
+			href: withBase(`blog/${article.postId}/#${article.anchor}`),
+			date: article.date,
+			title: article.title,
+		}))}
+	/>
 </BaseLayout>
 
 <style>
@@ -86,40 +71,5 @@ const timeline = buildTimeline(category.articles);
 		margin: var(--space-2xs) 0 0;
 		color: var(--color-text-muted);
 		font-size: var(--text-xs);
-	}
-
-	.year {
-		margin-top: var(--space-xl);
-	}
-
-	/* 年の下に罫線は引かない。直後の月ラベルが罫線を持つため二重線になる。 */
-	.year-label {
-		margin: 0;
-		font-family: var(--font-mono);
-		font-size: var(--text-xl);
-		font-weight: 500;
-		letter-spacing: 0.02em;
-	}
-
-	.month {
-		margin-top: var(--space-lg);
-	}
-
-	.month-label {
-		display: flex;
-		align-items: center;
-		gap: var(--space-md);
-		margin: 0 0 var(--space-md);
-		color: var(--color-text-muted);
-		font-family: var(--font-mono);
-		font-size: var(--text-xs);
-		font-weight: 400;
-		letter-spacing: 0.14em;
-	}
-
-	.month-label::after {
-		content: '';
-		flex: 1;
-		border-top: 1px solid var(--color-border);
 	}
 </style>

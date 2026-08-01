@@ -46,7 +46,7 @@ src/pages/*.astro         受け取ったデータを HTML にする
 | `articles.ts` | 日次レポート本文から記事（H3 見出し 1 つ）を抽出 |
 | `categories.ts` | 記事をカテゴリ別に集約 |
 | `timeline.ts` | `date` を持つ列を年 → 月に集約（トップとカテゴリページで共用） |
-| `summaries.ts` | 月・年のひとことタイトルを `docs/blog/summaries.json` から引く |
+| `summaries.ts` | 月・年のひとことタイトル（サイト全体／カテゴリ別）を `docs/blog/summaries.json` から引く |
 | `date.ts` | 表示用の `YYYY-MM-DD`（UTC）整形 |
 | `url.ts` | `base` 込みのサイト内リンク組み立て |
 | `rehypeExternalLinks.ts` | 本文の外部リンクに `target` / `rel` を付与（`astro.config.mjs` から使う） |
