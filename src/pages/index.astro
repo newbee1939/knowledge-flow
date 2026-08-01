@@ -1,7 +1,9 @@
 ---
+import DayStrip from '../components/DayStrip.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { formatDate } from '../lib/date';
 import { getPosts } from '../lib/posts';
+import { periodTitle } from '../lib/summaries';
 import { buildTimeline } from '../lib/timeline';
 import { withBase } from '../lib/url';
 
@@ -9,9 +11,15 @@ import { withBase } from '../lib/url';
 // docs/blog/posts/ に md を 1 枚足すだけで、コードを変えずにカードが増える。
 const posts = await getPosts();
 const latestPost = posts[0];
+
+// 年・月のひとことタイトルはテンプレートで引かず、ここで畳んでおく（同じ呼び出しを 2 度書かない）
 const timeline = buildTimeline(
 	posts.map((post) => ({ id: post.id, date: post.data.date, title: post.data.title })),
-);
+).map((year) => ({
+	...year,
+	title: periodTitle(year.year),
+	months: year.months.map((month) => ({ ...month, title: periodTitle(year.year, month.month) })),
+}));
 ---
 
 <BaseLayout title="knowledge-flow">
@@ -23,22 +31,25 @@ const timeline = buildTimeline(
 		</time>
 	</a>
 	{
-		timeline.map(({ year, months }) => (
+		timeline.map(({ year, title: yearTitle, months }) => (
 			<section class="year">
-				<h2 class="year-label">{year}</h2>
-				{months.map(({ month, entries }) => (
+				<h2 class="year-label">
+					{year}
+					{yearTitle && <span class="period-title">{yearTitle}</span>}
+				</h2>
+				{months.map(({ month, title: monthTitle, entries }) => (
 					<section class="month">
-						<h3 class="month-label">{String(month).padStart(2, '0')}</h3>
-						<ol class="day-strip">
-							{entries.map((entry) => (
-								<li class="day-card">
-									<a href={withBase(`blog/${entry.id}/`)} title={entry.title}>
-										<time datetime={entry.date.toISOString()}>{formatDate(entry.date)}</time>
-										<span class="day-title">{entry.title}</span>
-									</a>
-								</li>
-							))}
-						</ol>
+						<h3 class="month-label">
+							{String(month).padStart(2, '0')}
+							{monthTitle && <span class="period-title">{monthTitle}</span>}
+						</h3>
+						<DayStrip
+							items={entries.map((entry) => ({
+								href: withBase(`blog/${entry.id}/`),
+								date: entry.date,
+								title: entry.title,
+							}))}
+						/>
 					</section>
 				))}
 			</section>
@@ -94,6 +105,9 @@ const timeline = buildTimeline(
 
 	/* 年の下に罫線は引かない。直後の月ラベルが罫線を持つため二重線になる。 */
 	.year-label {
+		display: flex;
+		align-items: baseline;
+		gap: var(--space-md);
 		margin: 0;
 		font-family: var(--font-mono);
 		font-size: var(--text-xl);
@@ -123,64 +137,17 @@ const timeline = buildTimeline(
 		border-top: 1px solid var(--color-border);
 	}
 
-	/* 月ごとの横スクロール領域。カードは日単位 */
-	.day-strip {
-		display: flex;
-		gap: var(--space-sm);
-		margin: 0;
-		padding: 0 0 var(--space-xs);
-		list-style: none;
-		overflow-x: auto;
-		scroll-snap-type: x proximity;
-		scrollbar-width: thin;
-	}
-
-	.day-card {
-		flex: 0 0 17rem;
-		scroll-snap-align: start;
-	}
-
-	.day-card a {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-xs);
-		height: 100%;
-		border-left: 1px solid var(--color-border);
-		padding: var(--space-2xs) var(--space-md) var(--space-xs);
-		text-decoration: none;
-		transition: border-color 0.2s ease;
-	}
-
-	.day-card a:hover {
-		border-left-color: var(--color-accent);
-	}
-
-	.day-card a:hover .day-title {
-		text-decoration: underline;
-		text-decoration-color: var(--color-border);
-		text-underline-offset: 0.22em;
-		text-decoration-thickness: 1px;
-	}
-
-	.day-card time {
+	/* 年月の数字（等幅・字間広め）と地続きに見えないよう、和文は本文の書体に戻す */
+	.period-title {
+		flex: 0 1 auto;
 		color: var(--color-text-muted);
+		font-family: var(--font-sans);
 		font-size: var(--text-xs);
-		letter-spacing: 0.02em;
+		font-weight: 400;
+		letter-spacing: 0;
 	}
 
-	.day-title {
-		display: -webkit-box;
-		-webkit-box-orient: vertical;
-		-webkit-line-clamp: 3;
-		overflow: hidden;
+	.year-label .period-title {
 		font-size: var(--text-sm);
-		font-weight: 500;
-		line-height: 1.75;
-	}
-
-	@media (max-width: 40rem) {
-		.day-card {
-			flex-basis: 15rem;
-		}
 	}
 </style>

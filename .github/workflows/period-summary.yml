@@ -1,0 +1,44 @@
+name: Period Summary
+
+# 毎月 1 日に /period-summary Skill を実行し、前月（1 月なら前年も）のひとことタイトルを
+# docs/blog/summaries.json へ書いて main へ push する。
+# トークンの扱い・push が pages.yml を直接起動できない事情は daily-report.yml のコメントを参照。
+on:
+  schedule:
+    # 1 日 09:00 JST = 1 日 00:00 UTC。cron は UTC で書く（ARCHITECTURE.md の落とし穴 5）。
+    # 「月末 24:00 JST」は UTC の日付がずれて cron で書けないため、月初の朝に前月をまとめる。
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+    inputs:
+      period:
+        description: 'YYYY-MM または YYYY（省略時は前月）'
+        required: false
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: period-summary
+  cancel-in-progress: false
+
+jobs:
+  period-summary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TZ: Asia/Tokyo # 「前月」を JST で確定させる
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - uses: anthropics/claude-code-action@700e7f8316990de46bed556429765647af760efc # v1.0.176
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            /period-summary ${{ inputs.period }} を実行してください。
+            完了したら、生成されたコミットを main ブランチへ直接 push してください（git push origin main）。
+            claude/ プレフィックスのブランチは作らないでください。
+            書き込み・コミットしてよいのは docs/ 配下のみです。src/ や .github/ など他の場所は変更しないでください。
+          claude_args: |
+            --allowedTools "Bash,Read,Write,Edit,Glob,Grep"
+            --model opus

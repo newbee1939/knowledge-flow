@@ -10,7 +10,7 @@ on:
     branches: [main]
   workflow_dispatch:
   workflow_run:
-    workflows: [Daily Report]
+    workflows: [Daily Report, Period Summary]
     types: [completed]
     branches: [main]
 
