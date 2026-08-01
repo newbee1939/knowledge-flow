@@ -23,7 +23,7 @@ markdown が入口で HTML が出口。その間を一方向に流れる。
 
 ```
 docs/blog/posts/*.md      データ層。Skill だけが書く
-docs/blog/summaries.json  月・年のひとことタイトル（月初に Period Summary が追記）
+docs/blog/summaries.json  月・年のひとことタイトル。全体＋カテゴリ別（月初に Period Summary が追記）
         ↓
 src/content.config.ts     Content Collections の定義と frontmatter のスキーマ
         ↓
