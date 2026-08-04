@@ -19,7 +19,7 @@ interface Period {
  * 実体は docs/blog/summaries.json で、月初に Period Summary ワークフローが追記する
  * （.claude/skills/period-summary/SKILL.md）。まだ書かれていない期間は undefined。
  */
-export function periodTitle({ year, month, category }: Period): string | undefined {
+export function getPeriodTitle({ year, month, category }: Period): string | undefined {
 	const key = month === undefined ? String(year) : `${year}-${String(month).padStart(2, '0')}`;
 	const titles = category === undefined ? overall : (categories[category] ?? {});
 	return titles[key];

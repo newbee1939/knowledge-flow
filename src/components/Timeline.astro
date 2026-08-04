@@ -1,6 +1,6 @@
 ---
 import { formatDate } from '../lib/date';
-import { periodTitle } from '../lib/summaries';
+import { getPeriodTitle } from '../lib/summaries';
 import { buildTimeline } from '../lib/timeline';
 
 // 年 → 月 → 日カード（横スクロール）の年表。トップページとカテゴリページで共用する。
@@ -15,10 +15,10 @@ const { items, category } = Astro.props;
 // ひとことタイトルはテンプレートで引かず、ここで畳んでおく（同じ呼び出しを 2 度書かない）
 const timeline = buildTimeline(items).map((year) => ({
 	...year,
-	title: periodTitle({ year: year.year, category }),
+	title: getPeriodTitle({ year: year.year, category }),
 	months: year.months.map((month) => ({
 		...month,
-		title: periodTitle({ year: year.year, month: month.month, category }),
+		title: getPeriodTitle({ year: year.year, month: month.month, category }),
 	})),
 }));
 ---
