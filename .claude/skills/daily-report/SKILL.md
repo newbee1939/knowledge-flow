@@ -116,10 +116,11 @@ AIが生み出す文章や返答の「できばえ」を、人がいちいち目
 - SRE Weekly `[RSS]`: https://sreweekly.com/feed/
 - Cloudflare Blog `[RSS]`: https://blog.cloudflare.com/rss/
 - CNCF Blog `[RSS]`: https://www.cncf.io/feed/
+- TLDR (tech) `[RSS]`: https://tldr.tech/api/rss/tech （1 エントリ＝その日のニュースレター 1 号。個別記事の URL を持たないので、号のページを WebFetch して中の記事 URL を採る）
 
 ## Reddit
-取得方法は `# 注意` 参照（WebFetch 不可、curl で取る）。6 サブレディットを `+` で連結した合成フィードを **1 リクエスト**で取る（個別に叩くと 2 本目以降がレート制限で 429 になる）。
-- r/programming + r/ExperiencedDevs + r/MachineLearning + r/LocalLLaMA + r/sre + r/devops `[RSS]`: https://www.reddit.com/r/programming+ExperiencedDevs+MachineLearning+LocalLLaMA+sre+devops/.rss?limit=60
+取得方法は `# 注意` 参照（WebFetch 不可、curl で取る）。8 サブレディットを `+` で連結した合成フィードを **1 リクエスト**で取る（個別に叩くと 2 本目以降がレート制限で 429 になる）。
+- r/programming + r/ExperiencedDevs + r/MachineLearning + r/LocalLLaMA + r/sre + r/devops + r/learnprogramming + r/softwaredevelopment `[RSS]`: https://www.reddit.com/r/programming+ExperiencedDevs+MachineLearning+LocalLLaMA+sre+devops+learnprogramming+softwaredevelopment/.rss?limit=60
 
 ## セキュリティ
 - IPA セキュリティアラート `[HTML]`: https://www.ipa.go.jp/security/security-alert/index.html
