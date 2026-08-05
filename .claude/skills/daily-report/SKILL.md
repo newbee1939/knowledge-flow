@@ -6,8 +6,8 @@ description: 1 日分のテックニュースをジャンル別にまとめ docs
 
 1. **日付**: 今日を JST で `<DATE>`（`YYYY-MM-DD`）に確定。引数で日付を渡されたらそれを優先。
 2. **取得**: `# 情報ソース` の各行の `[TAG]` に従う。`[RSS]`/`[Atom]`/`[HTML]` は WebFetch、`[API]`/`[JSON]` は `curl -s <URL>` + `jq`。取得できなければそのソースはスキップし、`failures.json` を更新する（`# 注意` 参照）。
-3. **日時フィルタ**: 各記事の公開日時（RSS の `pubDate` / Atom の `published` / Hacker News の `created_at` など）を確認し、基準時刻から**24 時間以内**に公開されたものだけを候補に残す。基準時刻は、`<DATE>` が今日なら実行時の現在時刻（JST）、過去日付（バックフィル）ならその日の 23:59:59 JST とする。フィードの日時は UTC 表記が多いため、JST に換算してから比較する。公開日時が取得できない記事・ソースはそのまま残す（判断材料がないため除外しない）。
-4. **重複排除**: URL を正規化（`http`→`https`、`utm_*`/`fbclid`/`gclid` 除去、末尾スラッシュ除去）し、一致するものは 1 件に畳む。**さらに、直近 7 日分の既存レポートに載っている URL は候補から必ず除外する**（同じ記事は 1 度しか載せない）。既出 URL は次で取れる:
+3. **日時フィルタ**: 各記事の公開日時（RSS 2.0 の `pubDate` / RSS 1.0（RDF）の `dc:date` / Atom の `published` / Hacker News の `created_at` など）を確認し、基準時刻から**24 時間以内**に公開されたものだけを候補に残す。基準時刻は、`<DATE>` が今日なら実行時の現在時刻（JST）、過去日付（バックフィル）ならその日の 23:59:59 JST とする。フィードの日時は UTC 表記が多いため、JST に換算してから比較する。公開日時が取得できない記事・ソースはそのまま残す（判断材料がないため除外しない）。
+4. **重複排除**: URL を正規化（`http`→`https`、`utm_*`/`fbclid`/`gclid`/`ref` 除去、末尾スラッシュ除去）し、一致するものは 1 件に畳む。**本文に書く URL も正規化後のものを使う**（フィードが付ける追跡用パラメータをそのまま残すと、翌日以降の重複判定と食い違う）。**さらに、直近 7 日分の既存レポートに載っている URL は候補から必ず除外する**（同じ記事は 1 度しか載せない）。既出 URL は次で取れる:
 
     ```sh
     ls -1 docs/blog/posts/*.md | sort | tail -7 | xargs grep -ho '](https\?://[^)]*)' | tr -d '](' | tr -d ')' | sort -u
@@ -15,9 +15,10 @@ description: 1 日分のテックニュースをジャンル別にまとめ docs
 
     前日分だけを見ていた頃は、2〜5 日空いた重複が素通りしてのべ 40 件たまった。同じ記事が日付違いで並ぶと、カテゴリページ（その技術の歴史を時系列で辿る画面）が用をなさなくなる。**サイト側も同じ URL が 2 記事以上に付いているとビルドを止める**（`src/lib/posts.ts` の `getArticles()`）ため、ここで漏らすと公開が止まる。
 5. **分類**: AI / Infra / Backend / Frontend / Others に分類（1 記事 1 ジャンル、迷ったら主題で判断）。件数上限は設けず、まず候補として全件残す。
-6. **執筆**: 各ジャンルで、候補の中から**特に重要、または知っておくべきと判断したニュースを 5 件**選び、1 件ずつしっかり要約する。選定基準は〈影響範囲の広さ・技術的インパクト・実務での有用性〉。**選んだ 5 件は、この基準でより重要と判断した順に並べる（ジャンル内の 1 件目が最重要）。** 各トピックは「見出し（記事タイトルをインラインリンクにした H3）＋ 要約 4〜6 文」。**リンク先は必ずその記事・投稿そのものの URL（パーマリンク）にする。** フィード URL や一覧ページ URL（`https://www.reddit.com/r/programming/`、`https://qiita.com/popular-items/feed` など）を貼ってはいけない。パーマリンクは取得したフィードの各エントリが持っている（RSS は `<item><link>`、Atom は `<entry><link href>`、Hacker News API は `url`。`url` が空の Ask HN 等は `https://news.ycombinator.com/item?id=<objectID>`）。エントリから URL が取れなかった記事は、推測で URL を組み立てず**その記事を採用しない**。**URL は書いている記事のエントリから 1 件ずつコピーし、隣の記事のものを貼らないよう確認する。** 貼り違えてもリンク先は正常に開いてしまうため、後から気づく手段がない（実際に 2026-07-20 で、Windows 11 の記事に Gemma 4 の URL が付いていた）。要約には〈何が起きたか・技術的な要点・なぜ重要か〉を含める。**専門用語や横文字はそのまま使わず、平易な言葉に言い換えるか、身近な例え（比喩）を添えて初心者にも分かるように書く**（例:「トークンコスト」→「AIを動かす費用（トークン代）」、「レイテンシ」→「応答までの待ち時間」）。処理の流れ・アーキテクチャ・比較など図解した方が伝わりやすい内容には、Mermaid 図（` ```mermaid `コードブロック）を必要に応じて添える（無理に全トピックへ入れる必要はない）。冗長な前置き・締めは書かない。**各記事の H3 見出しの直後の行に `<!-- categories: A, B -->` 形式でカテゴリを 1〜3 個付ける**（サイトの `/categories/` ページがこのコメントから導出される。詳細は「# カテゴリの付け方」参照）。
+6. **執筆**: 各ジャンルで、候補の中から**特に重要、または知っておくべきと判断したニュースを 5 件**選び、1 件ずつしっかり要約する。選定基準は〈影響範囲の広さ・技術的インパクト・実務での有用性〉。**選んだ 5 件は、この基準でより重要と判断した順に並べる（ジャンル内の 1 件目が最重要）。** 各トピックは「見出し（記事タイトルをインラインリンクにした H3）＋ 要約 4〜6 文」。**リンク先は必ずその記事・投稿そのものの URL（パーマリンク）にする。** フィード URL や一覧ページ URL（`https://www.reddit.com/r/programming/`、`https://qiita.com/popular-items/feed` など）を貼ってはいけない。パーマリンクは取得したフィードの各エントリが持っている（RSS は `<item><link>`、Atom は `<entry><link href>`、Hacker News API は `url`。`url` が空の Ask HN 等は `https://news.ycombinator.com/item?id=<objectID>`）。エントリから URL が取れなかった記事は、推測で URL を組み立てず**その記事を採用しない**。**URL は書いている記事のエントリから 1 件ずつコピーし、隣の記事のものを貼らないよう確認する。** 貼り違えてもリンク先は正常に開いてしまうため、後から気づく手段がない（実際に 2026-07-20 で、Windows 11 の記事に Gemma 4 の URL が付いていた）。要約には〈何が起きたか・技術的な要点・なぜ重要か〉を含める。**専門用語や横文字はそのまま使わず、平易な言葉に言い換えるか、身近な例え（比喩）を添えて初心者にも分かるように書く**（例:「トークンコスト」→「AIを動かす費用（トークン代）」、「レイテンシ」→「応答までの待ち時間」）。**Mermaid 図（` ```mermaid `コードブロック）は原則入れない。** 文章だけでは構造が掴めないものに限って添える（判断基準は「# Mermaid 図の書き方」参照）。冗長な前置き・締めは書かない。**各記事の H3 見出しの直後の行に `<!-- categories: A, B -->` 形式でカテゴリを 1〜3 個付ける**（サイトの `/categories/` ページがこのコメントから導出される。詳細は「# カテゴリの付け方」参照）。
 7. **書き出し**: `docs/blog/posts/<DATE>.md` に書く（同日再実行は上書き）。先頭に下記スキーマの frontmatter、本文は H2 で 5 ジャンル。空のジャンルはセクションごと省略。
-8. **commit**: `git add docs/ && git commit -m "report: <DATE>"`。push は任意（手動確認のため）。
+8. **校正**: 書いたファイルを読み返し、誤字脱字・変換ミスを直す。特に**外来語がひらがなのまま残っていないか**（`grep -nE '[ぁ-ん]ー' docs/blog/posts/<DATE>.md` で「くろーらー」のような取りこぼしが出る）。観点は [[proofread]] と同じ。
+9. **commit**: `git add docs/ && git commit -m "report: <DATE>"`。push は任意（手動確認のため）。
 
 # レポートのスキーマ
 
@@ -43,7 +44,7 @@ title: "一行ヘッドライン"
 複数のAI（LLMエージェント）が、まるで会社のチームのように役割分担して1つの仕事を進める仕組みが紹介された。誰かが失敗したときにそれを他のメンバーにどう伝えて立て直すかが設計の一番難しいところで、1人で全部やるより段取りは複雑になる。記事では「計画を立てる係」「実際に手を動かす係」「出来栄えをチェックする係」の3人体制の例を示し、チェック役を挟むことで間違った答えが混ざりにくくなったと報告している。
 
 ```mermaid
-flowchart LR
+flowchart TD
     A[計画を立てる係] --> B[実際に手を動かす係]
     B --> C[出来栄えをチェックする係]
     C -- やり直し --> B
@@ -62,6 +63,25 @@ AIが生み出す文章や返答の「できばえ」を、人がいちいち目
 
 クラウド上のAIサービスを使う場合と、自分のパソコン（GPU搭載機）で小さめのAIモデルを動かす場合とで、費用と精度を実際に比べた記事。使う回数がある一定を超えると、自前のパソコンで動かした方が安くなる「損益分岐点」があることが分かった。精度は大規模なクラウドAIには一歩譲るものの、要約や仕分けのような決まったパターンの作業なら十分実用に耐えるという評価だ。データを外部に一切送らずに済むという「情報が漏れない安心感」も、用途によっては大きな決め手になると整理している。
 ````
+
+# Mermaid 図の書き方
+
+## 入れるかどうか
+
+**既定は「入れない」。** 図が要るのは、文章で説明すると読み手が頭の中で組み立てないといけない構造があるときだけ。
+
+- **入れる**: 分岐や合流がある流れ、新旧・従来と提案の対比、複数の登場人物がやり取りする順序
+- **入れない**: A→B→C と一直線に進むだけの手順（文章で足りる）、箇条書きで足りる列挙、図にしても本文の言い換えにしかならないもの
+- 迷ったら入れない。**1 日のレポート全体で 1〜2 個で十分**
+
+## 幅に収める
+
+図は本文の幅（44rem ≒ 704px）に収まらないと縮小され、スマホでは文字が潰れて読めなくなる。**横に広げない**ことが最優先。
+
+- **向きは `flowchart TD`（縦）にする。** `LR` は 4 ノードで本文幅を超える
+- **ノードのラベルは 12 文字程度まで。** 長くなるなら `<br/>` で折る
+- **subgraph や独立したツリーは横に並ぶ。** 縦に積みたいときは `old --> new` のように矢印でつなぐ（`subgraph old["旧方式"]` と id を付ける）
+- 1 つの図にノードを詰め込みすぎない。分岐は 3 本まで
 
 # カテゴリの付け方
 
@@ -93,6 +113,10 @@ AIが生み出す文章や返答の「できばえ」を、人がいちいち目
 - coliss 新着記事 `[RSS]`: https://coliss.com/feed/
 - Findyメディア 新着記事 `[RSS]`: https://api.findy-code.io/rss/media/recent
 - はてブ SRE 検索 `[RSS]`: https://b.hatena.ne.jp/q/sre?date_range=5y&sort=recent&target=all&users=3&mode=rss
+- PC Watch `[RSS]`: https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf
+- クラウド Watch `[RSS]`: https://cloud.watch.impress.co.jp/data/rss/1.0/clw/feed.rdf
+- AI Watch `[RSS]`: https://ai.watch.impress.co.jp/data/rss/1.0/aiw/feed.rdf
+- AKIBA PC Hotline! `[RSS]`: https://akiba-pc.watch.impress.co.jp/data/rss/1.0/ah/feed.rdf
 
 ## 日本 — その他
 - はてなブックマーク - 人気エントリー - 総合 `[RSS]`: https://b.hatena.ne.jp/hotentry/all.rss
@@ -111,10 +135,12 @@ AIが生み出す文章や返答の「できばえ」を、人がいちいち目
 - SRE Weekly `[RSS]`: https://sreweekly.com/feed/
 - Cloudflare Blog `[RSS]`: https://blog.cloudflare.com/rss/
 - CNCF Blog `[RSS]`: https://www.cncf.io/feed/
+- Serve The Home `[RSS]`: https://www.servethehome.com/feed/
+- TLDR (tech) `[RSS]`: https://tldr.tech/api/rss/tech （1 エントリ＝その日のニュースレター 1 号。個別記事の URL を持たないので、号のページを WebFetch して中の記事 URL を採る）
 
 ## Reddit
-取得方法は `# 注意` 参照（WebFetch 不可、curl で取る）。6 サブレディットを `+` で連結した合成フィードを **1 リクエスト**で取る（個別に叩くと 2 本目以降がレート制限で 429 になる）。
-- r/programming + r/ExperiencedDevs + r/MachineLearning + r/LocalLLaMA + r/sre + r/devops `[RSS]`: https://www.reddit.com/r/programming+ExperiencedDevs+MachineLearning+LocalLLaMA+sre+devops/.rss?limit=60
+取得方法は `# 注意` 参照（WebFetch 不可、curl で取る）。8 サブレディットを `+` で連結した合成フィードを **1 リクエスト**で取る（個別に叩くと 2 本目以降がレート制限で 429 になる）。
+- r/programming + r/ExperiencedDevs + r/MachineLearning + r/LocalLLaMA + r/sre + r/devops + r/learnprogramming + r/softwaredevelopment `[RSS]`: https://www.reddit.com/r/programming+ExperiencedDevs+MachineLearning+LocalLLaMA+sre+devops+learnprogramming+softwaredevelopment/.rss?limit=60
 
 ## セキュリティ
 - IPA セキュリティアラート `[HTML]`: https://www.ipa.go.jp/security/security-alert/index.html
