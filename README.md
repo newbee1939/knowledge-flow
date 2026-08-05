@@ -19,18 +19,17 @@ npm run dev
 
 ## コードの構成
 
-markdown が入口で HTML が出口。その間を一方向に流れる。
+markdown と JSON が入口で HTML が出口。その間を一方向に流れる。
 
 ```
 docs/blog/posts/*.md      データ層。Skill だけが書く
-docs/blog/summaries.json  月・年のひとことタイトル。全体＋カテゴリ別（月初に Period Summary が追記）
         ↓
 src/content.config.ts     Content Collections の定義と frontmatter のスキーマ
         ↓
 src/lib/posts.ts          astro:content を触る唯一の場所。壊れていたらビルドを止める
         ↓                 （以降はただの配列・オブジェクト。Astro は登場しない）
 src/lib/*.ts              純粋関数。抽出・集約・整形
-        ↓
+        ↓                 ※ summaries.ts だけは docs/blog/summaries.json を直接 import する
 src/components/*.astro    2 ページ以上で使う見た目の部品
         ↓
 src/pages/*.astro         受け取ったデータを HTML にする
