@@ -1,9 +1,12 @@
-import summaries from '../../docs/blog/summaries.json';
+import summariesJson from '../../docs/blog/summaries.json';
 
-const { overall, categories } = summaries as {
+const {
+	overall,
+	categories,
+}: {
 	overall: Record<string, string>;
 	categories: Record<string, Record<string, string>>;
-};
+} = summariesJson;
 
 interface Period {
 	year: number;
