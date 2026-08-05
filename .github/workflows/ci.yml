@@ -21,7 +21,7 @@ jobs:
       # Action はタグではなくコミットハッシュで固定する。
       # タグは書き換え可能なので、リポジトリが乗っ取られると v7 が別のコミットを指しうる。
       # 末尾のコメントがバージョンの目印で、Dependabot はこれを見て更新 PR を出す。
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # Node のバージョンは .tool-versions が唯一の真実。
       # mise（ローカル）と setup-node（CI）の両方がこのファイルをそのまま読む。
