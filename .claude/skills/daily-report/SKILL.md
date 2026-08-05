@@ -6,8 +6,8 @@ description: 1 日分のテックニュースをジャンル別にまとめ docs
 
 1. **日付**: 今日を JST で `<DATE>`（`YYYY-MM-DD`）に確定。引数で日付を渡されたらそれを優先。
 2. **取得**: `# 情報ソース` の各行の `[TAG]` に従う。`[RSS]`/`[Atom]`/`[HTML]` は WebFetch、`[API]`/`[JSON]` は `curl -s <URL>` + `jq`。取得できなければそのソースはスキップし、`failures.json` を更新する（`# 注意` 参照）。
-3. **日時フィルタ**: 各記事の公開日時（RSS の `pubDate` / Atom の `published` / Hacker News の `created_at` など）を確認し、基準時刻から**24 時間以内**に公開されたものだけを候補に残す。基準時刻は、`<DATE>` が今日なら実行時の現在時刻（JST）、過去日付（バックフィル）ならその日の 23:59:59 JST とする。フィードの日時は UTC 表記が多いため、JST に換算してから比較する。公開日時が取得できない記事・ソースはそのまま残す（判断材料がないため除外しない）。
-4. **重複排除**: URL を正規化（`http`→`https`、`utm_*`/`fbclid`/`gclid` 除去、末尾スラッシュ除去）し、一致するものは 1 件に畳む。**さらに、直近 7 日分の既存レポートに載っている URL は候補から必ず除外する**（同じ記事は 1 度しか載せない）。既出 URL は次で取れる:
+3. **日時フィルタ**: 各記事の公開日時（RSS 2.0 の `pubDate` / RSS 1.0（RDF）の `dc:date` / Atom の `published` / Hacker News の `created_at` など）を確認し、基準時刻から**24 時間以内**に公開されたものだけを候補に残す。基準時刻は、`<DATE>` が今日なら実行時の現在時刻（JST）、過去日付（バックフィル）ならその日の 23:59:59 JST とする。フィードの日時は UTC 表記が多いため、JST に換算してから比較する。公開日時が取得できない記事・ソースはそのまま残す（判断材料がないため除外しない）。
+4. **重複排除**: URL を正規化（`http`→`https`、`utm_*`/`fbclid`/`gclid`/`ref` 除去、末尾スラッシュ除去）し、一致するものは 1 件に畳む。**本文に書く URL も正規化後のものを使う**（フィードが付ける追跡用パラメータをそのまま残すと、翌日以降の重複判定と食い違う）。**さらに、直近 7 日分の既存レポートに載っている URL は候補から必ず除外する**（同じ記事は 1 度しか載せない）。既出 URL は次で取れる:
 
     ```sh
     ls -1 docs/blog/posts/*.md | sort | tail -7 | xargs grep -ho '](https\?://[^)]*)' | tr -d '](' | tr -d ')' | sort -u
@@ -94,6 +94,10 @@ AIが生み出す文章や返答の「できばえ」を、人がいちいち目
 - coliss 新着記事 `[RSS]`: https://coliss.com/feed/
 - Findyメディア 新着記事 `[RSS]`: https://api.findy-code.io/rss/media/recent
 - はてブ SRE 検索 `[RSS]`: https://b.hatena.ne.jp/q/sre?date_range=5y&sort=recent&target=all&users=3&mode=rss
+- PC Watch `[RSS]`: https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf
+- クラウド Watch `[RSS]`: https://cloud.watch.impress.co.jp/data/rss/1.0/clw/feed.rdf
+- AI Watch `[RSS]`: https://ai.watch.impress.co.jp/data/rss/1.0/aiw/feed.rdf
+- AKIBA PC Hotline! `[RSS]`: https://akiba-pc.watch.impress.co.jp/data/rss/1.0/ah/feed.rdf
 
 ## 日本 — その他
 - はてなブックマーク - 人気エントリー - 総合 `[RSS]`: https://b.hatena.ne.jp/hotentry/all.rss
