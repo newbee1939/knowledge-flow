@@ -1,9 +1,14 @@
 name: CI
 
+# リポジトリ直下の *.md（README / TODO / TASK など）はサイトの中身でも実装でもないので CI を回さない。
+# フィルタパターンの `*` は `/` にマッチしないため、`*.md` は直下だけを指す。
+# 記事本体（docs/blog/posts/*.md）はビルド対象なので、これに巻き込まれず今までどおり回る。
 on:
   pull_request:
+    paths-ignore: ['*.md']
   push:
     branches: [main]
+    paths-ignore: ['*.md']
 
 # 同じブランチに続けて push したら、古い実行は打ち切る
 concurrency:

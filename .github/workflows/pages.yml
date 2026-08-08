@@ -8,6 +8,8 @@ name: Deploy Pages
 on:
   push:
     branches: [main]
+    # 直下の *.md（README / TODO / TASK など）は公開物に含まれないのでデプロイしない（ci.yml と同じ方針）
+    paths-ignore: ['*.md']
   workflow_dispatch:
   workflow_run:
     workflows: [Daily Report, Period Summary]
