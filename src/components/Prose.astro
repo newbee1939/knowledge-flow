@@ -1,0 +1,114 @@
+---
+// Markdown から生成される本文の体裁。日次レポートと月・年のまとめ記事で共用する。
+---
+
+<div class="prose"><slot /></div>
+
+<style>
+	.prose {
+		margin-top: var(--space-lg);
+	}
+
+	/* Markdown から生成される本文にはクラスを振れないので :global で当てる。
+	 * 適用範囲は .prose 配下に限定する。 */
+	/* h2 はジャンル名、h3 は記事タイトル。サイズが近いと階層が読めないので、
+	 * h2 はラベル＋罫線にして大きさではなく形で分ける。 */
+	.prose :global(h2) {
+		display: flex;
+		align-items: center;
+		gap: var(--space-md);
+		margin: var(--space-2xl) 0 var(--space-lg);
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		font-weight: 400;
+		letter-spacing: 0.14em;
+		line-height: 1.4;
+		text-transform: uppercase;
+	}
+
+	.prose > :global(h2:first-child) {
+		margin-top: var(--space-xl);
+	}
+
+	.prose :global(h2)::after {
+		content: '';
+		flex: 1;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.prose :global(h3) {
+		margin: var(--space-lg) 0 var(--space-sm);
+		font-size: var(--text-lg);
+		font-weight: 700;
+		line-height: 1.6;
+	}
+
+	.prose :global(h3 a) {
+		text-decoration-color: var(--color-border);
+		text-decoration-thickness: 1px;
+		text-underline-offset: 0.25em;
+	}
+
+	.prose :global(p),
+	.prose :global(ul),
+	.prose :global(ol) {
+		margin: var(--space-sm) 0;
+	}
+
+	.prose :global(li) {
+		margin-block: var(--space-2xs);
+	}
+
+	.prose :global(a) {
+		color: inherit;
+		text-decoration: underline;
+		text-underline-offset: 0.22em;
+		text-decoration-thickness: 1px;
+		text-decoration-color: var(--color-border);
+		transition: text-decoration-color 0.2s ease;
+	}
+
+	.prose :global(a:hover) {
+		color: var(--color-accent);
+		text-decoration-color: var(--color-accent);
+	}
+
+	.prose :global(pre) {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		padding: var(--space-md);
+		overflow-x: auto;
+		font-size: var(--text-sm);
+		line-height: 1.7;
+	}
+
+	.prose :global(:not(pre) > code) {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		padding: 0.05em 0.3em;
+		font-size: 0.85em;
+	}
+
+	/* Mermaid はビルド時にインライン SVG になる（ARCHITECTURE.md の落とし穴 4）。
+	 * 幅の広い図でもページを横に破綻させない。 */
+	.prose :global(svg) {
+		max-width: 100%;
+		height: auto;
+	}
+
+	.prose :global(blockquote) {
+		margin: var(--space-md) 0;
+		border-left: 1px solid var(--color-border);
+		padding-left: var(--space-md);
+		color: var(--color-text-muted);
+	}
+
+	.prose :global(hr) {
+		margin: var(--space-xl) 0;
+		border: 0;
+		border-top: 1px solid var(--color-border);
+	}
+</style>

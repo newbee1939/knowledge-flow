@@ -37,6 +37,27 @@ export async function getPosts() {
 }
 
 /**
+ * 月・年のまとめ記事を返す（期間の新しい順）。
+ *
+ * **id が期間キー（`YYYY-MM` / `YYYY`）でなければビルドを止める。** id はそのまま URL になり、
+ * 年表の年・月ラベルからのリンク先の照合キーにもなる。ずれていても表示は静かにリンク無しへ
+ * 戻るだけで、書いたのにどこからも辿れない記事ができてしまう。
+ */
+export async function getPeriods() {
+	const periods = await getCollection('periods');
+
+	const invalid = periods.find((period) => !/^\d{4}(-\d{2})?$/.test(period.id));
+	if (invalid) {
+		throw new Error(
+			`まとめ記事 ${invalid.id} のファイル名が期間キーになっていません。\n` +
+				'  - docs/blog/periods/ のファイル名は 2026-08.md（月）または 2026.md（年）にしてください。',
+		);
+	}
+
+	return periods.sort((a, b) => b.id.localeCompare(a.id));
+}
+
+/**
  * 全レポートを横断して記事一覧を返す（新しい順）。
  *
  * **同じ URL が 2 記事以上に付いていたらビルドを止める。** この誤りは HTTP 的には

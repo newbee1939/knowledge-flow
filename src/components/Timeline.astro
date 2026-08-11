@@ -1,39 +1,54 @@
 ---
 import { formatDate } from '../lib/date';
+import { getPeriodKey } from '../lib/periods';
 import { getPeriodTitle } from '../lib/summaries';
 import { buildTimeline } from '../lib/timeline';
+import { withBase } from '../lib/url';
 
 // 年 → 月 → 日カード（横スクロール）の年表。トップページとカテゴリページで共用する。
 interface Props {
 	items: { href: string; date: Date; title: string }[];
 	/** 指定するとそのカテゴリのひとことタイトルを引く。省略時はサイト全体のもの */
 	category?: string;
+	/** まとめ記事のある期間キー。渡された期間だけ年・月ラベルがその記事へのリンクになる */
+	periodIds?: string[];
 }
 
-const { items, category } = Astro.props;
+const { items, category, periodIds = [] } = Astro.props;
+
+const getPeriodHref = (year: number, month?: number) => {
+	const key = getPeriodKey({ year, month });
+	return periodIds.includes(key) ? withBase(`periods/${key}/`) : undefined;
+};
 
 // ひとことタイトルはテンプレートで引かず、ここで畳んでおく（同じ呼び出しを 2 度書かない）
 const timeline = buildTimeline(items).map((year) => ({
 	...year,
 	title: getPeriodTitle({ year: year.year, category }),
+	href: getPeriodHref(year.year),
 	months: year.months.map((month) => ({
 		...month,
 		title: getPeriodTitle({ year: year.year, month: month.month, category }),
+		href: getPeriodHref(year.year, month.month),
 	})),
 }));
 ---
 
 {
-	timeline.map(({ year, title: yearTitle, months }) => (
+	timeline.map(({ year, title: yearTitle, href: yearHref, months }) => (
 		<section class="year">
 			<h2 class="year-label">
-				{year}
+				{yearHref ? <a href={yearHref}>{year}</a> : year}
 				{yearTitle && <span class="period-title">{yearTitle}</span>}
 			</h2>
-			{months.map(({ month, title: monthTitle, entries }) => (
+			{months.map(({ month, title: monthTitle, href: monthHref, entries }) => (
 				<section class="month">
 					<h3 class="month-label">
-						{String(month).padStart(2, '0')}
+						{monthHref ? (
+							<a href={monthHref}>{String(month).padStart(2, '0')}</a>
+						) : (
+							String(month).padStart(2, '0')
+						)}
 						{monthTitle && <span class="period-title">{monthTitle}</span>}
 					</h3>
 					<ol class="day-strip">
@@ -67,6 +82,21 @@ const timeline = buildTimeline(items).map((year) => ({
 		font-size: var(--text-xl);
 		font-weight: 500;
 		letter-spacing: 0.02em;
+	}
+
+	/* まとめ記事へのリンク。通常時は年月ラベルの見た目を統一するため下線を出さず、ホバー時だけ出す */
+	.year-label a,
+	.month-label a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.year-label a:hover,
+	.month-label a:hover {
+		color: var(--color-accent);
+		text-decoration: underline;
+		text-underline-offset: 0.25em;
+		text-decoration-thickness: 1px;
 	}
 
 	.month {

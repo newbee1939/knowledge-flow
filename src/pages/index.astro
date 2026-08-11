@@ -2,16 +2,33 @@
 import Timeline from '../components/Timeline.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { formatDate } from '../lib/date';
-import { getPosts } from '../lib/posts';
+import { getPeriodLabel } from '../lib/periods';
+import { getPeriods, getPosts } from '../lib/posts';
 import { withBase } from '../lib/url';
 
 // タイムラインは posts からビルド時に導出する（設計原則 Derived-not-Generated）。
 // docs/blog/posts/ に md を 1 枚足すだけで、コードを変えずにカードが増える。
 const posts = await getPosts();
 const latestPost = posts[0];
+
+// 月・年のまとめ記事は、書かれた日だけ最新記事の上に並べる。翌日のレポートが入れば
+// 自然に消え、以降は年表の年・月ラベル（Timeline.astro）から辿れる。
+const periods = await getPeriods();
+const newPeriods = periods.filter(
+	(period) => period.data.date.getTime() >= latestPost.data.date.getTime(),
+);
 ---
 
 <BaseLayout title="knowledge-flow">
+	{
+		newPeriods.map((period) => (
+			<a class="latest summary" href={withBase(`periods/${period.id}/`)}>
+				<span class="latest-label">Summary</span>
+				<span class="latest-title">{getPeriodLabel(period.id)}</span>
+				<span class="latest-note">{period.data.title}</span>
+			</a>
+		))
+	}
 	<a class="latest" href={withBase(`blog/${latestPost.id}/`)}>
 		<span class="latest-label">Latest Post</span>
 		<h1 class="latest-title">{latestPost.data.title}</h1>
@@ -25,6 +42,7 @@ const latestPost = posts[0];
 			date: post.data.date,
 			title: post.data.title,
 		}))}
+		periodIds={periods.map((period) => period.id)}
 	/>
 </BaseLayout>
 
@@ -48,6 +66,7 @@ const latestPost = posts[0];
 	}
 
 	.latest-title {
+		display: block;
 		margin: var(--space-xs) 0 0;
 		max-width: 26em;
 		font-size: var(--text-2xl);
@@ -61,6 +80,23 @@ const latestPost = posts[0];
 	.latest:hover .latest-title {
 		text-decoration: underline;
 		text-decoration-color: var(--color-accent);
+	}
+
+	/* 月・年のまとめは、書いた日だけ最新記事の上に同じ形で並ぶ。下の罫線は次の
+	 * ブロックの上罫線と重なるので持たせない。 */
+	.summary {
+		border-bottom: none;
+	}
+
+	.summary .latest-label {
+		color: var(--color-accent);
+	}
+
+	.latest-note {
+		display: block;
+		margin-top: var(--space-md);
+		color: var(--color-text-muted);
+		font-size: var(--text-sm);
 	}
 
 	.latest-date {

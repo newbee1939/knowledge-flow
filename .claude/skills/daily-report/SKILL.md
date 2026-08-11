@@ -112,6 +112,7 @@ AIが生み出す文章や返答の「できばえ」を、人がいちいち目
 - Gizmodo JP 新着記事 `[RSS]`: https://www.gizmodo.jp/feed/index.xml
 - coliss 新着記事 `[RSS]`: https://coliss.com/feed/
 - Findyメディア 新着記事 `[RSS]`: https://api.findy-code.io/rss/media/recent
+- レバテックLAB 新着記事 `[RSS]`: https://levtech.jp/media/rss
 - はてブ SRE 検索 `[RSS]`: https://b.hatena.ne.jp/q/sre?date_range=5y&sort=recent&target=all&users=3&mode=rss
 - PC Watch `[RSS]`: https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf
 - クラウド Watch `[RSS]`: https://cloud.watch.impress.co.jp/data/rss/1.0/clw/feed.rdf
