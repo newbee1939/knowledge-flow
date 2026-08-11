@@ -17,4 +17,14 @@ const posts = defineCollection({
 	}),
 });
 
-export const collections = { posts };
+// 月・年のまとめ記事。id は期間キー（`2026-08` / `2026`）で、date は生成日
+// （まとめた期間ではなく書いた日。トップページはこの日付の間だけ新着リンクを出す）。
+const periods = defineCollection({
+	loader: glob({ base: './docs/blog/periods', pattern: '*.md' }),
+	schema: z.object({
+		date: z.coerce.date(),
+		title: z.string(),
+	}),
+});
+
+export const collections = { posts, periods };

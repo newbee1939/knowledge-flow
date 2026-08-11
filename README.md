@@ -23,6 +23,7 @@ markdown と JSON が入口で HTML が出口。その間を一方向に流れ�
 
 ```
 docs/blog/posts/*.md      データ層。Skill だけが書く
+docs/blog/periods/*.md    月・年のまとめ記事（ファイル名が期間キー: 2026-08.md / 2026.md）
         ↓
 src/content.config.ts     Content Collections の定義と frontmatter のスキーマ
         ↓
@@ -43,10 +44,11 @@ src/pages/*.astro         受け取ったデータを HTML にする
 
 | `src/lib/` | 役割 |
 |---|---|
-| `posts.ts` | コレクションの取得と検証。**唯一の I/O 境界** |
+| `posts.ts` | コレクション（レポート・まとめ記事）の取得と検証。**唯一の I/O 境界** |
 | `articles.ts` | 日次レポート本文から記事（H3 見出し 1 つ）を抽出 |
 | `categories.ts` | 記事をカテゴリ別に集約 |
 | `timeline.ts` | `date` を持つ列を年 → 月に集約（トップとカテゴリページで共用） |
+| `periods.ts` | 期間キー（`2026-08` / `2026`）の組み立てと表示名 |
 | `summaries.ts` | 月・年のひとことタイトル（サイト全体／カテゴリ別）を `docs/blog/summaries.json` から引く |
 | `date.ts` | 表示用の `YYYY-MM-DD`（UTC）整形 |
 | `url.ts` | `base` 込みのサイト内リンク組み立て |
@@ -54,7 +56,8 @@ src/pages/*.astro         受け取ったデータを HTML にする
 
 | `src/components/` | 役割 |
 |---|---|
-| `Timeline.astro` | 年 → 月 → 日カード（横スクロール）の年表。ひとことタイトルの解決もここで畳む |
+| `Timeline.astro` | 年 → 月 → 日カード（横スクロール）の年表。ひとことタイトルとまとめ記事へのリンクの解決もここで畳む |
+| `Prose.astro` | Markdown 本文の体裁（日次レポートとまとめ記事で共用） |
 
 **部品を切り出すのは 2 ページ目で同じものが要るとき。** 1 ページでしか使わないマークアップは `.astro` に置いたままにする。`Timeline.astro` はトップとカテゴリページで同じ年表を出す必要が生まれて切り出した（`category` を渡すかどうかだけが違う）。
 
@@ -65,7 +68,7 @@ src/pages/*.astro         受け取ったデータを HTML にする
 | Skill | 実行 | 書き込み先 |
 |---|---|---|
 | `/daily-report` | `daily-report.yml`（毎日 cron） | `docs/blog/posts/<DATE>.md` |
-| `/period-summary` | `period-summary.yml`（月初 cron） | `docs/blog/summaries.json` |
+| `/period-summary` | `period-summary.yml`（月初 cron） | `docs/blog/periods/<期間>.md`、`docs/blog/summaries.json` |
 | `/proofread` | 手動 | `docs/blog/posts/*.md` の誤字修正 |
 
 手順・執筆ルールは各 `.claude/skills/<name>/SKILL.md` が唯一の真実。README には転記しない。

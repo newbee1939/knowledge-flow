@@ -1,4 +1,5 @@
 import summariesJson from '../../docs/blog/summaries.json';
+import { periodKey } from './periods';
 
 const {
 	overall,
@@ -23,7 +24,7 @@ interface Period {
  * （.claude/skills/period-summary/SKILL.md）。まだ書かれていない期間は undefined。
  */
 export function getPeriodTitle({ year, month, category }: Period): string | undefined {
-	const key = month === undefined ? String(year) : `${year}-${String(month).padStart(2, '0')}`;
+	const key = periodKey({ year, month });
 	const titles = category === undefined ? overall : (categories[category] ?? {});
 	return titles[key];
 }

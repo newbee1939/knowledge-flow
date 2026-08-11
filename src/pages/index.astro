@@ -2,13 +2,20 @@
 import Timeline from '../components/Timeline.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { formatDate } from '../lib/date';
-import { getPosts } from '../lib/posts';
+import { periodLabel } from '../lib/periods';
+import { getPeriods, getPosts } from '../lib/posts';
 import { withBase } from '../lib/url';
 
 // タイムラインは posts からビルド時に導出する（設計原則 Derived-not-Generated）。
 // docs/blog/posts/ に md を 1 枚足すだけで、コードを変えずにカードが増える。
 const posts = await getPosts();
 const latestPost = posts[0];
+
+// 月・年のまとめ記事は、書かれた日だけ最新記事の下に並べる。翌日のレポートが入れば
+// 自然に消え、以降は年表の年・月ラベル（Timeline.astro）から辿れる。
+const newPeriods = (await getPeriods()).filter(
+	(period) => period.data.date.getTime() >= latestPost.data.date.getTime(),
+);
 ---
 
 <BaseLayout title="knowledge-flow">
@@ -19,6 +26,19 @@ const latestPost = posts[0];
 			{formatDate(latestPost.data.date)}
 		</time>
 	</a>
+	{
+		newPeriods.length > 0 && (
+			<ul class="new-periods">
+				{newPeriods.map((period) => (
+					<li>
+						<a href={withBase(`periods/${period.id}/`)} title={period.data.title}>
+							{periodLabel(period.id)}
+						</a>
+					</li>
+				))}
+			</ul>
+		)
+	}
 	<Timeline
 		items={posts.map((post) => ({
 			href: withBase(`blog/${post.id}/`),
@@ -60,6 +80,29 @@ const latestPost = posts[0];
 
 	.latest:hover .latest-title {
 		text-decoration: underline;
+		text-decoration-color: var(--color-accent);
+	}
+
+	.new-periods {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-md);
+		margin: var(--space-md) 0 0;
+		padding: 0;
+		list-style: none;
+		font-size: var(--text-sm);
+	}
+
+	.new-periods a {
+		color: inherit;
+		text-decoration: underline;
+		text-decoration-color: var(--color-border);
+		text-underline-offset: 0.22em;
+		text-decoration-thickness: 1px;
+	}
+
+	.new-periods a:hover {
+		color: var(--color-accent);
 		text-decoration-color: var(--color-accent);
 	}
 
