@@ -11,9 +11,10 @@ import { withBase } from '../lib/url';
 const posts = await getPosts();
 const latestPost = posts[0];
 
-// 月・年のまとめ記事は、書かれた日だけ最新記事の下に並べる。翌日のレポートが入れば
+// 月・年のまとめ記事は、書かれた日だけ最新記事の上に並べる。翌日のレポートが入れば
 // 自然に消え、以降は年表の年・月ラベル（Timeline.astro）から辿れる。
-const newPeriods = (await getPeriods()).filter(
+const periods = await getPeriods();
+const newPeriods = periods.filter(
 	(period) => period.data.date.getTime() >= latestPost.data.date.getTime(),
 );
 ---
@@ -41,6 +42,7 @@ const newPeriods = (await getPeriods()).filter(
 			date: post.data.date,
 			title: post.data.title,
 		}))}
+		periodIds={periods.map((period) => period.id)}
 	/>
 </BaseLayout>
 

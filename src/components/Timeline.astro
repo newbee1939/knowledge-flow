@@ -1,7 +1,6 @@
 ---
 import { formatDate } from '../lib/date';
 import { getPeriodKey } from '../lib/periods';
-import { getPeriods } from '../lib/posts';
 import { getPeriodTitle } from '../lib/summaries';
 import { buildTimeline } from '../lib/timeline';
 import { withBase } from '../lib/url';
@@ -11,16 +10,16 @@ interface Props {
 	items: { href: string; date: Date; title: string }[];
 	/** 指定するとそのカテゴリのひとことタイトルを引く。省略時はサイト全体のもの */
 	category?: string;
+	/** まとめ記事のある期間キー。渡された期間だけ年・月ラベルがその記事へのリンクになる */
+	periodIds?: string[];
 }
 
-const { items, category } = Astro.props;
+const { items, category, periodIds = [] } = Astro.props;
 
-// まとめ記事のある期間は、年・月ラベル自体をその記事へのリンクにする。
-// まとめはサイト全体を対象に書かれるため、カテゴリページでは貼らない。
-const periodIds = new Set(category === undefined ? (await getPeriods()).map((p) => p.id) : []);
+const linkedPeriods = new Set(periodIds);
 const getPeriodHref = (year: number, month?: number) => {
 	const key = getPeriodKey({ year, month });
-	return periodIds.has(key) ? withBase(`periods/${key}/`) : undefined;
+	return linkedPeriods.has(key) ? withBase(`periods/${key}/`) : undefined;
 };
 
 // ひとことタイトルはテンプレートで引かず、ここで畳んでおく（同じ呼び出しを 2 度書かない）
