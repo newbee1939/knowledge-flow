@@ -3,7 +3,7 @@ import { render } from 'astro:content';
 import Prose from '../../components/Prose.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { formatDate } from '../../lib/date';
-import { periodLabel } from '../../lib/periods';
+import { getPeriodLabel } from '../../lib/periods';
 import { getPeriods } from '../../lib/posts';
 
 export async function getStaticPaths() {
@@ -21,7 +21,7 @@ const { Content } = await render(period);
 <BaseLayout title={period.data.title}>
 	<article class="post">
 		<header class="post-header">
-			<span class="post-period">{periodLabel(period.id)}</span>
+			<span class="post-period">{getPeriodLabel(period.id)}</span>
 			<h1>{period.data.title}</h1>
 			<time datetime={period.data.date.toISOString()}>{formatDate(period.data.date)}</time>
 		</header>

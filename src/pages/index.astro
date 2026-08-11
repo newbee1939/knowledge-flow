@@ -2,7 +2,7 @@
 import Timeline from '../components/Timeline.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { formatDate } from '../lib/date';
-import { periodLabel } from '../lib/periods';
+import { getPeriodLabel } from '../lib/periods';
 import { getPeriods, getPosts } from '../lib/posts';
 import { withBase } from '../lib/url';
 
@@ -23,7 +23,7 @@ const newPeriods = (await getPeriods()).filter(
 		newPeriods.map((period) => (
 			<a class="latest summary" href={withBase(`periods/${period.id}/`)}>
 				<span class="latest-label">Summary</span>
-				<span class="latest-title">{periodLabel(period.id)}</span>
+				<span class="latest-title">{getPeriodLabel(period.id)}</span>
 				<span class="latest-note">{period.data.title}</span>
 			</a>
 		))
