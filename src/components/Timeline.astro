@@ -16,10 +16,9 @@ interface Props {
 
 const { items, category, periodIds = [] } = Astro.props;
 
-const linkedPeriods = new Set(periodIds);
 const getPeriodHref = (year: number, month?: number) => {
 	const key = getPeriodKey({ year, month });
-	return linkedPeriods.has(key) ? withBase(`periods/${key}/`) : undefined;
+	return periodIds.includes(key) ? withBase(`periods/${key}/`) : undefined;
 };
 
 // ひとことタイトルはテンプレートで引かず、ここで畳んでおく（同じ呼び出しを 2 度書かない）
