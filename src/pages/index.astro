@@ -19,6 +19,21 @@ const newPeriods = (await getPeriods()).filter(
 ---
 
 <BaseLayout title="knowledge-flow">
+	{
+		newPeriods.length > 0 && (
+			<ul class="summaries">
+				{newPeriods.map((period) => (
+					<li class="summary">
+						<a href={withBase(`periods/${period.id}/`)}>
+							<span class="summary-kicker">Summary</span>
+							<span class="summary-label">{periodLabel(period.id)}</span>
+							<span class="summary-title">{period.data.title}</span>
+						</a>
+					</li>
+				))}
+			</ul>
+		)
+	}
 	<a class="latest" href={withBase(`blog/${latestPost.id}/`)}>
 		<span class="latest-label">Latest Post</span>
 		<h1 class="latest-title">{latestPost.data.title}</h1>
@@ -26,19 +41,6 @@ const newPeriods = (await getPeriods()).filter(
 			{formatDate(latestPost.data.date)}
 		</time>
 	</a>
-	{
-		newPeriods.length > 0 && (
-			<ul class="new-periods">
-				{newPeriods.map((period) => (
-					<li>
-						<a href={withBase(`periods/${period.id}/`)} title={period.data.title}>
-							{periodLabel(period.id)}
-						</a>
-					</li>
-				))}
-			</ul>
-		)
-	}
 	<Timeline
 		items={posts.map((post) => ({
 			href: withBase(`blog/${post.id}/`),
@@ -83,27 +85,64 @@ const newPeriods = (await getPeriods()).filter(
 		text-decoration-color: var(--color-accent);
 	}
 
-	.new-periods {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-md);
+	/* 月・年のまとめは書いた日だけ最上段に出る特別枠。日次レポートの見出しに埋もれないよう、
+	 * ここだけアクセント色の帯を敷いて紙面のトップ記事のように扱う。 */
+	.summaries {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+		gap: var(--space-sm);
 		margin: var(--space-md) 0 0;
 		padding: 0;
 		list-style: none;
-		font-size: var(--text-sm);
 	}
 
-	.new-periods a {
-		color: inherit;
+	.summary a {
+		display: block;
+		height: 100%;
+		border: 1px solid var(--color-border);
+		border-top: 3px solid var(--color-accent);
+		border-radius: var(--radius);
+		padding: var(--space-md) var(--space-md) var(--space-lg);
+		background: var(--color-surface);
+		text-decoration: none;
+		transition: border-color 0.2s ease;
+	}
+
+	.summary a:hover {
+		border-color: var(--color-accent);
+	}
+
+	.summary-kicker {
+		display: block;
+		color: var(--color-accent);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	.summary-label {
+		display: block;
+		margin-top: var(--space-2xs);
+		font-size: var(--text-xl);
+		font-weight: 700;
+		letter-spacing: -0.01em;
+		line-height: 1.4;
+	}
+
+	.summary a:hover .summary-label {
 		text-decoration: underline;
-		text-decoration-color: var(--color-border);
-		text-underline-offset: 0.22em;
+		text-decoration-color: var(--color-accent);
+		text-underline-offset: 0.18em;
 		text-decoration-thickness: 1px;
 	}
 
-	.new-periods a:hover {
-		color: var(--color-accent);
-		text-decoration-color: var(--color-accent);
+	.summary-title {
+		display: block;
+		margin-top: var(--space-xs);
+		color: var(--color-text-muted);
+		font-size: var(--text-sm);
+		line-height: 1.75;
 	}
 
 	.latest-date {
