@@ -20,19 +20,13 @@ const newPeriods = (await getPeriods()).filter(
 
 <BaseLayout title="knowledge-flow">
 	{
-		newPeriods.length > 0 && (
-			<ul class="summaries">
-				{newPeriods.map((period) => (
-					<li class="summary">
-						<a href={withBase(`periods/${period.id}/`)}>
-							<span class="summary-kicker">Summary</span>
-							<span class="summary-label">{periodLabel(period.id)}</span>
-							<span class="summary-title">{period.data.title}</span>
-						</a>
-					</li>
-				))}
-			</ul>
-		)
+		newPeriods.map((period) => (
+			<a class="latest summary" href={withBase(`periods/${period.id}/`)}>
+				<span class="latest-label">Summary</span>
+				<span class="latest-title">{periodLabel(period.id)}</span>
+				<span class="latest-note">{period.data.title}</span>
+			</a>
+		))
 	}
 	<a class="latest" href={withBase(`blog/${latestPost.id}/`)}>
 		<span class="latest-label">Latest Post</span>
@@ -70,6 +64,7 @@ const newPeriods = (await getPeriods()).filter(
 	}
 
 	.latest-title {
+		display: block;
 		margin: var(--space-xs) 0 0;
 		max-width: 26em;
 		font-size: var(--text-2xl);
@@ -85,64 +80,21 @@ const newPeriods = (await getPeriods()).filter(
 		text-decoration-color: var(--color-accent);
 	}
 
-	/* 月・年のまとめは書いた日だけ最上段に出る特別枠。日次レポートの見出しに埋もれないよう、
-	 * ここだけアクセント色の帯を敷いて紙面のトップ記事のように扱う。 */
-	.summaries {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-		gap: var(--space-sm);
-		margin: var(--space-md) 0 0;
-		padding: 0;
-		list-style: none;
+	/* 月・年のまとめは、書いた日だけ最新記事の上に同じ形で並ぶ。下の罫線は次の
+	 * ブロックの上罫線と重なるので持たせない。 */
+	.summary {
+		border-bottom: none;
 	}
 
-	.summary a {
-		display: block;
-		height: 100%;
-		border: 1px solid var(--color-border);
-		border-top: 3px solid var(--color-accent);
-		border-radius: var(--radius);
-		padding: var(--space-md) var(--space-md) var(--space-lg);
-		background: var(--color-surface);
-		text-decoration: none;
-		transition: border-color 0.2s ease;
-	}
-
-	.summary a:hover {
-		border-color: var(--color-accent);
-	}
-
-	.summary-kicker {
-		display: block;
+	.summary .latest-label {
 		color: var(--color-accent);
-		font-family: var(--font-mono);
-		font-size: var(--text-xs);
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
 	}
 
-	.summary-label {
+	.latest-note {
 		display: block;
-		margin-top: var(--space-2xs);
-		font-size: var(--text-xl);
-		font-weight: 700;
-		letter-spacing: -0.01em;
-		line-height: 1.4;
-	}
-
-	.summary a:hover .summary-label {
-		text-decoration: underline;
-		text-decoration-color: var(--color-accent);
-		text-underline-offset: 0.18em;
-		text-decoration-thickness: 1px;
-	}
-
-	.summary-title {
-		display: block;
-		margin-top: var(--space-xs);
+		margin-top: var(--space-md);
 		color: var(--color-text-muted);
 		font-size: var(--text-sm);
-		line-height: 1.75;
 	}
 
 	.latest-date {
