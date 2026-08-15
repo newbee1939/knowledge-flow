@@ -104,6 +104,7 @@ AIが生み出す文章や返答の「できばえ」を、人がいちいち目
 ## 日本 — テック
 - はてなブックマーク - 人気エントリー - テクノロジー `[RSS]`: https://b.hatena.ne.jp/hotentry/it.rss
 - Publickey 新着記事 `[Atom]`: https://www.publickey1.jp/atom.xml
+- gihyo.jp 新着記事 `[Atom]`: https://gihyo.jp/feed/atom
 - Qiita 人気記事 `[RSS]`: https://qiita.com/popular-items/feed
 - Zenn トレンド記事 `[RSS]`: https://zenn.dev/feed
 - ITmedia 最新記事 `[RSS]`: https://rss.itmedia.co.jp/rss/2.0/topstory.xml
@@ -118,6 +119,13 @@ AIが生み出す文章や返答の「できばえ」を、人がいちいち目
 - クラウド Watch `[RSS]`: https://cloud.watch.impress.co.jp/data/rss/1.0/clw/feed.rdf
 - AI Watch `[RSS]`: https://ai.watch.impress.co.jp/data/rss/1.0/aiw/feed.rdf
 - AKIBA PC Hotline! `[RSS]`: https://akiba-pc.watch.impress.co.jp/data/rss/1.0/ah/feed.rdf
+- ASCII.jp トップ `[RSS]`: https://ascii.jp/rss.xml
+- ASCII.jp 自作PC `[RSS]`: https://ascii.jp/pc/rss.xml
+
+## 日本 — 企業テックブログ
+- DevelopersIO（クラスメソッド）`[RSS]`: https://dev.classmethod.jp/feed/
+- メルカリエンジニアリングブログ `[RSS]`: https://engineering.mercari.com/blog/feed.xml
+- LINEヤフー Tech Blog `[RSS]`: https://techblog.lycorp.co.jp/ja/feed/index.xml
 
 ## 日本 — その他
 - はてなブックマーク - 人気エントリー - 総合 `[RSS]`: https://b.hatena.ne.jp/hotentry/all.rss
