@@ -16,6 +16,7 @@ npm run dev
 - `npm run lint` — Biome によるフォーマット・静的解析
 - `npm run test` — Vitest
 - `npm run build` — Astro ビルド
+- `npm run articles` — 過去レポートの記事索引を TSV で出力（日次レポート生成 Skill が過去の言及を引くのに使う）
 
 ## コードの構成
 
@@ -47,12 +48,13 @@ src/pages/*.astro         受け取ったデータを HTML にする
 | `posts.ts` | コレクション（レポート・まとめ記事）の取得と検証。**唯一の I/O 境界** |
 | `articles.ts` | 日次レポート本文から記事（H3 見出し 1 つ）を抽出 |
 | `categories.ts` | 記事をカテゴリ別に集約 |
+| `related.ts` | 記事ごとに、カテゴリを共有する過去の記事を引く（レポート末尾の「この日の話題の続き」） |
 | `timeline.ts` | `date` を持つ列を年 → 月に集約（トップとカテゴリページで共用） |
 | `periods.ts` | 期間キー（`2026-08` / `2026`）の組み立てと表示名 |
 | `summaries.ts` | 月・年のひとことタイトル（サイト全体／カテゴリ別）を `docs/blog/summaries.json` から引く |
 | `date.ts` | 表示用の `YYYY-MM-DD`（UTC）整形 |
 | `url.ts` | `base` 込みのサイト内リンク組み立て |
-| `rehypeExternalLinks.ts` | 本文の外部リンクに `target` / `rel` を付与（`astro.config.mjs` から使う） |
+| `rehypeLinks.ts` | 本文の外部リンクに `target` / `rel` を付与し、サイト内リンク（`/blog/...`）に `base` を前置（`astro.config.mjs` から使う） |
 
 | `src/components/` | 役割 |
 |---|---|

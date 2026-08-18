@@ -11,6 +11,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "test": "vitest run",
+    "articles": "node scripts/articles-index.ts",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "postinstall": "playwright install --only-shell chromium"
