@@ -3,17 +3,20 @@ import { render } from 'astro:content';
 import Prose from '../../components/Prose.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { formatDate } from '../../lib/date';
-import { getPosts } from '../../lib/posts';
+import { getArticles, getPosts } from '../../lib/posts';
+import { collectRelated } from '../../lib/related';
+import { withBase } from '../../lib/url';
 
 export async function getStaticPaths() {
 	const posts = await getPosts();
+	const articles = await getArticles();
 	return posts.map((post) => ({
 		params: { slug: post.id },
-		props: { post },
+		props: { post, related: collectRelated(articles, post.id) },
 	}));
 }
 
-const { post } = Astro.props;
+const { post, related } = Astro.props;
 
 // rehype-mermaid の描画に失敗すると、Astro の glob loader はエラーをログに出すだけで
 // 本文を空のまま握りつぶし、ビルドは exit 0 で成功してしまう（Mermaid 構文エラーなどが
@@ -38,6 +41,34 @@ const { Content } = await render(post);
 		<Prose>
 			<Content />
 		</Prose>
+		{
+			related.length > 0 && (
+				<section class="related">
+					<h2>この日の話題の続き</h2>
+					<ul>
+						{related.map((group) => (
+							<li>
+								<a class="related-source" href={`#${group.article.anchor}`}>
+									{group.article.title}
+								</a>
+								<ul>
+									{group.related.map((article) => (
+										<li>
+											<time datetime={article.date.toISOString()}>
+												{formatDate(article.date)}
+											</time>
+											<a href={withBase(`blog/${article.postId}/#${article.anchor}`)}>
+												{article.title}
+											</a>
+										</li>
+									))}
+								</ul>
+							</li>
+						))}
+					</ul>
+				</section>
+			)
+		}
 	</article>
 </BaseLayout>
 
@@ -60,5 +91,60 @@ const { Content } = await render(post);
 		font-weight: 700;
 		line-height: 1.55;
 		letter-spacing: -0.01em;
+	}
+
+	.related {
+		margin-top: var(--space-2xl);
+		border-top: 1px solid var(--color-border);
+		padding-top: var(--space-lg);
+	}
+
+	.related h2 {
+		margin: 0 0 var(--space-md);
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		font-weight: 500;
+		color: var(--color-text-muted);
+	}
+
+	.related ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.related > ul > li + li {
+		margin-top: var(--space-md);
+	}
+
+	.related-source {
+		font-size: var(--text-sm);
+		font-weight: 700;
+		text-decoration: none;
+		color: var(--color-text);
+	}
+
+	.related ul ul {
+		margin-top: var(--space-2xs);
+		border-left: 1px solid var(--color-border);
+		padding-left: var(--space-sm);
+	}
+
+	.related ul ul li {
+		display: flex;
+		gap: var(--space-xs);
+		font-size: var(--text-sm);
+		line-height: 1.9;
+	}
+
+	.related time {
+		flex-shrink: 0;
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+	}
+
+	.related a:hover {
+		color: var(--color-accent);
 	}
 </style>
