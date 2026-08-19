@@ -163,6 +163,7 @@ grep -iE 'Microsoft|Windows|DRAM|メモリ' /tmp/kf-index.tsv
 ## 海外
 - Hacker News front page `[API]`: https://hn.algolia.com/api/v1/search?tags=front_page
 - Lobsters `[RSS]`: https://lobste.rs/rss
+- Techmeme `[RSS]`: https://www.techmeme.com/feed.xml
 - TechCrunch `[RSS]`: https://techcrunch.com/feed/
 - Dev.to `[RSS]`: https://dev.to/feed/
 - HackerNoon `[RSS]`: https://hackernoon.com/feed （WebFetch 不可、`# 注意` 参照）

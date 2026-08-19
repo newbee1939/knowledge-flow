@@ -101,3 +101,28 @@ h3 {
 ::selection {
 	background: color-mix(in srgb, var(--color-accent) 22%, transparent);
 }
+
+/* スクロールバーは枠線と同じ色にして、内容の一部に見えないよう細くする。
+ * Firefox は scrollbar-*、WebKit/Blink は ::-webkit-scrollbar と、どちらも指定が要る。 */
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--color-border) transparent;
+}
+
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--color-border);
+	border-radius: var(--radius);
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: var(--color-text-muted);
+}
