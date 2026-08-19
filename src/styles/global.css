@@ -105,8 +105,11 @@ h3 {
 /* スクロールバーは読むものではなく操作部品。1px の罫線で区切るこのサイトでは
  * OS 既定の太い帯が区切り線より目立つので、細く・枠線と同色にして沈める。
  *
- * 指定が 2 系統あるのは、下の ::-webkit-scrollbar を Firefox が解さないため。
- * 逆に太さやホバー色まで指定できるのは ::-webkit- 側だけなので、両方書く。 */
+ * 見た目の変え方はブラウザで 2 通りあり、片方だけでは全ブラウザを賄えないので両方書く。
+ *   - scrollbar-width / scrollbar-color: 標準の書き方。Firefox はこれしか読まないが、
+ *     太さは thin/auto、色は 2 色までしか指定できない
+ *   - ::-webkit-scrollbar: Chrome / Safari 独自の書き方。8px やホバー色まで指定できるが、
+ *     Firefox は丸ごと無視する */
 * {
 	scrollbar-width: thin;
 	scrollbar-color: var(--color-border) transparent;
