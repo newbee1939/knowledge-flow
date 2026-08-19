@@ -102,7 +102,9 @@ h3 {
 	background: color-mix(in srgb, var(--color-accent) 22%, transparent);
 }
 
-/* スクロールバーは枠線と同じ色にして、内容の一部に見えないよう細くする。
+/* スクロールバーは読むものではなく操作部品。OS 既定の太い帯のままだと、
+ * 1px の罫線で区切っているこのサイトではカードの区切り線より目立ってしまうので、
+ * 細く・枠線と同色にして背景に沈める。
  * Firefox は scrollbar-*、WebKit/Blink は ::-webkit-scrollbar と、どちらも指定が要る。 */
 * {
 	scrollbar-width: thin;
