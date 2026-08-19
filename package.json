@@ -13,6 +13,7 @@
     "test": "vitest run",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
+    "articles": "node scripts/articles-index.ts",
     "postinstall": "playwright install --only-shell chromium"
   },
   "dependencies": {

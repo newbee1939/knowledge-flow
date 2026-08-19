@@ -3,6 +3,7 @@ import { unified } from '@astrojs/markdown-remark';
 import { defineConfig } from 'astro/config';
 import rehypeMermaid from 'rehype-mermaid';
 import { rehypeExternalLinks } from './src/lib/rehypeExternalLinks.ts';
+import { rehypeInternalLinks } from './src/lib/rehypeInternalLinks.ts';
 
 // mermaid の既定テーマは薄紫・arial で、サイトの配色（モノクロ、青を使わない）と合わない。
 // 図はビルド時に SVG へ焼かれるため、色を実値で書くとダークモードに追従できない。
@@ -42,9 +43,11 @@ const mermaidConfig = {
 
 // GitHub Pages はプロジェクトページとして https://<user>.github.io/<repo>/ で公開される。
 // site と base を設定しないと、本番だけ CSS と画像が 404 になる（ARCHITECTURE.md の落とし穴 3）。
+const base = '/knowledge-flow';
+
 export default defineConfig({
 	site: 'https://newbee1939.github.io',
-	base: '/knowledge-flow',
+	base,
 	markdown: {
 		// mermaid 図をビルド時にインライン SVG へ変換する。クライアント JS を配らない
 		// （ARCHITECTURE.md の落とし穴 4）。既定の 'inline-svg' 戦略をそのまま使う。
@@ -57,8 +60,15 @@ export default defineConfig({
 		},
 		// 記事内の外部リンク（元記事へのリンクなど）は新しいタブで開く。
 		// サイト内リンクは対象外。rehypeExternalLinks の詳細は src/lib/rehypeExternalLinks.ts
+		//
+		// 記事本文に書いたサイト内リンク（`/blog/…`）には base を付ける。
+		// 詳細は src/lib/rehypeInternalLinks.ts
 		processor: unified({
-			rehypePlugins: [[rehypeMermaid, { mermaidConfig }], rehypeExternalLinks],
+			rehypePlugins: [
+				[rehypeMermaid, { mermaidConfig }],
+				rehypeExternalLinks,
+				[rehypeInternalLinks, base],
+			],
 		}),
 	},
 });

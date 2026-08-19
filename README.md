@@ -16,6 +16,7 @@ npm run dev
 - `npm run lint` — Biome によるフォーマット・静的解析
 - `npm run test` — Vitest
 - `npm run build` — Astro ビルド
+- `npm run articles` — 全記事の索引を TSV で出力（daily-report skill が関連する過去記事を探すために使う。サイトのビルドには関与しない）
 
 ## コードの構成
 
