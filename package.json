@@ -13,6 +13,7 @@
     "test": "vitest run",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
+    "articles": "node scripts/articles-index.ts",
     "postinstall": "playwright install --only-shell chromium"
   },
   "dependencies": {
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.6",
+    "@types/node": "24.13.3",
     "vitest": "4.1.10"
   },
   "allowScripts": {
