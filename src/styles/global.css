@@ -102,10 +102,11 @@ h3 {
 	background: color-mix(in srgb, var(--color-accent) 22%, transparent);
 }
 
-/* スクロールバーは読むものではなく操作部品。OS 既定の太い帯のままだと、
- * 1px の罫線で区切っているこのサイトではカードの区切り線より目立ってしまうので、
- * 細く・枠線と同色にして背景に沈める。
- * Firefox は scrollbar-*、WebKit/Blink は ::-webkit-scrollbar と、どちらも指定が要る。 */
+/* スクロールバーは読むものではなく操作部品。1px の罫線で区切るこのサイトでは
+ * OS 既定の太い帯が区切り線より目立つので、細く・枠線と同色にして沈める。
+ *
+ * 指定が 2 系統あるのは、下の ::-webkit-scrollbar を Firefox が解さないため。
+ * 逆に太さやホバー色まで指定できるのは ::-webkit- 側だけなので、両方書く。 */
 * {
 	scrollbar-width: thin;
 	scrollbar-color: var(--color-border) transparent;
