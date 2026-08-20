@@ -56,3 +56,8 @@
 - リポジトリへのリンクを表示する
 - コードのアーキテクチャをリファクタリング
 - 目次表示機能
+- ワークロード ID フェデレーション（WIF）の導入
+    - https://platform.claude.com/settings/workload-identity-federation
+    - GitHub Actions が発行する OIDC トークンを短命な Anthropic アクセストークンに交換する仕組み。長期有効な `sk-ant-...` を secrets に置かずに済む
+    - 対象は `secrets.ANTHROPIC_API_KEY`（daily-report / period-summary のフォールバック）。`CLAUDE_CODE_OAUTH_TOKEN` 側が WIF に対応するかは要確認
+    - 手順: Console の Settings → Workload identity で GitHub Actions を選び、issuer 登録 → サービスアカウント作成 → フェデレーションルール作成
