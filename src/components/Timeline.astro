@@ -159,11 +159,15 @@ const timeline = buildTimeline(items).map((year) => ({
 		border-left: 1px solid var(--color-border);
 		padding: var(--space-2xs) var(--space-md) var(--space-xs);
 		text-decoration: none;
-		transition: border-color 0.2s ease;
+		transition:
+			border-color 0.2s ease,
+			background-color 0.2s ease;
 	}
 
+	/* ホバー中のカードを面で示す。罫線の色だけだと、横に並ぶカードのどれを指しているか分かりにくい */
 	.day-card a:hover {
 		border-left-color: var(--color-accent);
+		background: var(--color-surface);
 	}
 
 	.day-card a:hover .day-title {
