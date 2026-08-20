@@ -1,0 +1,89 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const REPO_URL = 'https://github.com/newbee1939/knowledge-flow';
+---
+
+<BaseLayout title="About | knowledge-flow" description="このサイトの成り立ちと、記事の引用・掲載方針">
+	<div class="page">
+		<h1>About</h1>
+
+		<h2>コンセプト</h2>
+		<p>
+			テックニュースは、いつも「点」で流れてきます。今日読んだ発表が過去のどの動きの続きなのか、その技術がどんな経緯で今の形になったのか。一つひとつの記事を追うだけでは、そこが見えてきません。読んだ量のわりに何も積み上がらない、という感覚がこのサイトの出発点です。
+		</p>
+		<p>
+			knowledge-flow は、公開されているテックニュースを 1 日 1 本のレポートにまとめ、年 → 月 → 日のタイムラインに並べます。日付を横に辿れば流れが見え、月や年のまとめから全体像を掴むこともできます。カテゴリのページでは、一つの技術に関する話題だけを時系列で追えます。さらに各記事の要約は、関連する過去のレポートにサイト内リンクで繋がります。点を線として読めるようにすることが、このサイトの目的です。
+		</p>
+
+		<h2>記事の作られ方</h2>
+		<p>
+			レポートの選定と要約は AI が行い、毎日自動で公開されています。人手による事実確認は行っていないため、正確性は保証できません。
+		</p>
+
+		<h2>記事の掲載方針</h2>
+		<ul>
+			<li>各項目は必ず元記事へのリンクを持ちます。詳細は原文をご確認ください</li>
+			<li>要約は、記事を読んで把握した事実をこのサイトの言葉で書き直したものです。原文の文章の複製・逐語訳は行いません</li>
+			<li>本文・画像・図表の転載は行いません</li>
+			<li>元記事の代わりになることは意図していません。関心を持った記事は原文で読んでいただくことを前提にしています</li>
+		</ul>
+
+		<h2>削除・修正のご依頼</h2>
+		<p>
+			掲載内容について、権利者の方からの削除・修正のご依頼を受け付けています。<a href={`${REPO_URL}/issues`}>GitHub の Issue</a> からご連絡ください。該当箇所を確認のうえ、速やかに対応します。
+		</p>
+
+		<h2>ソースコード</h2>
+		<p>
+			サイトの生成コードはすべて <a href={REPO_URL}>GitHub</a> で公開しています。
+		</p>
+	</div>
+</BaseLayout>
+
+<style>
+	.page {
+		max-width: var(--container-article);
+		margin-inline: auto;
+		padding-top: var(--space-xl);
+	}
+
+	h1 {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: var(--text-2xl);
+		font-weight: 500;
+		letter-spacing: -0.02em;
+	}
+
+	h2 {
+		margin: var(--space-xl) 0 var(--space-xs);
+		font-size: var(--text-lg);
+		font-weight: 700;
+	}
+
+	p,
+	li {
+		font-size: var(--text-sm);
+	}
+
+	ul {
+		margin: 0;
+		padding-left: 1.2em;
+	}
+
+	li {
+		margin-top: var(--space-xs);
+	}
+
+	a {
+		text-underline-offset: 0.18em;
+		text-decoration-thickness: 1px;
+		text-decoration-color: var(--color-border);
+	}
+
+	a:hover {
+		color: var(--color-accent);
+		text-decoration-color: currentColor;
+	}
+</style>

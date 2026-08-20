@@ -36,6 +36,9 @@ const { title, description = 'Daily Tech Report' } = Astro.props;
 				The articles on this site are automatically generated: an AI summarizes publicly available
 				articles. Accuracy is not guaranteed — please read the original source linked in each item.
 			</p>
+			<p class="footer-links">
+				<a href={withBase('about/')}>About・掲載方針</a>
+			</p>
 			<p class="copyright">© {new Date().getFullYear()} knowledge-flow</p>
 		</footer>
 	</body>
@@ -96,6 +99,14 @@ const { title, description = 'Daily Tech Report' } = Astro.props;
 		max-width: 58ch;
 		margin-bottom: var(--space-sm);
 		line-height: 1.9;
+	}
+
+	.footer-links {
+		margin-top: var(--space-md);
+	}
+
+	.footer-links a:hover {
+		color: var(--color-accent);
 	}
 
 	.copyright {
