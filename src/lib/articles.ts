@@ -5,7 +5,7 @@ export interface PostArticle {
 	/** 記事が属する post のファイル名由来 ID（例: "2026-07-18"） */
 	postId: string;
 	date: Date;
-	/** H2 見出しのジャンル（AI / Infra / Backend / Frontend / Others） */
+	/** H2 見出しのジャンル（AI / Infra / Backend / Frontend / Products / Others） */
 	genre: string;
 	title: string;
 	/** 元記事の URL */

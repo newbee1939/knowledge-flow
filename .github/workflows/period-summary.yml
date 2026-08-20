@@ -27,17 +27,30 @@ jobs:
     timeout-minutes: 30
     env:
       TZ: Asia/Tokyo # 「前月」を JST で確定させる
+      # 指示は下の 2 ステップで共有する（daily-report.yml と同じ理由）
+      PROMPT: |
+        /period-summary ${{ inputs.period }} を実行してください。
+        完了したら、生成されたコミットを main ブランチへ直接 push してください（git push origin main）。
+        claude/ プレフィックスのブランチは作らないでください。
+        書き込み・コミットしてよいのは docs/ 配下のみです。src/ や .github/ など他の場所は変更しないでください。
+      CLAUDE_ARGS: |
+        --allowedTools "Bash,Read,Write,Edit,Glob,Grep"
+        --model opus
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      - uses: anthropics/claude-code-action@700e7f8316990de46bed556429765647af760efc # v1.0.176
+      - id: subscription
+        uses: anthropics/claude-code-action@700e7f8316990de46bed556429765647af760efc # v1.0.176
+        continue-on-error: true
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt: |
-            /period-summary ${{ inputs.period }} を実行してください。
-            完了したら、生成されたコミットを main ブランチへ直接 push してください（git push origin main）。
-            claude/ プレフィックスのブランチは作らないでください。
-            書き込み・コミットしてよいのは docs/ 配下のみです。src/ や .github/ など他の場所は変更しないでください。
-          claude_args: |
-            --allowedTools "Bash,Read,Write,Edit,Glob,Grep"
-            --model opus
+          prompt: ${{ env.PROMPT }}
+          claude_args: ${{ env.CLAUDE_ARGS }}
+
+      # サブスクリプションが切れたら従量課金の API キーで実行し直す（理由は daily-report.yml のコメント）
+      - if: steps.subscription.outcome == 'failure'
+        uses: anthropics/claude-code-action@700e7f8316990de46bed556429765647af760efc # v1.0.176
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: ${{ env.PROMPT }}
+          claude_args: ${{ env.CLAUDE_ARGS }}
