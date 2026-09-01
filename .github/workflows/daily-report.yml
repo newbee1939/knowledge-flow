@@ -97,7 +97,7 @@ jobs:
       # そのため pages.yml は on: push ではなく workflow_run で本ワークフローの完了を直接受けて起動する。
       - id: subscription
         if: steps.check.outputs.needed == 'true'
-        uses: anthropics/claude-code-action@be7b93b1907a4abad570368f3c74b6fe3807510b # v1.0.183
+        uses: anthropics/claude-code-action@a874e9ecd7bb36efdad65429c6b35815f5a08f10 # v1.0.210
         continue-on-error: true
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -112,7 +112,7 @@ jobs:
       # どちらを使うかを決めるのは Claude Code 側。期限切れのトークンが残っている限りそちらが選ばれ、
       # API キーへは落ちてこない。だから「失敗したら実行し直す」という形にしている。
       - if: steps.subscription.outcome == 'failure'
-        uses: anthropics/claude-code-action@be7b93b1907a4abad570368f3c74b6fe3807510b # v1.0.183
+        uses: anthropics/claude-code-action@a874e9ecd7bb36efdad65429c6b35815f5a08f10 # v1.0.210
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: ${{ env.PROMPT }}
