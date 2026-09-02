@@ -15,7 +15,8 @@ npm run dev
 
 - `npm run lint` — Biome によるフォーマット・静的解析
 - `npm run test` — Vitest
-- `npm run build` — Astro ビルド
+- `npm run build` — 型チェック（`astro check`）→ Astro ビルド。**型エラーがあればビルドしない**
+  - Biome も Vitest も型は見ない（どちらも内部で型注釈を捨てるだけ）。型を実際に検査するのは `astro check` だけで、`.astro` の型も含めて見られるのはこれしかない（[公式の推奨](https://docs.astro.build/en/guides/typescript/)）
 - `npm run articles` — 全記事の索引を TSV で出力（daily-report skill が関連する過去記事を探すために使う。サイトのビルドには関与しない）
 
 ## コードの構成
@@ -32,7 +33,7 @@ src/content.config.ts     Content Collections の定義と frontmatter のスキ
 src/lib/posts.ts          astro:content を触る唯一の場所。壊れていたらビルドを止める
         ↓                 （以降はただの配列・オブジェクト。Astro は登場しない）
 src/lib/*.ts              純粋関数。抽出・集約・整形
-        ↓                 ※ summaries.ts だけは docs/blog/summaries.json を直接 import する
+        ↓                 ※ summaries.ts だけは docs/blog/summaries.json を直接 import し、自前で検証する
 src/components/*.astro    2 ページ以上で使う見た目の部品
         ↓
 src/pages/*.astro         受け取ったデータを HTML にする
@@ -52,7 +53,7 @@ src/pages/*.astro         受け取ったデータを HTML にする
 | `tips.ts` | 記事本文から Tips への壊れたリンクを検出（存在しない slug はビルドを止める） |
 | `timeline.ts` | `date` を持つ列を年 → 月に集約（トップとカテゴリページで共用） |
 | `periods.ts` | 期間キー（`2026-08` / `2026`）の組み立てと表示名 |
-| `summaries.ts` | 月・年のひとことタイトル（サイト全体／カテゴリ別）を `docs/blog/summaries.json` から引く |
+| `summaries.ts` | 月・年のひとことタイトル（サイト全体／カテゴリ別）を `docs/blog/summaries.json` から引く。Content Collections を通らないぶん、形の検証も自前で行う |
 | `date.ts` | 表示用の `YYYY-MM-DD`（UTC）整形 |
 | `url.ts` | `base` 込みのサイト内リンク組み立て |
 | `rehypeExternalLinks.ts` | 本文の外部リンクに `target` / `rel` を付与（`astro.config.mjs` から使う） |
@@ -80,6 +81,10 @@ src/pages/*.astro         受け取ったデータを HTML にする
 | `/daily-report` | `daily-report.yml`（毎日 cron） | `docs/blog/posts/<DATE>.md` |
 | `/period-summary` | `period-summary.yml`（月初 cron） | `docs/blog/periods/<期間>.md`、`docs/blog/summaries.json` |
 | `/proofread` | 手動 | `docs/blog/posts/*.md` の誤字修正 |
+
+**Skill が作ったコミットの push は、Skill 自身ではなくワークフローが行う。** push の直前に「`docs/` の外が変わっていないか」を検査し、変わっていたら push せずに落とす。
+
+日次レポートの生成は 20 以上の外部サイトから RSS / HTML を取得して読む。その記事タイトルや本文は第三者が書けるため、「これまでの指示を無視して〜」といった文章を仕込まれ、AI がそれを指示として実行してしまう余地がある（**間接プロンプトインジェクション**）。プロンプトに「`docs/` 配下のみ」と書くだけでは、誘導されれば破られる。**検査を AI のプロセスの外に置く**ことで、誘導されたセッション自身には無効化できない形にしている。SKILL.md 側にも、取得した文章を指示として扱わないルールを書いてある。
 
 手順・執筆ルールは各 `.claude/skills/<name>/SKILL.md` が唯一の真実。README には転記しない。
 

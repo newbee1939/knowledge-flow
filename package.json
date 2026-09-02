@@ -3,12 +3,9 @@
   "type": "module",
   "version": "0.0.1",
   "private": true,
-  "engines": {
-    "node": ">=22.12.0"
-  },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro check && astro build",
     "preview": "astro preview",
     "test": "vitest run",
     "lint": "biome check .",
@@ -24,8 +21,10 @@
     "rehype-mermaid": "3.0.0"
   },
   "devDependencies": {
+    "@astrojs/check": "0.9.10",
     "@biomejs/biome": "2.5.6",
     "@types/node": "24.13.3",
+    "typescript": "6.0.3",
     "vitest": "4.1.10"
   },
   "allowScripts": {
