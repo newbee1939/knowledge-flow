@@ -45,7 +45,7 @@ jobs:
       # ズレるのを防ぐため、ステップに直書きせず env に置く。
       PROMPT: |
         /daily-report を実行してください。
-        完了したら、生成されたコミットを main ブランチへ直接 push してください（git push origin main）。
+        コミットまでで止め、push はしないでください（push は後続のステップが行います）。
         claude/ プレフィックスのブランチは作らないでください。
         書き込み・コミットしてよいのは docs/ 配下のみです。src/ や .github/ など他の場所は変更しないでください。
       CLAUDE_ARGS: |
@@ -77,8 +77,8 @@ jobs:
             echo "$FILE は生成済みのためスキップした。" >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      # push はこのプロンプト経由でのみ行わせる。SKILL.md 自体は commit 止まりで固定し、
-      # ローカルで /daily-report を手動実行しても main へ push されないようにする。
+      # push は Claude にさせず、最後の「push（docs/ 以外の変更があれば中止）」ステップが行う。
+      # SKILL.md 自体も commit 止まりで固定してあり、ローカルの手動実行で main へ push されることはない。
       #
       # 【claude-code-action に登場する 3 つのトークンの整理】役割は完全に別物で、混同しやすい:
       #   1. CLAUDE_CODE_OAUTH_TOKEN … Anthropic への認証。Claude（AI）を使う許可で、GitHub とは無関係。
@@ -89,7 +89,7 @@ jobs:
       #   3. GITHUB_TOKEN … GitHub がジョブごとに全ワークフローへ自動支給するトークン。
       #      actions/checkout が既定（persist-credentials: true）で git 設定に認証情報として埋め込む。
       #      git push は GitHub API ではなく git プロトコルの通信で、git は git 設定の認証情報を
-      #      機械的に使うため、Claude が Bash で実行する git push はこれを使う
+      #      機械的に使うため、最後の push ステップはこれを使う
       #      （2 の App トークンは claude-code-action のプロセス内にあるだけで、git からは見えない）
       #
       # つまり「App を入れたから push も App のトークンのはず」は誤り。push は 3 の GITHUB_TOKEN で行われ、
@@ -117,3 +117,40 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: ${{ env.PROMPT }}
           claude_args: ${{ env.CLAUDE_ARGS }}
+
+      # --- ここから先が「agent の外側」の検査。Claude には push させない ---
+      #
+      # SKILL.md 手順 2 は 20 以上の外部サイトから RSS / HTML を取得して読む。その中身
+      # （記事タイトル・本文）は第三者が書けるため、「これまでの指示を無視して〜」のような
+      # 文字列を仕込まれ、AI がそれを指示として実行してしまう余地がある（間接プロンプト
+      # インジェクション）。「docs/ 配下のみ」はプロンプトに書いた"お願い"でしかなく、
+      # 誘導されれば破られる。そこで push の直前に、変更が docs/ に収まっているかを
+      # ワークフロー側で機械的に確かめる。この検査は Claude のプロセスの外にあるので、
+      # 誘導されたセッション自身には無効化できない。
+      #
+      # 比較の基点はチェックアウトしたコミット（$GITHUB_SHA）。Claude が作った全コミットの
+      # 変更ファイルがこの差分に出る。
+      - name: push（docs/ 以外の変更があれば中止）
+        if: steps.check.outputs.needed == 'true'
+        run: |
+          # 「docs/ の外で変わったファイル」は git のパススペックに直接聞く。
+          # grep で弾くとシェルの挙動に依存するうえ、読んで正しさが分かりにくい。
+          changed=$(git diff --name-only "$GITHUB_SHA" HEAD)
+          outside=$(git diff --name-only "$GITHUB_SHA" HEAD -- ':(exclude)docs/')
+
+          if [ -z "$changed" ]; then
+            echo '生成されたコミットが無いため push しない。' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          if [ -n "$outside" ]; then
+            {
+              echo '## docs/ の外が変更されたため push を中止した'
+              echo '```'
+              echo "$outside"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          git push origin HEAD:main
