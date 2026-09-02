@@ -14,11 +14,11 @@ export function findBrokenTipLinks(
 	posts: { id: string; body: string }[],
 	tipSlugs: string[],
 ): { postId: string; slug: string }[] {
-	const known = new Set(tipSlugs);
+	const existingSlugs = new Set(tipSlugs);
 	return posts.flatMap((post) =>
 		[...post.body.matchAll(TIP_LINK)]
 			.map((match) => match[1])
-			.filter((slug) => !known.has(slug))
+			.filter((slug) => !existingSlugs.has(slug))
 			.map((slug) => ({ postId: post.id, slug })),
 	);
 }
