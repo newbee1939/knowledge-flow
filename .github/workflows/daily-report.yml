@@ -47,7 +47,7 @@ jobs:
         /daily-report を実行してください。
         コミットまでで止め、push はしないでください（push は後続のステップが行います）。
         claude/ プレフィックスのブランチは作らないでください。
-        書き込み・コミットしてよいのは docs/ 配下のみです。src/ や .github/ など他の場所は変更しないでください。
+        書き込み・コミットしてよいのは docs/ 配下と .claude/skills/daily-report/failures.json だけです。src/ や .github/ など他の場所は変更しないでください。
       CLAUDE_ARGS: |
         --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
         --model opus
@@ -124,19 +124,24 @@ jobs:
       # （記事タイトル・本文）は第三者が書けるため、「これまでの指示を無視して〜」のような
       # 文字列を仕込まれ、AI がそれを指示として実行してしまう余地がある（間接プロンプト
       # インジェクション）。「docs/ 配下のみ」はプロンプトに書いた"お願い"でしかなく、
-      # 誘導されれば破られる。そこで push の直前に、変更が docs/ に収まっているかを
+      # 誘導されれば破られる。そこで push の直前に、変更が許可された場所に収まっているかを
       # ワークフロー側で機械的に確かめる。この検査は Claude のプロセスの外にあるので、
       # 誘導されたセッション自身には無効化できない。
       #
       # 比較の基点はチェックアウトしたコミット（$GITHUB_SHA）。Claude が作った全コミットの
       # 変更ファイルがこの差分に出る。
-      - name: push（docs/ 以外の変更があれば中止）
+      - name: push（許可された場所の外に変更があれば中止）
         if: steps.check.outputs.needed == 'true'
         run: |
-          # 「docs/ の外で変わったファイル」は git のパススペックに直接聞く。
+          # 「許可された場所の外で変わったファイル」は git のパススペックに直接聞く。
           # grep で弾くとシェルの挙動に依存するうえ、読んで正しさが分かりにくい。
+          #
+          # 例外は failures.json ただ 1 ファイル（SKILL.md の「連続失敗の記録」がここに書く）。
+          # .claude/skills/ ごと許すことはしない。同じ場所に SKILL.md ＝ AI 自身への指示書が
+          # あり、それを書き換えられるとこの防護そのものを外されうる。
           changed=$(git diff --name-only "$GITHUB_SHA" HEAD)
-          outside=$(git diff --name-only "$GITHUB_SHA" HEAD -- ':(exclude)docs/')
+          outside=$(git diff --name-only "$GITHUB_SHA" HEAD \
+            -- ':(exclude)docs/' ':(exclude).claude/skills/daily-report/failures.json')
 
           if [ -z "$changed" ]; then
             echo '生成されたコミットが無いため push しない。' >> "$GITHUB_STEP_SUMMARY"
@@ -145,7 +150,7 @@ jobs:
 
           if [ -n "$outside" ]; then
             {
-              echo '## docs/ の外が変更されたため push を中止した'
+              echo '## 許可された場所の外が変更されたため push を中止した'
               echo '```'
               echo "$outside"
               echo '```'

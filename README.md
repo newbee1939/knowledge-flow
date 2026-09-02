@@ -82,7 +82,7 @@ src/pages/*.astro         受け取ったデータを HTML にする
 | `/period-summary` | `period-summary.yml`（月初 cron） | `docs/blog/periods/<期間>.md`、`docs/blog/summaries.json` |
 | `/proofread` | 手動 | `docs/blog/posts/*.md` の誤字修正 |
 
-**Skill が作ったコミットの push は、Skill 自身ではなくワークフローが行う。** push の直前に「`docs/` の外が変わっていないか」を検査し、変わっていたら push せずに落とす。
+**Skill が作ったコミットの push は、Skill 自身ではなくワークフローが行う。** push の直前に「許可された場所の外が変わっていないか」を検査し、変わっていたら push せずに落とす。許可されているのは `docs/` 配下と、失敗回数を記録する `.claude/skills/daily-report/failures.json` の 1 ファイルだけ。
 
 日次レポートの生成は 20 以上の外部サイトから RSS / HTML を取得して読む。その記事タイトルや本文は第三者が書けるため、「これまでの指示を無視して〜」といった文章を仕込まれ、AI がそれを指示として実行してしまう余地がある（**間接プロンプトインジェクション**）。プロンプトに「`docs/` 配下のみ」と書くだけでは、誘導されれば破られる。**検査を AI のプロセスの外に置く**ことで、誘導されたセッション自身には無効化できない形にしている。SKILL.md 側にも、取得した文章を指示として扱わないルールを書いてある。
 
