@@ -24,6 +24,7 @@ const { title, description = 'Daily Tech Report' } = Astro.props;
 		<header class="site-header">
 			<a class="site-name" href={withBase('/')}>knowledge-flow</a>
 			<nav class="site-nav">
+				<a href={withBase('tips/')}>Tips</a>
 				<a href={withBase('categories/')}>Categories</a>
 			</nav>
 		</header>
@@ -67,6 +68,11 @@ const { title, description = 'Daily Tech Report' } = Astro.props;
 	.site-header a:hover {
 		color: var(--color-accent);
 		text-decoration: underline;
+	}
+
+	.site-nav {
+		display: flex;
+		gap: var(--space-md);
 	}
 
 	.site-nav a {

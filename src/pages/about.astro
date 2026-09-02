@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/url';
 
 const REPO_URL = 'https://github.com/newbee1939/knowledge-flow';
 ---
@@ -19,6 +20,9 @@ const REPO_URL = 'https://github.com/newbee1939/knowledge-flow';
 		<h2>記事の作られ方</h2>
 		<p>
 			記事の選定も要約も AI が行い、毎日自動で公開されます。人の手による事実確認は挟んでいないため、内容の正確性は保証できません。
+		</p>
+		<p>
+			ただし <a href={withBase('tips/')}>Tips</a> の解説記事だけは例外で、運営者が自分で書いています。レポートに出てくる技術やサービスの前提知識をまとめたもので、記事の中から参照します。
 		</p>
 
 		<h2>記事の掲載方針</h2>

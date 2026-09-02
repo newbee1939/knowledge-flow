@@ -27,4 +27,16 @@ const periods = defineCollection({
 	}),
 });
 
-export const collections = { posts, periods };
+// 手書きの解説記事（Tips）。posts / periods と違い、Skill ではなく人が書く。
+// id はそのまま URL（`/tips/<id>/`）になり、日次レポート本文からの参照キーにもなる。
+const tips = defineCollection({
+	loader: glob({ base: './docs/tips', pattern: '*.md' }),
+	schema: z.object({
+		title: z.string(),
+		// 一覧に出す 1 行の説明。本文の書き出しを流用せず、何が分かる記事かを書く
+		description: z.string(),
+		updated: z.coerce.date(),
+	}),
+});
+
+export const collections = { posts, periods, tips };

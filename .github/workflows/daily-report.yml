@@ -45,9 +45,9 @@ jobs:
       # ズレるのを防ぐため、ステップに直書きせず env に置く。
       PROMPT: |
         /daily-report を実行してください。
-        完了したら、生成されたコミットを main ブランチへ直接 push してください（git push origin main）。
+        コミットまでで止め、push はしないでください（push は後続のステップが行います）。
         claude/ プレフィックスのブランチは作らないでください。
-        書き込み・コミットしてよいのは docs/ 配下のみです。src/ や .github/ など他の場所は変更しないでください。
+        書き込み・コミットしてよいのは docs/ 配下と .claude/skills/daily-report/failures.json だけです。src/ や .github/ など他の場所は変更しないでください。
       CLAUDE_ARGS: |
         --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
         --model opus
@@ -77,8 +77,8 @@ jobs:
             echo "$FILE は生成済みのためスキップした。" >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      # push はこのプロンプト経由でのみ行わせる。SKILL.md 自体は commit 止まりで固定し、
-      # ローカルで /daily-report を手動実行しても main へ push されないようにする。
+      # push は Claude にさせず、最後の「push（docs/ 以外の変更があれば中止）」ステップが行う。
+      # SKILL.md 自体も commit 止まりで固定してあり、ローカルの手動実行で main へ push されることはない。
       #
       # 【claude-code-action に登場する 3 つのトークンの整理】役割は完全に別物で、混同しやすい:
       #   1. CLAUDE_CODE_OAUTH_TOKEN … Anthropic への認証。Claude（AI）を使う許可で、GitHub とは無関係。
@@ -89,7 +89,7 @@ jobs:
       #   3. GITHUB_TOKEN … GitHub がジョブごとに全ワークフローへ自動支給するトークン。
       #      actions/checkout が既定（persist-credentials: true）で git 設定に認証情報として埋め込む。
       #      git push は GitHub API ではなく git プロトコルの通信で、git は git 設定の認証情報を
-      #      機械的に使うため、Claude が Bash で実行する git push はこれを使う
+      #      機械的に使うため、最後の push ステップはこれを使う
       #      （2 の App トークンは claude-code-action のプロセス内にあるだけで、git からは見えない）
       #
       # つまり「App を入れたから push も App のトークンのはず」は誤り。push は 3 の GITHUB_TOKEN で行われ、
@@ -117,3 +117,35 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: ${{ env.PROMPT }}
           claude_args: ${{ env.CLAUDE_ARGS }}
+
+      # push するのはワークフローで、Claude ではない。
+      # SKILL.md 手順 2 は 20 以上の外部サイトの RSS / HTML を読む。記事タイトルや本文は
+      # 第三者が書けるので、「これまでの指示は無視して〜」を仕込まれ、Claude がそれに従う
+      # 余地がある（間接プロンプトインジェクション）。プロンプトの「docs/ 配下のみ」は
+      # お願いでしかないが、この検査は Claude の外で動くので、誘導されても外せない。
+      - name: push（触ってはいけない場所の変更があれば中止）
+        if: steps.check.outputs.needed == 'true'
+        run: |
+          # 触ってよいのは記事（docs/）と、取得の連続失敗回数を書く failures.json だけ。
+          #
+          # .claude/skills/ をディレクトリごと許してはいけない。同じ場所に SKILL.md
+          # ＝ 毎朝 Claude が読む指示書がある。ここを書き換えられると、翌日以降の実行が
+          # まるごと書き換えられた指示で走る。1 日の誘導が明日から毎日効き続けてしまう。
+          #
+          # ':(exclude)<パス>' は「そこを除いて」の意味。除いてなお残れば、はみ出し。
+          disallowed=$(git diff --name-only "$GITHUB_SHA" HEAD \
+            -- ':(exclude)docs/' ':(exclude).claude/skills/daily-report/failures.json')
+
+          if [ -n "$disallowed" ]; then
+            echo "触ってはいけない場所が変更された:"
+            echo "$disallowed"
+            exit 1
+          fi
+
+          # 生成に失敗しても Claude 自体は成功で終わることがある。空 push を成功にしない
+          if [ -z "$(git diff --name-only "$GITHUB_SHA" HEAD)" ]; then
+            echo 'コミットが 1 つも積まれていない'
+            exit 1
+          fi
+
+          git push origin HEAD:main

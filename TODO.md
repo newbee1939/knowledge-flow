@@ -1,5 +1,6 @@
 <!-- 残タスク・追加したい機能などがあれば列挙 -->
 
+- tipsのファイルを作るShell Script
 - 情報ソースの拡充
 - nano bananaを使ったビジュアライズ
 - より生成物の精度を上げるには？
@@ -57,9 +58,26 @@
 - 独自ドメインの設定
 - リポジトリへのリンクを表示する
 - コードのアーキテクチャをリファクタリング
+    - **先に仕様化テストを書いてから着手する。** テストを 1 文字も変えずに全件通ることを「挙動不変」の証拠にする（CLAUDE.md）
+    - `src/lib/posts.ts` が 4 つの関心（posts / periods / articles / tips）を持っている。ファイル分割の候補
+    - `getTips()` が tips と posts の両方を読んでいる。リンク切れ検査をどこに置くかの再検討
+    - `src/lib/articles.ts` の `extractArticles` が `reduce` の中で state オブジェクトを書き換えている。読みづらさの元
+    - `src/components/Timeline.astro` が 201 行で最大。構造の組み立てと見た目が同居している
+    - `scripts/articles-index.ts` が `posts.ts` を通らず fs を直接読む。抽出ロジックは共有しているが、URL 重複検査は効かない
 - 目次表示機能
 - ワークロード ID フェデレーション（WIF）の導入
     - https://platform.claude.com/settings/workload-identity-federation
     - GitHub Actions が発行する OIDC トークンを短命な Anthropic アクセストークンに交換する仕組み。長期有効な `sk-ant-...` を secrets に置かずに済む
     - 対象は `secrets.ANTHROPIC_API_KEY`（daily-report / period-summary のフォールバック）。`CLAUDE_CODE_OAUTH_TOKEN` 側が WIF に対応するかは要確認
     - 手順: Console の Settings → Workload identity で GitHub Actions を選び、issuer 登録 → サービスアカウント作成 → フェデレーションルール作成
+- セキュリティ対策の強化
+    - **`main` のブランチ保護 / ルールセットが無い**（未設定を確認済み）
+        - 最低限「force push 禁止」「ブランチ削除禁止」。PR 必須にすると毎朝の自動更新が止まるので、GitHub Actions を bypass 対象に含める必要がある
+        - 今のガード（push 前に許可された場所の外の変更を弾く）は agent の暴走にしか効かない。トークンが漏れた場合の直接 push は防げない
+    - **既知の脆弱性が 4 件放置されている**（`npm audit`）
+        - nanoid <3.3.18（high、無限ループ DoS）／ mermaid ≤11.16.0（prototype pollution ほか）／ dompurify ≤3.4.12（XSS）／ postcss ≤8.5.22
+        - 実害は小さい。ビルド時にしか動かず、クライアントへ JS を配っていないため。ただし mermaid の入力は外部由来の文章から AI が生成した図なので経路はゼロではない
+        - Dependabot が月 1 回設定なので、**security updates だけ即時に受け取る枠**を `.github/dependabot.yml` に足す
+    - `permissions: id-token: write`（daily-report / period-summary）の棚卸し
+        - Claude GitHub App の OIDC 交換に必要で消せないが、「このリポジトリの GitHub Actions である」と外部に名乗れる強い権限。他用途に使われていないかをたまに確認する
+    - 自動実行の agent が触れる範囲は、増やすたびにガード（`.github/workflows/daily-report.yml` の push ステップ）と揃える

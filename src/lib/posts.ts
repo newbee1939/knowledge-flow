@@ -1,6 +1,7 @@
 import { getCollection } from 'astro:content';
 import { extractArticles, type PostArticle } from './articles';
 import { formatDate } from './date';
+import { findBrokenTipLinks } from './tips';
 
 /**
  * 日次レポートを新しい順に返す。
@@ -94,4 +95,42 @@ export async function getArticles(): Promise<PostArticle[]> {
 	}
 
 	return articles;
+}
+
+/**
+ * 手書きの解説記事（Tips）を更新日の新しい順に返す。
+ *
+ * **id が slug（英小文字・数字・ハイフン）でなければビルドを止める。** id はそのまま
+ * URL になり、日次レポート本文からの参照キー（`/tips/<id>/`）にもなる。日本語や大文字が
+ * 混じると、記事側からリンクを書くたびにエンコードの差でリンク切れを踏む。
+ *
+ * **日次レポートから存在しない Tips へリンクしていてもビルドを止める。** 記事と Tips の
+ * 両方を持っているのはここだけで、他に照合できる場所がない（詳細は findBrokenTipLinks）。
+ */
+export async function getTips() {
+	const tips = await getCollection('tips');
+
+	const invalid = tips.find((tip) => !/^[a-z0-9-]+$/.test(tip.id));
+	if (invalid) {
+		throw new Error(
+			`Tips ${invalid.id} のファイル名が slug になっていません。\n` +
+				'  - docs/tips/ のファイル名は英小文字・数字・ハイフンだけにしてください（例: openrouter.md）。',
+		);
+	}
+
+	const posts = await getPosts();
+	const broken = findBrokenTipLinks(
+		posts.map((post) => ({ id: post.id, body: post.body ?? '' })),
+		tips.map((tip) => tip.id),
+	);
+	if (broken.length > 0) {
+		const detail = broken.map(({ postId, slug }) => `  ${postId} → /tips/${slug}/`).join('\n');
+		throw new Error(
+			`存在しない Tips へのリンクがあります（${broken.length} 件）。ビルドを中止しました。\n` +
+				`${detail}\n` +
+				'  - docs/tips/<slug>.md があるか、記事側の slug の綴りを確認してください',
+		);
+	}
+
+	return tips.sort((a, b) => b.data.updated.getTime() - a.data.updated.getTime());
 }
