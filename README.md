@@ -73,7 +73,7 @@ src/pages/*.astro         受け取ったデータを HTML にする
 
 ## 自動化
 
-サイトのコンテンツは Claude Code Skill が書き、GitHub Actions が実行する。`src/` は人が書き、`docs/` は Skill だけが書く。
+サイトのコンテンツは Claude Code Skill が書き、GitHub Actions が実行する。`src/` は人が書き、`docs/blog/` は Skill だけが書く（`docs/tips/` だけは例外で人が書く。次節）。
 
 | Skill | 実行 | 書き込み先 |
 |---|---|---|
@@ -82,5 +82,39 @@ src/pages/*.astro         受け取ったデータを HTML にする
 | `/proofread` | 手動 | `docs/blog/posts/*.md` の誤字修正 |
 
 手順・執筆ルールは各 `.claude/skills/<name>/SKILL.md` が唯一の真実。README には転記しない。
+
+## Tips を書く
+
+`docs/tips/` は**人が手で書く解説記事**。「OpenRouter とは何か」のような、その日のニュースではなく前提知識にあたる話を置き、日次レポートの中から用語の説明としてリンクする。`/daily-report` はこれを読むだけで、書かない。
+
+1. **`docs/tips/<slug>.md` を作る。** ファイル名がそのまま URL と記事からの参照キー（`/tips/<slug>/`）になる。使えるのは英小文字・数字・ハイフンだけ（`openrouter.md` / `mcp.md`）。日本語や大文字を使うとビルドが落ちる
+2. **frontmatter は 3 つ。**
+
+   ```yaml
+   ---
+   title: "OpenRouter とは"
+   description: "複数の LLM を 1 つの API で呼び分けられる中継サービス"
+   updated: 2026-09-02
+   ---
+   ```
+
+   - `description` は `/tips/` の一覧に出る 1 行。本文の書き出しを流用せず「何が分かる記事か」を書く
+   - `updated` は書いた日・直した日。一覧はこの降順で並ぶ（内容を直したら上げる）
+
+3. **本文は H2 区切りの markdown。** 体裁は日次レポートと共用（`Prose.astro`）
+4. `npm run dev` で `/tips/` と `/tips/<slug>/` を目で見て commit
+
+**記事から参照するとき**は `/tips/…` から書く（`/knowledge-flow/…` と書かない。公開先の接頭辞はビルド時に付く）。
+
+```markdown
+複数のモデルを切り替えて使える[OpenRouter](/tips/openrouter/)を土台にしている。
+```
+
+**slug を変える・Tips を消すときは、指している記事も直す。** 存在しない Tips へのリンクが残っているとビルドが落ちる（`getTips()` が記事本文を全件照合する）。対象は次で洗い出せる。
+
+```sh
+grep -rn '/tips/<slug>/' docs/blog/posts
+```
+
 
 設計の背景・方針は [ARCHITECTURE.md](./ARCHITECTURE.md) を参照。
