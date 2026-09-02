@@ -113,10 +113,12 @@ describe('getTips', () => {
 		data: { title: id, description: '', updated: new Date(updated) },
 	});
 
+	const postWithBody = (date: string, body = '') => ({ ...post(date), body });
+
 	/** コレクション名で返り値を出し分ける（getTips は tips と posts の両方を読む） */
 	const mockCollections = (
-		tips: unknown[],
-		posts: unknown[] = [{ ...post('2026-09-02'), body: '' }],
+		tips: ReturnType<typeof tip>[],
+		posts: ReturnType<typeof postWithBody>[] = [postWithBody('2026-09-02')],
 	) => getCollection.mockImplementation((name: string) => (name === 'tips' ? tips : posts));
 
 	beforeEach(() => getCollection.mockReset());
@@ -138,7 +140,7 @@ describe('getTips', () => {
 	it('存在しない Tips へリンクしている記事があればビルドを止める', async () => {
 		mockCollections(
 			[tip('mcp', '2026-09-01')],
-			[{ ...post('2026-09-02'), body: '[OpenRouter](/tips/openrouter/)' }],
+			[postWithBody('2026-09-02', '[OpenRouter](/tips/openrouter/)')],
 		);
 		await expect(getTips()).rejects.toThrow('2026-09-02 → /tips/openrouter/');
 	});
