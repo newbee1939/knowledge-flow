@@ -118,41 +118,48 @@ jobs:
           prompt: ${{ env.PROMPT }}
           claude_args: ${{ env.CLAUDE_ARGS }}
 
-      # --- ここから先が「agent の外側」の検査。Claude には push させない ---
+      # --- ここから先は Claude の外側。push するのはワークフローであって Claude ではない ---
       #
-      # SKILL.md 手順 2 は 20 以上の外部サイトから RSS / HTML を取得して読む。その中身
-      # （記事タイトル・本文）は第三者が書けるため、「これまでの指示を無視して〜」のような
-      # 文字列を仕込まれ、AI がそれを指示として実行してしまう余地がある（間接プロンプト
-      # インジェクション）。「docs/ 配下のみ」はプロンプトに書いた"お願い"でしかなく、
-      # 誘導されれば破られる。そこで push の直前に、変更が許可された場所に収まっているかを
-      # ワークフロー側で機械的に確かめる。この検査は Claude のプロセスの外にあるので、
-      # 誘導されたセッション自身には無効化できない。
+      # なぜ Claude に push させないか。SKILL.md 手順 2 は 20 以上の外部サイトから
+      # RSS / HTML を取得して読む。そこに載る記事タイトルや本文は第三者が書けるので、
+      # 「これまでの指示は無視して〜」のような文章を仕込まれ、Claude がそれを指示として
+      # 実行してしまう余地がある（間接プロンプトインジェクション）。
       #
-      # 比較の基点はチェックアウトしたコミット（$GITHUB_SHA）。Claude が作った全コミットの
-      # 変更ファイルがこの差分に出る。
-      - name: push（許可された場所の外に変更があれば中止）
+      # プロンプトの「docs/ 配下のみ」は"お願い"でしかなく、誘導されれば破られる。
+      # 一方この検査は Claude のプロセスの外で動くので、誘導されたセッションからは
+      # 手を出せない。破られても main には入らない、という最後の砦にあたる。
+      - name: push（触ってはいけない場所の変更があれば中止）
         if: steps.check.outputs.needed == 'true'
         run: |
-          # 「許可された場所の外で変わったファイル」は git のパススペックに直接聞く。
-          # grep で弾くとシェルの挙動に依存するうえ、読んで正しさが分かりにくい。
+          # Claude が触ってよいのは、この 2 つだけ。
+          #   - docs/ 配下                                     … 記事そのもの
+          #   - .claude/skills/daily-report/failures.json      … 取得の連続失敗回数
+          #                                                      （SKILL.md の「連続失敗の記録」）
           #
-          # 例外は failures.json ただ 1 ファイル（SKILL.md の「連続失敗の記録」がここに書く）。
-          # .claude/skills/ ごと許すことはしない。同じ場所に SKILL.md ＝ AI 自身への指示書が
-          # あり、それを書き換えられるとこの防護そのものを外されうる。
-          changed=$(git diff --name-only "$GITHUB_SHA" HEAD)
-          outside=$(git diff --name-only "$GITHUB_SHA" HEAD \
+          # .claude/skills/ をディレクトリごと開けてはいけない。隣に SKILL.md ＝ Claude 自身への
+          # 指示書があり、それを書き換えられると、次回以降この検査ごと骨抜きにされる。
+
+          # はみ出しの判定は git 自身にさせる。`-- ':(exclude)<パス>'` は「このパスを除いて」
+          # という書き方（パススペック）で、除いてなお残ったファイルだけが出力される。
+          # つまり disallowed が空 = はみ出し無し。grep で弾くとシェルによって結果が変わる。
+          disallowed=$(git diff --name-only "$GITHUB_SHA" HEAD \
             -- ':(exclude)docs/' ':(exclude).claude/skills/daily-report/failures.json')
 
+          # 比較の基点はチェックアウトしたコミット（$GITHUB_SHA）。
+          # Claude が積んだコミットが全部この差分に出る。
+          changed=$(git diff --name-only "$GITHUB_SHA" HEAD)
+
+          # レポートを作るはずの run で 1 ファイルも増えていないなら、生成が失敗している
           if [ -z "$changed" ]; then
             echo '生成されたコミットが無いため push しない。' >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
 
-          if [ -n "$outside" ]; then
+          if [ -n "$disallowed" ]; then
             {
-              echo '## 許可された場所の外が変更されたため push を中止した'
+              echo '## 触ってはいけない場所が変更されたため push を中止した'
               echo '```'
-              echo "$outside"
+              echo "$disallowed"
               echo '```'
             } >> "$GITHUB_STEP_SUMMARY"
             exit 1
