@@ -118,50 +118,30 @@ jobs:
           prompt: ${{ env.PROMPT }}
           claude_args: ${{ env.CLAUDE_ARGS }}
 
-      # --- ここから先は Claude の外側。push するのはワークフローであって Claude ではない ---
-      #
-      # なぜ Claude に push させないか。SKILL.md 手順 2 は 20 以上の外部サイトから
-      # RSS / HTML を取得して読む。そこに載る記事タイトルや本文は第三者が書けるので、
-      # 「これまでの指示は無視して〜」のような文章を仕込まれ、Claude がそれを指示として
-      # 実行してしまう余地がある（間接プロンプトインジェクション）。
-      #
-      # プロンプトの「docs/ 配下のみ」は"お願い"でしかなく、誘導されれば破られる。
-      # 一方この検査は Claude のプロセスの外で動くので、誘導されたセッションからは
-      # 手を出せない。破られても main には入らない、という最後の砦にあたる。
+      # push するのはワークフローで、Claude ではない。
+      # SKILL.md 手順 2 は 20 以上の外部サイトの RSS / HTML を読む。記事タイトルや本文は
+      # 第三者が書けるので、「これまでの指示は無視して〜」を仕込まれ、Claude がそれに従う
+      # 余地がある（間接プロンプトインジェクション）。プロンプトの「docs/ 配下のみ」は
+      # お願いでしかないが、この検査は Claude の外で動くので、誘導されても外せない。
       - name: push（触ってはいけない場所の変更があれば中止）
         if: steps.check.outputs.needed == 'true'
         run: |
-          # Claude が触ってよいのは、この 2 つだけ。
-          #   - docs/ 配下                                     … 記事そのもの
-          #   - .claude/skills/daily-report/failures.json      … 取得の連続失敗回数
-          #                                                      （SKILL.md の「連続失敗の記録」）
-          #
-          # .claude/skills/ をディレクトリごと開けてはいけない。隣に SKILL.md ＝ Claude 自身への
-          # 指示書があり、それを書き換えられると、次回以降この検査ごと骨抜きにされる。
-
-          # はみ出しの判定は git 自身にさせる。`-- ':(exclude)<パス>'` は「このパスを除いて」
-          # という書き方（パススペック）で、除いてなお残ったファイルだけが出力される。
-          # つまり disallowed が空 = はみ出し無し。grep で弾くとシェルによって結果が変わる。
+          # 触ってよいのは記事（docs/）と、取得の連続失敗回数を書く failures.json だけ。
+          # .claude/skills/ ごと開けない。隣の SKILL.md は Claude 自身への指示書で、
+          # 書き換えられるとこの検査ごと骨抜きにされる。
+          # ':(exclude)<パス>' は「そこを除いて」の意味。除いてなお残れば、はみ出し。
           disallowed=$(git diff --name-only "$GITHUB_SHA" HEAD \
             -- ':(exclude)docs/' ':(exclude).claude/skills/daily-report/failures.json')
 
-          # 比較の基点はチェックアウトしたコミット（$GITHUB_SHA）。
-          # Claude が積んだコミットが全部この差分に出る。
-          changed=$(git diff --name-only "$GITHUB_SHA" HEAD)
-
-          # レポートを作るはずの run で 1 ファイルも増えていないなら、生成が失敗している
-          if [ -z "$changed" ]; then
-            echo '生成されたコミットが無いため push しない。' >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$disallowed" ]; then
+            echo "触ってはいけない場所が変更された:"
+            echo "$disallowed"
             exit 1
           fi
 
-          if [ -n "$disallowed" ]; then
-            {
-              echo '## 触ってはいけない場所が変更されたため push を中止した'
-              echo '```'
-              echo "$disallowed"
-              echo '```'
-            } >> "$GITHUB_STEP_SUMMARY"
+          # 生成に失敗しても Claude 自体は成功で終わることがある。空 push を成功にしない
+          if [ -z "$(git diff --name-only "$GITHUB_SHA" HEAD)" ]; then
+            echo 'コミットが 1 つも積まれていない'
             exit 1
           fi
 

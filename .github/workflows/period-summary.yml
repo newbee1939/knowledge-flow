@@ -55,31 +55,23 @@ jobs:
           prompt: ${{ env.PROMPT }}
           claude_args: ${{ env.CLAUDE_ARGS }}
 
-      # push するのはワークフローであって Claude ではない（理由は daily-report.yml の
-      # 同じステップのコメントを参照）。このワークフローが読む日次レポートは外部サイト
-      # 由来の文章を含むので、プロンプトインジェクションの連鎖はここにも届く。
+      # push するのはワークフローで、Claude ではない（理由は daily-report.yml の同じ
+      # ステップを参照）。ここが読む日次レポートは外部サイト由来の文章を含むので、
+      # プロンプトインジェクションの連鎖はこのワークフローにも届く。
       - name: push（触ってはいけない場所の変更があれば中止）
         run: |
-          # 触ってよいのは docs/ 配下だけ（このワークフローは failures.json を書かない）。
-          # 判定は git 自身にさせる。`-- ':(exclude)docs/'` は「docs/ を除いて」という
-          # 書き方（パススペック）で、除いてなお残ったファイルだけが出力される。
+          # 触ってよいのは docs/ だけ。':(exclude)docs/' は「docs/ を除いて」の意味で、
+          # 除いてなお残れば、はみ出し。
           disallowed=$(git diff --name-only "$GITHUB_SHA" HEAD -- ':(exclude)docs/')
 
-          # 比較の基点はチェックアウトしたコミット（$GITHUB_SHA）
-          changed=$(git diff --name-only "$GITHUB_SHA" HEAD)
-
-          if [ -z "$changed" ]; then
-            echo '生成されたコミットが無いため push しない。' >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$disallowed" ]; then
+            echo "触ってはいけない場所が変更された:"
+            echo "$disallowed"
             exit 1
           fi
 
-          if [ -n "$disallowed" ]; then
-            {
-              echo '## 触ってはいけない場所が変更されたため push を中止した'
-              echo '```'
-              echo "$disallowed"
-              echo '```'
-            } >> "$GITHUB_STEP_SUMMARY"
+          if [ -z "$(git diff --name-only "$GITHUB_SHA" HEAD)" ]; then
+            echo 'コミットが 1 つも積まれていない'
             exit 1
           fi
 
