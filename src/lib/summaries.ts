@@ -10,6 +10,8 @@ import { getPeriodKey } from './periods';
  * 形が崩れてもビルドは通り、**ひとことタイトルだけが静かに消える**。
  * 月初に Period Summary ワークフローが機械的に書き換える以上、
  * 「壊れたデータはビルドで落とす」を他のコレクションと揃える。
+ *
+ * TODO: できればexportを辞めたい
  */
 export function parseSummaries(json: unknown) {
 	const schema = z.object({
