@@ -127,8 +127,11 @@ jobs:
         if: steps.check.outputs.needed == 'true'
         run: |
           # 触ってよいのは記事（docs/）と、取得の連続失敗回数を書く failures.json だけ。
-          # .claude/skills/ ごと開けない。隣の SKILL.md は Claude 自身への指示書で、
-          # 書き換えられるとこの検査ごと骨抜きにされる。
+          #
+          # .claude/skills/ をディレクトリごと許してはいけない。同じ場所に SKILL.md
+          # ＝ 毎朝 Claude が読む指示書がある。ここを書き換えられると、翌日以降の実行が
+          # まるごと書き換えられた指示で走る。1 日の誘導が明日から毎日効き続けてしまう。
+          #
           # ':(exclude)<パス>' は「そこを除いて」の意味。除いてなお残れば、はみ出し。
           disallowed=$(git diff --name-only "$GITHUB_SHA" HEAD \
             -- ':(exclude)docs/' ':(exclude).claude/skills/daily-report/failures.json')
