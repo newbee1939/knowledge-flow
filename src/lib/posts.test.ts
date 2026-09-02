@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // astro:content は Astro のビルド時に生成される仮想モジュールなので、テストでは差し替える。
 const getCollection = vi.fn();
-vi.mock('astro:content', () => ({ getCollection: () => getCollection() }));
+vi.mock('astro:content', () => ({ getCollection: (name: string) => getCollection(name) }));
 
-const { getPosts, getArticles } = await import('./posts');
+const { getPosts, getArticles, getTips } = await import('./posts');
 
 const post = (date: string) => ({ id: date, data: { date: new Date(date), title: date } });
 
@@ -104,5 +104,42 @@ describe('getArticles', () => {
 		]);
 
 		await expect(getArticles()).resolves.toHaveLength(2);
+	});
+});
+
+describe('getTips', () => {
+	const tip = (id: string, updated: string) => ({
+		id,
+		data: { title: id, description: '', updated: new Date(updated) },
+	});
+
+	/** コレクション名で返り値を出し分ける（getTips は tips と posts の両方を読む） */
+	const mockCollections = (
+		tips: unknown[],
+		posts: unknown[] = [{ ...post('2026-09-02'), body: '' }],
+	) => getCollection.mockImplementation((name: string) => (name === 'tips' ? tips : posts));
+
+	beforeEach(() => getCollection.mockReset());
+
+	it('更新日の新しい順に並べる', async () => {
+		mockCollections([tip('mcp', '2026-08-01'), tip('openrouter', '2026-09-01')]);
+		const tips = await getTips();
+		expect(tips.map((t) => t.id)).toEqual(['openrouter', 'mcp']);
+	});
+
+	// id はそのまま URL と記事からの参照キーになる。日本語や大文字が混じると
+	// エンコードの差でリンク切れを踏む。
+	it('id が slug でなければビルドを止める', async () => {
+		mockCollections([tip('OpenRouter', '2026-09-01')]);
+		await expect(getTips()).rejects.toThrow('Tips OpenRouter のファイル名が slug になっていません');
+	});
+
+	// リンク切れは 404 になるだけで、ビルドも HTTP も静かに通る。
+	it('存在しない Tips へリンクしている記事があればビルドを止める', async () => {
+		mockCollections(
+			[tip('mcp', '2026-09-01')],
+			[{ ...post('2026-09-02'), body: '[OpenRouter](/tips/openrouter/)' }],
+		);
+		await expect(getTips()).rejects.toThrow('2026-09-02 → /tips/openrouter/');
 	});
 });

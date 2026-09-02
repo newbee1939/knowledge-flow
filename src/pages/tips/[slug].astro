@@ -1,0 +1,63 @@
+---
+import { render } from 'astro:content';
+import Prose from '../../components/Prose.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { formatDate } from '../../lib/date';
+import { getTips } from '../../lib/posts';
+
+export async function getStaticPaths() {
+	const tips = await getTips();
+	return tips.map((tip) => ({
+		params: { slug: tip.id },
+		props: { tip },
+	}));
+}
+
+const { tip } = Astro.props;
+const { Content } = await render(tip);
+---
+
+<BaseLayout title={`${tip.data.title} | knowledge-flow`} description={tip.data.description}>
+	<article class="tip">
+		<header class="tip-header">
+			<span class="tip-label">Tips</span>
+			<h1>{tip.data.title}</h1>
+			<time datetime={tip.data.updated.toISOString()}>{formatDate(tip.data.updated)} 更新</time>
+		</header>
+		<Prose>
+			<Content />
+		</Prose>
+	</article>
+</BaseLayout>
+
+<style>
+	.tip {
+		max-width: var(--container-article);
+		margin-inline: auto;
+		padding-top: var(--space-xl);
+	}
+
+	.tip-label {
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	.tip-header h1 {
+		margin: var(--space-xs) 0 0;
+		font-size: var(--text-xl);
+		font-weight: 700;
+		line-height: 1.55;
+		letter-spacing: -0.01em;
+	}
+
+	.tip-header time {
+		display: block;
+		margin-top: var(--space-sm);
+		color: var(--color-text-muted);
+		font-size: var(--text-xs);
+		letter-spacing: 0.02em;
+	}
+</style>

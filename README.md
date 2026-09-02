@@ -25,6 +25,7 @@ markdown と JSON が入口で HTML が出口。その間を一方向に流れ�
 ```
 docs/blog/posts/*.md      データ層。Skill だけが書く
 docs/blog/periods/*.md    月・年のまとめ記事（ファイル名が期間キー: 2026-08.md / 2026.md）
+docs/tips/*.md            手書きの解説記事（ファイル名が slug: openrouter.md）。人だけが書く
         ↓
 src/content.config.ts     Content Collections の定義と frontmatter のスキーマ
         ↓
@@ -45,9 +46,10 @@ src/pages/*.astro         受け取ったデータを HTML にする
 
 | `src/lib/` | 役割 |
 |---|---|
-| `posts.ts` | コレクション（レポート・まとめ記事）の取得と検証。**唯一の I/O 境界** |
+| `posts.ts` | コレクション（レポート・まとめ記事・Tips）の取得と検証。**唯一の I/O 境界** |
 | `articles.ts` | 日次レポート本文から記事（H3 見出し 1 つ）を抽出 |
 | `categories.ts` | 記事をカテゴリ別に集約 |
+| `tips.ts` | 記事本文から Tips への壊れたリンクを検出（存在しない slug はビルドを止める） |
 | `timeline.ts` | `date` を持つ列を年 → 月に集約（トップとカテゴリページで共用） |
 | `periods.ts` | 期間キー（`2026-08` / `2026`）の組み立てと表示名 |
 | `summaries.ts` | 月・年のひとことタイトル（サイト全体／カテゴリ別）を `docs/blog/summaries.json` から引く |
