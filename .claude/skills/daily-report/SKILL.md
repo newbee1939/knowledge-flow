@@ -138,7 +138,7 @@ grep -iE 'Microsoft|Windows|DRAM|メモリ' /tmp/kf-index.tsv
 
 ## Tips へのリンク
 
-`docs/tips/<slug>.md` は**運営者が手で書いた解説記事**（AI は書かない）。「OpenRouter とは何か」のような、
+`docs/tips/<slug>.md` は**運営者が用意した解説記事**（このスキルでは書かない。増やすときは `/tip`）。「OpenRouter とは何か」のような、
 その日のニュースではなく前提知識にあたる話がここに置いてある。読者が引っかかりそうな用語に Tips があるなら、
 括弧で短く開くより、そちらへ渡したほうが深く理解できる。
 

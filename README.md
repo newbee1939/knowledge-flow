@@ -90,7 +90,9 @@ src/pages/*.astro         受け取ったデータを HTML にする
 
 ## Tips を書く
 
-`docs/tips/` は**人が手で書く解説記事**。「OpenRouter とは何か」のような、その日のニュースではなく前提知識にあたる話を置き、日次レポートの中から用語の説明としてリンクする。`/daily-report` はこれを読むだけで、書かない。
+`docs/tips/` は**運営者が書く解説記事**。「OpenRouter とは何か」のような、その日のニュースではなく前提知識にあたる話を置き、日次レポートの中から用語の説明としてリンクする。`/daily-report` はこれを読むだけで、書かない。
+
+下書きは `/tip <テーマ>`（`.claude/skills/tip/`）で作れる。**自動実行はしない**（GitHub Actions が回すのは `/daily-report` と `/period-summary` だけ）。何を Tips にするかを決め、内容に責任を持つのは運営者。
 
 1. **`docs/tips/<slug>.md` を作る。** ファイル名がそのまま URL と記事からの参照キー（`/tips/<slug>/`）になる。使えるのは英小文字・数字・ハイフンだけ（`openrouter.md` / `mcp.md`）。日本語や大文字を使うとビルドが落ちる
 2. **frontmatter は 3 つ。**
