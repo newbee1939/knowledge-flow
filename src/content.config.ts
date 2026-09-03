@@ -27,7 +27,7 @@ const periods = defineCollection({
 	}),
 });
 
-// 手書きの解説記事（Tips）。posts / periods と違い、Skill ではなく人が書く。
+// 解説記事（Tips）。posts / periods と違い、自動実行では増えず、運営者が必要なときに書く。
 // id はそのまま URL（`/tips/<id>/`）になり、日次レポート本文からの参照キーにもなる。
 const tips = defineCollection({
 	loader: glob({ base: './docs/tips', pattern: '*.md' }),
