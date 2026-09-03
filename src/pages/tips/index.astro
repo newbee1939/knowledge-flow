@@ -8,12 +8,7 @@ const tips = await getTips();
 ---
 
 <BaseLayout title="Tips | knowledge-flow" description="技術トピックの解説記事。日次レポートの用語はここに繋がる">
-	<div class="intro">
-		<h1>Tips</h1>
-		<p>
-			日次レポートに出てくる技術やサービスを、単体で読める形にまとめたものです。レポートの要約と違い、運営者が自分で書いています。
-		</p>
-	</div>
+	<h1 class="page-label">Tips</h1>
 	<ul class="tip-list">
 		{
 			tips.map((tip) => (
@@ -22,7 +17,7 @@ const tips = await getTips();
 						<h2 class="tip-title">{tip.data.title}</h2>
 						<p class="tip-description">{tip.data.description}</p>
 						<time class="tip-date" datetime={tip.data.updated.toISOString()}>
-							{formatDate(tip.data.updated)}
+							Updated {formatDate(tip.data.updated)}
 						</time>
 					</a>
 				</li>
@@ -32,31 +27,22 @@ const tips = await getTips();
 </BaseLayout>
 
 <style>
-	.intro {
+	.page-label {
 		max-width: var(--container-article);
-		margin-inline: auto;
+		margin: 0 auto;
 		padding-top: var(--space-xl);
-	}
-
-	.intro h1 {
-		margin: 0;
+		color: var(--color-text-muted);
 		font-family: var(--font-mono);
 		font-size: var(--text-xs);
 		font-weight: 400;
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
-		color: var(--color-text-muted);
-	}
-
-	.intro p {
-		margin: var(--space-sm) 0 0;
-		color: var(--color-text-muted);
-		font-size: var(--text-sm);
 	}
 
 	.tip-list {
 		max-width: var(--container-article);
-		margin: var(--space-lg) auto 0;
+		margin: var(--space-md) auto 0;
+		border-bottom: 1px solid var(--color-border);
 		padding: 0;
 		list-style: none;
 	}

@@ -22,7 +22,7 @@ const { Content } = await render(tip);
 		<header class="tip-header">
 			<span class="tip-label">Tips</span>
 			<h1>{tip.data.title}</h1>
-			<time datetime={tip.data.updated.toISOString()}>{formatDate(tip.data.updated)} 更新</time>
+			<time datetime={tip.data.updated.toISOString()}>Updated {formatDate(tip.data.updated)}</time>
 		</header>
 		<Prose>
 			<Content />
