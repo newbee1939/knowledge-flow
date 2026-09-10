@@ -19,7 +19,7 @@
   "https://ascii.jp/rss.xml": 0,
   "https://ascii.jp/pc/rss.xml": 0,
   "https://dev.classmethod.jp/feed/": 0,
-  "https://engineering.mercari.com/blog/feed.xml": 7,
+  "https://engineering.mercari.com/blog/feed.xml": 8,
   "https://techblog.lycorp.co.jp/ja/feed/index.xml": 0,
   "https://b.hatena.ne.jp/hotentry/all.rss": 0,
   "https://b.hatena.ne.jp/hotentry/life.rss": 0,
@@ -39,5 +39,6 @@
   "https://tldr.tech/api/rss/tech": 0,
   "https://www.producthunt.com/feed": 0,
   "https://www.reddit.com/r/programming+ExperiencedDevs+MachineLearning+LocalLLaMA+sre+devops+learnprogramming+softwaredevelopment/.rss?limit=60": 0,
-  "https://www.ipa.go.jp/security/security-alert/index.html": 0
+  "https://www.ipa.go.jp/security/security-alert/index.html": 0,
+  "https://leaddev.com/feed": 0
 }
