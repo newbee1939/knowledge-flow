@@ -96,3 +96,7 @@
     - `permissions: id-token: write`（daily-report / period-summary）の棚卸し
         - Claude GitHub App の OIDC 交換に必要で消せないが、「このリポジトリの GitHub Actions である」と外部に名乗れる強い権限。他用途に使われていないかをたまに確認する
     - 自動実行の agent が触れる範囲は、増やすたびにガード（`.github/workflows/daily-report.yml` の push ステップ）と揃える
+- 画像も貼れるようにしたい
+    - カテゴリごとのページでこれまでの歴史が分かるような画像？
+    - 月や年のまとめのところも？
+    - Dailyのところも？
