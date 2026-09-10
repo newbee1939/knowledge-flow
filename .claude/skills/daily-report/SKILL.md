@@ -317,6 +317,7 @@ head -5 docs/tips/*.md    # 全 Tips の title / description を一覧する
 - Google Cloud Release Notes `[Atom]`: https://docs.cloud.google.com/feeds/gcp-release-notes.xml
 - Google Cloud (Medium) `[RSS]`: https://medium.com/feed/google-cloud
 - SRE Weekly `[RSS]`: https://sreweekly.com/feed/
+- LeadDev `[RSS]`: https://leaddev.com/feed
 - Cloudflare Blog `[RSS]`: https://blog.cloudflare.com/rss/
 - CNCF Blog `[RSS]`: https://www.cncf.io/feed/
 - Serve The Home `[RSS]`: https://www.servethehome.com/feed/
