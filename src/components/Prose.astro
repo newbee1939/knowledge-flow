@@ -185,9 +185,8 @@
 </style>
 
 <script>
-	// このサイトで唯一クライアント JS が必要な箇所（クリップボード）。記事ごとに script を
-	// 吐かず、ページに 1 つだけ置いてイベント委譲で拾う。details の開閉と「ChatGPTで深掘り」は
-	// JS 無しで動くので、ここが失敗しても記事は読めるし深掘りもできる。
+	// コピーだけはクライアント JS が要る。document に 1 つ置いて委譲で拾う
+	// （details の開閉と「ChatGPTで深掘り」は JS 無しで動く）。
 	document.addEventListener('click', async (event) => {
 		const target = event.target;
 		if (!(target instanceof HTMLElement)) {
@@ -204,13 +203,11 @@
 		try {
 			await navigator.clipboard.writeText(prompt);
 		} catch {
-			// clipboard 非対応・権限拒否。黙って諦める（ChatGPT リンクは動く）
-			return;
+			return; // 非対応・権限拒否は黙って諦める
 		}
 		const label = button.textContent;
 		button.textContent = 'コピーしました';
-		// 2 秒だけ押せなくする。連打対策の状態をどこにも持たずに済む
-		button.disabled = true;
+		button.disabled = true; // 2 秒だけ押せなくする（連打対策）
 		setTimeout(() => {
 			button.textContent = label;
 			button.disabled = false;

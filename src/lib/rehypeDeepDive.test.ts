@@ -20,18 +20,16 @@ const heading = (tagName: string, children: HastNode[]): HastNode => ({
 
 const root = (children: HastNode[]): HastNode => ({ type: 'root', children });
 
-/** ツリー内の details 要素をすべて集める */
 const findDeepDives = (node: HastNode): HastNode[] => [
 	...(node.tagName === 'details' ? [node] : []),
 	...(node.children ?? []).flatMap(findDeepDives),
 ];
 
-/** details 配下から tagName の要素を 1 つ取り出す */
-const pick = (node: HastNode, tagName: string): HastNode | undefined =>
+const findByTag = (node: HastNode, tagName: string): HastNode | undefined =>
 	node.tagName === tagName
 		? node
 		: (node.children ?? []).reduce<HastNode | undefined>(
-				(found, child) => found ?? pick(child, tagName),
+				(found, child) => found ?? findByTag(child, tagName),
 				undefined,
 			);
 
@@ -52,8 +50,8 @@ describe('insertDeepDive', () => {
 
 		const prompt =
 			'以下の記事について、分かりやすく解説をお願いします。\n\nhttps://example.com/article';
-		expect(pick(deepDive, 'button')?.properties?.['data-deepdive-copy']).toBe(prompt);
-		expect(pick(deepDive, 'a')?.properties?.href).toBe(
+		expect(findByTag(deepDive, 'button')?.properties?.['data-deepdive-copy']).toBe(prompt);
+		expect(findByTag(deepDive, 'a')?.properties?.href).toBe(
 			`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`,
 		);
 	});
@@ -62,7 +60,7 @@ describe('insertDeepDive', () => {
 		const tree = root([heading('h3', [link('https://example.com/article')])]);
 		insertDeepDive(tree);
 		const [deepDive] = findDeepDives(tree);
-		expect(pick(deepDive, 'summary')?.properties?.['aria-label']).toBe('AI深掘り');
+		expect(findByTag(deepDive, 'summary')?.properties?.['aria-label']).toBe('AI深掘り');
 	});
 
 	it('リンクのない見出しには挿入しない', () => {
