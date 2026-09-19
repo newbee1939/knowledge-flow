@@ -3,6 +3,8 @@ export interface HastNode {
 	tagName?: string;
 	properties?: Record<string, unknown>;
 	children?: HastNode[];
+	/** テキストノード（type: 'text'）の中身 */
+	value?: string;
 }
 
 /**

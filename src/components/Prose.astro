@@ -48,6 +48,85 @@
 		text-underline-offset: 0.25em;
 	}
 
+	/* 記事見出しの直下に出る「AI深掘り」（src/lib/rehypeDeepDive.ts が挿入する）。
+	 * 開閉は details 任せで JS を使わない。トリガーはアイコン 1 つだけにして、
+	 * 記事が 20 本並んでも紙面が騒がしくならないようにする。 */
+	.prose :global(.deepdive) {
+		/* 四芒星（辺が内側にくぼんだ細身のスパーク）。絵柄の差し替えはこの 1 行だけ。
+		 * 塗りだけの形なので 14px でも潰れない。 */
+		--deepdive-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 .5C8.6 4.6 11.4 7.4 15.5 8 11.4 8.6 8.6 11.4 8 15.5 7.4 11.4 4.6 8.6 .5 8 4.6 7.4 7.4 4.6 8 .5Z'/%3E%3C/svg%3E")
+			center / contain no-repeat;
+		margin: 0 0 var(--space-xs);
+	}
+
+	.prose :global(.deepdive summary) {
+		/* details の三角を消す。::marker 非対応の Safari 向けに webkit 側も指定する */
+		list-style: none;
+		display: flex;
+		align-items: center;
+		width: fit-content;
+		/* アイコンは 14px しかないので、指で押せるだけの余白を padding で稼ぐ */
+		min-height: 2.75rem;
+		padding-right: var(--space-md);
+		color: var(--color-text-muted);
+		cursor: pointer;
+	}
+
+	.prose :global(.deepdive summary::-webkit-details-marker) {
+		display: none;
+	}
+
+	.prose :global(.deepdive summary::before) {
+		content: '';
+		display: block;
+		width: 0.875rem;
+		height: 0.875rem;
+		/* 色は currentColor 由来。色トークンを直接書かないのでダークモードに自動で追従する */
+		background: currentColor;
+		-webkit-mask: var(--deepdive-icon);
+		mask: var(--deepdive-icon);
+	}
+
+	.prose :global(.deepdive summary:hover),
+	.prose :global(.deepdive[open] summary) {
+		color: var(--color-accent);
+	}
+
+	.prose :global(.deepdive-menu) {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-md);
+		padding-bottom: var(--space-2xs);
+		color: var(--color-text-muted);
+		font-size: var(--text-xs);
+	}
+
+	/* コピーは button（遷移しない）、深掘りは a（遷移する）で役割が違うが、
+	 * 並びで見えるものなので見た目は揃える */
+	.prose :global(.deepdive-menu button) {
+		border: 0;
+		background: none;
+		padding: 0;
+		color: inherit;
+		font: inherit;
+		text-decoration: underline;
+		text-underline-offset: 0.22em;
+		text-decoration-color: var(--color-text-muted);
+		cursor: pointer;
+	}
+
+	.prose :global(.deepdive-menu button:hover) {
+		color: var(--color-accent);
+		text-decoration-color: var(--color-accent);
+	}
+
+	/* コピー直後の 2 秒間。押せないことを見た目でも示す */
+	.prose :global(.deepdive-menu button:disabled) {
+		text-decoration: none;
+		cursor: default;
+	}
+
 	.prose :global(p),
 	.prose :global(ul),
 	.prose :global(ol) {
@@ -110,3 +189,37 @@
 		border-top: 1px solid var(--color-border);
 	}
 </style>
+
+<script>
+	// このサイトで唯一クライアント JS が必要な箇所（クリップボード）。記事ごとに script を
+	// 吐かず、ページに 1 つだけ置いてイベント委譲で拾う。details の開閉と「ChatGPTで深掘り」は
+	// JS 無しで動くので、ここが失敗しても記事は読めるし深掘りもできる。
+	document.addEventListener('click', async (event) => {
+		const target = event.target;
+		if (!(target instanceof HTMLElement)) {
+			return;
+		}
+		const button = target.closest('button[data-deepdive-copy]');
+		if (!(button instanceof HTMLButtonElement)) {
+			return;
+		}
+		const prompt = button.dataset.deepdiveCopy;
+		if (!prompt) {
+			return;
+		}
+		try {
+			await navigator.clipboard.writeText(prompt);
+		} catch {
+			// clipboard 非対応・権限拒否。黙って諦める（ChatGPT リンクは動く）
+			return;
+		}
+		const label = button.textContent;
+		button.textContent = 'コピーしました';
+		// 2 秒だけ押せなくする。連打対策の状態をどこにも持たずに済む
+		button.disabled = true;
+		setTimeout(() => {
+			button.textContent = label;
+			button.disabled = false;
+		}, 2000);
+	});
+</script>
