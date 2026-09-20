@@ -73,6 +73,8 @@ type: `feat` / `fix` / `chore` / `docs` / `style` / `refactor` / `ci`
 - PR上でAIによるレビューが来るので対応する
     - 修正したら、それぞれのコメントに返信した上でコメントをResolveする
 - **実装を追加・修正したら、PR の description も必ず最新化する。** 差分と description がズレると、レビュアーが古い前提で読んでしまう
+- **PR の description は最小限にする。** 何をするものか・設計の要点・確認したことだけ書く。差分を読めば分かることを並べ直さない
+- **セッション ID（`https://claude.ai/code/session_…`）は書かない。** PR の description にもコミットメッセージにも残さない
 - 必ず出ているPRをマージしてから次のタスクに進む
 
 ## コミット前のセルフレビュー

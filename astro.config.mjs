@@ -2,6 +2,7 @@
 import { unified } from '@astrojs/markdown-remark';
 import { defineConfig } from 'astro/config';
 import rehypeMermaid from 'rehype-mermaid';
+import { rehypeDeepDive } from './src/lib/rehypeDeepDive.ts';
 import { rehypeExternalLinks } from './src/lib/rehypeExternalLinks.ts';
 import { rehypeInternalLinks } from './src/lib/rehypeInternalLinks.ts';
 
@@ -63,11 +64,15 @@ export default defineConfig({
 		//
 		// 記事本文に書いたサイト内リンク（`/blog/…`）には base を付ける。
 		// 詳細は src/lib/rehypeInternalLinks.ts
+		//
+		// 記事見出しの直下に「AI深掘り」を挿入する（生成したリンクを他プラグインに触らせないため最後）。
+		// 詳細は src/lib/rehypeDeepDive.ts
 		processor: unified({
 			rehypePlugins: [
 				[rehypeMermaid, { mermaidConfig }],
 				rehypeExternalLinks,
 				[rehypeInternalLinks, base],
+				rehypeDeepDive,
 			],
 		}),
 	},

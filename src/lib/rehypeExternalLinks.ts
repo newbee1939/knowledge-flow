@@ -3,6 +3,7 @@ export interface HastNode {
 	tagName?: string;
 	properties?: Record<string, unknown>;
 	children?: HastNode[];
+	value?: string;
 }
 
 /**
