@@ -23,7 +23,7 @@ const articleUrl = (node: HastNode): string | undefined => {
 
 /** 記事 1 本ぶんの「AI深掘り」。コピー用の文面は data 属性で Prose.astro のスクリプトに渡す */
 const deepDiveNode = (url: string): HastNode => {
-	const prompt = `以下の記事について、分かりやすく解説をお願いします。\n\n${url}`;
+	const prompt = `以下の記事について、分かりやすく簡潔に解説をお願いします。\n\n${url}`;
 	return element('details', { class: 'deepdive' }, [
 		// アイコンは CSS の summary::before で描くので中身は空
 		element('summary', { 'aria-label': 'AI深掘り', title: 'AI深掘り' }),
