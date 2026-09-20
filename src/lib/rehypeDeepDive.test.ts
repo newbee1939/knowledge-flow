@@ -49,7 +49,7 @@ describe('insertDeepDive', () => {
 		const [deepDive] = findDeepDives(tree);
 
 		const prompt =
-			'以下の記事について、分かりやすく解説をお願いします。\n\nhttps://example.com/article';
+			'以下の記事について、分かりやすく簡潔に解説をお願いします。\n\nhttps://example.com/article';
 		expect(findByTag(deepDive, 'button')?.properties?.['data-deepdive-copy']).toBe(prompt);
 		expect(findByTag(deepDive, 'a')?.properties?.href).toBe(
 			`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`,
