@@ -56,6 +56,21 @@ describe('insertDeepDive', () => {
 		);
 	});
 
+	it('Claude の URL も持ち、別タブで開く', () => {
+		const tree = root([heading('h3', [link('https://example.com/article')])]);
+		insertDeepDive(tree);
+		const [deepDive] = findDeepDives(tree);
+
+		const prompt =
+			'以下の記事について、分かりやすく簡潔に解説をお願いします。\n\nhttps://example.com/article';
+		const links = findByTag(deepDive, 'div')?.children?.filter((node) => node.tagName === 'a');
+		expect(links?.at(-1)?.properties).toEqual({
+			href: `https://claude.ai/new?q=${encodeURIComponent(prompt)}`,
+			target: '_blank',
+			rel: 'noopener noreferrer',
+		});
+	});
+
 	it('読み上げ用の名前を summary に付ける', () => {
 		const tree = root([heading('h3', [link('https://example.com/article')])]);
 		insertDeepDive(tree);

@@ -186,7 +186,7 @@
 
 <script>
 	// コピーだけはクライアント JS が要る。document に 1 つ置いて委譲で拾う
-	// （details の開閉と「ChatGPTで深掘り」は JS 無しで動く）。
+	// （details の開閉と「ChatGPT / Claudeで深掘り」は JS 無しで動く）。
 	document.addEventListener('click', async (event) => {
 		const target = event.target;
 		if (!(target instanceof HTMLElement)) {
