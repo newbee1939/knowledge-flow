@@ -21,9 +21,15 @@ const articleUrl = (node: HastNode): string | undefined => {
 	return typeof href === 'string' && EXTERNAL_URL.test(href) ? href : undefined;
 };
 
+const externalLink = (href: string, label: string): HastNode =>
+	element('a', { href, target: '_blank', rel: 'noopener noreferrer' }, [
+		{ type: 'text', value: label },
+	]);
+
 /** 記事 1 本ぶんの「AI深掘り」。コピー用の文面は data 属性で Prose.astro のスクリプトに渡す */
 const deepDiveNode = (url: string): HastNode => {
 	const prompt = `以下の記事について、分かりやすく簡潔に解説をお願いします。\n\n${url}`;
+	const query = encodeURIComponent(prompt);
 	return element('details', { class: 'deepdive' }, [
 		// アイコンは CSS の summary::before で描くので中身は空
 		element('summary', { 'aria-label': 'AI深掘り', title: 'AI深掘り' }),
@@ -32,15 +38,8 @@ const deepDiveNode = (url: string): HastNode => {
 				{ type: 'text', value: '深掘り文をコピー' },
 			]),
 			// Gemini は URL でのプレフィルが公式仕様ではないため、コピーで代替する
-			element(
-				'a',
-				{
-					href: `https://chatgpt.com/?q=${encodeURIComponent(prompt)}`,
-					target: '_blank',
-					rel: 'noopener noreferrer',
-				},
-				[{ type: 'text', value: 'ChatGPTで深掘り' }],
-			),
+			externalLink(`https://chatgpt.com/?q=${query}`, 'ChatGPTで深掘り'),
+			externalLink(`https://claude.ai/new?q=${query}`, 'Claudeで深掘り'),
 		]),
 	]);
 };
