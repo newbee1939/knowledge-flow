@@ -14,18 +14,18 @@
     "postinstall": "playwright install --only-shell chromium"
   },
   "dependencies": {
-    "@astrojs/markdown-remark": "7.2.4",
-    "astro": "7.2.9",
+    "@astrojs/markdown-remark": "7.3.1",
+    "astro": "7.3.5",
     "github-slugger": "2.0.0",
-    "playwright": "1.62.1",
+    "playwright": "1.63.0",
     "rehype-mermaid": "3.0.0"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
-    "@biomejs/biome": "2.5.11",
-    "@types/node": "26.4.0",
-    "typescript": "6.0.3",
-    "vitest": "4.1.11"
+    "@biomejs/biome": "2.5.14",
+    "@types/node": "26.6.3",
+    "typescript": "7.0.2",
+    "vitest": "5.0.2"
   },
   "allowScripts": {
     "esbuild": false,
