@@ -13,6 +13,11 @@ updates:
         patterns:
           - "*"
     open-pull-requests-limit: 1
+    # @astrojs/check（astro check）が peer で typescript ^5 || ^6 までしか許さず、
+    # 7 に上げると npm ci が ERESOLVE で落ちる。@astrojs/check が 7 に対応したら外す。
+    ignore:
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: chore
     labels:
