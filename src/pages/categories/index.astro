@@ -10,10 +10,14 @@ const categories = collectCategories(await getArticles());
 ---
 
 <BaseLayout title="Categories | knowledge-flow" description="Browse tech news by category in chronological order">
+	<label class="sort-toggle">
+		<input type="checkbox" />
+		投稿数順
+	</label>
 	<ul class="category-list">
 		{
 			categories.map((category) => (
-				<li>
+				<li style={`--count: ${category.articles.length}`}>
 					<a class="category-chip" href={withBase(`categories/${category.slug}/`)}>
 						<span class="category-name">{category.name}</span>
 						<span class="category-count">{category.articles.length}</span>
@@ -25,11 +29,26 @@ const categories = collectCategories(await getArticles());
 </BaseLayout>
 
 <style>
+	.sort-toggle {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2xs);
+		margin-top: var(--space-lg);
+		color: var(--color-text-muted);
+		font-size: var(--text-sm);
+		cursor: pointer;
+	}
+
+	/* JS 無しで並べ替える。order は降順にするため符号反転し、同数は DOM 順（名前順）のまま */
+	.sort-toggle:has(input:checked) + .category-list li {
+		order: calc(-1 * var(--count));
+	}
+
 	.category-list {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-sm);
-		margin: var(--space-lg) 0 0;
+		margin: var(--space-md) 0 0;
 		padding: 0;
 		list-style: none;
 	}
