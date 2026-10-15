@@ -41,7 +41,7 @@ description: 1 日分のテックニュースをジャンル別にまとめ docs
     **カテゴリを付ける**
 
     - **各記事の H3 見出しの直後の行に `<!-- categories: A, B -->` 形式でカテゴリを 1〜3 個付ける**（サイトの `/categories/` ページがこのコメントから導出される。「# カテゴリの付け方」参照）
-8. **書き出し**: `docs/blog/posts/<DATE>.md` に書く（同日再実行は上書き）。先頭に下記スキーマの frontmatter、本文は H2 で 6 ジャンル。空のジャンルはセクションごと省略。
+8. **書き出し**: `docs/blog/posts/<DATE>.md` に書く（同日再実行は上書き）。先頭に下記スキーマの frontmatter、本文は H2 で 6 ジャンル、その後ろに `## 管理人のピックアップ`（「# 管理人のピックアップの書き方」参照）。空のジャンルはセクションごと省略。
 9. **事実確認**: 書いた要約を 1 件ずつ、取得したエントリの内容と突き合わせる（「# ファクトチェック」参照）。裏が取れない事実は落とす。
 10. **校正**: 書いたファイルを読み返し、誤字脱字・変換ミスを直す。特に**外来語がひらがなのまま残っていないか**（`grep -nE '[ぁ-ん]ー' docs/blog/posts/<DATE>.md` で「くろーらー」のような取りこぼしが出る）。観点は [[proofread]] と同じ。あわせて、**報道媒体（Gigazine / ITmedia / @IT / Publickey など）にリンクしている記事の要約に、その媒体名が書かれているか**を 1 件ずつ確認する。抜けていたら足す。
 11. **commit**: `git add docs/ && git commit -m "report: <DATE>"`。push は任意（手動確認のため）。
@@ -126,6 +126,17 @@ AIの回答のできばえを、人が目で見る代わりに、ソフトのテ
 - 1 件 **3〜4 文**で〈何をするプロダクトか・既存のやり方と何が違うか・誰の役に立つか〉。ニュース要約より短くてよい
 - 見出しのリンク先は Product Hunt の投稿 URL（`<item><link>`）。プロダクトの公式サイトは貼らない（フィードから確実に取れるのが投稿ページの URL だけのため）
 - **キャッチコピーを訳しただけの紹介文にしない。** 「# 引用と著作権のルール」は Products にも同じく適用される
+
+# 管理人のピックアップの書き方
+
+運営者が前日にはてなブックマークした記事を、レポートの**末尾**に `## 管理人のピックアップ` として載せる。サイトはこの H2 の下の記事を `/pickup/` に集める（`src/lib/articles.ts`）。
+
+- **ソースは `# 情報ソース` の「管理人のブックマーク」だけ。** 手順 3 の 24 時間フィルタではなく、`dc:date`（UTC）を JST に直して **`<DATE>` の前日**のものを全件対象にする
+- **当日の通常ジャンルに載せた URL と、手順 4 の直近 7 日分の URL は除く。** 重複したら通常ジャンル側に残す（同じ URL が 2 記事にあるとビルドが止まる）
+- 対象が 0 件ならセクションごと省く
+- 書き方は通常記事と同じ（H3 ＋ categories コメント ＋ 要約 3〜4 文）。フィードには冒頭の抜粋しかないので、**記事本体を WebFetch してから要約する**
+- **categories には技術カテゴリだけを付ける。** 「管理人のピックアップ」はカテゴリではない（サイト側もカテゴリに入れない）
+- ブックマークコメントは載せない
 
 # Mermaid 図の書き方
 
@@ -330,6 +341,10 @@ head -5 docs/tips/*.md    # 全 Tips の title / description を一覧する
 ## Reddit
 取得方法は `# 注意` 参照（WebFetch 不可、curl で取る）。8 サブレディットを `+` で連結した合成フィードを **1 リクエスト**で取る（個別に叩くと 2 本目以降がレート制限で 429 になる）。
 - r/programming + r/ExperiencedDevs + r/MachineLearning + r/LocalLLaMA + r/sre + r/devops + r/learnprogramming + r/softwaredevelopment `[RSS]`: https://www.reddit.com/r/programming+ExperiencedDevs+MachineLearning+LocalLLaMA+sre+devops+learnprogramming+softwaredevelopment/.rss?limit=60
+
+## 管理人のブックマーク
+「# 管理人のピックアップの書き方」専用のソース。通常ジャンルの候補には混ぜない。
+- はてなブックマーク - newbee1939 `[RSS]`: https://b.hatena.ne.jp/newbee1939/bookmark.rss
 
 ## セキュリティ
 - IPA セキュリティアラート `[HTML]`: https://www.ipa.go.jp/security/security-alert/index.html

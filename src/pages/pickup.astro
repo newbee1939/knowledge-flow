@@ -1,0 +1,42 @@
+---
+import Timeline from '../components/Timeline.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getArticles } from '../lib/posts';
+import { withBase } from '../lib/url';
+
+const articles = (await getArticles()).filter((article) => article.pickup);
+---
+
+<BaseLayout title="Pickup | knowledge-flow" description="管理人がはてなブックマークで選んだ記事">
+	<header class="page-header">
+		<h1 class="page-title">管理人のピックアップ</h1>
+		<p class="page-description">{articles.length} 件の記事</p>
+	</header>
+	<Timeline
+		items={articles.map((article) => ({
+			href: withBase(`blog/${article.postId}/#${article.anchor}`),
+			date: article.date,
+			title: article.title,
+		}))}
+	/>
+</BaseLayout>
+
+<style>
+	.page-header {
+		margin-top: var(--space-md);
+		border-bottom: 1px solid var(--color-border);
+		padding-bottom: var(--space-lg);
+	}
+
+	.page-title {
+		margin: 0;
+		font-size: var(--text-2xl);
+		font-weight: 500;
+	}
+
+	.page-description {
+		margin: var(--space-2xs) 0 0;
+		color: var(--color-text-muted);
+		font-size: var(--text-xs);
+	}
+</style>
