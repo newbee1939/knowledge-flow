@@ -155,4 +155,24 @@ describe('extractArticles', () => {
 		expect(articles).toHaveLength(1);
 		expect(articles[0].anchor).toBe('ただの見出し-1');
 	});
+
+	it('「管理人のピックアップ」配下の記事は pickup になり、ジャンル名はカテゴリに入れない', () => {
+		const articles = extractArticles(
+			post(
+				[
+					'## AI',
+					'',
+					'### [Agent Patterns](https://example.com/a)',
+					'',
+					'## 管理人のピックアップ',
+					'',
+					'### [Logic Bugs](https://example.com/b)',
+					'<!-- categories: Security -->',
+				].join('\n'),
+			),
+		);
+
+		expect(articles[0]).toMatchObject({ pickup: false, categories: ['AI'] });
+		expect(articles[1]).toMatchObject({ pickup: true, categories: ['Security'] });
+	});
 });

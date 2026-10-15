@@ -10,6 +10,7 @@ const article = (overrides: Partial<PostArticle>): PostArticle => ({
 	url: 'https://example.com',
 	anchor: 'title',
 	categories: ['Backend'],
+	pickup: false,
 	...overrides,
 });
 

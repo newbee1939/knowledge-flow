@@ -14,7 +14,11 @@ export interface PostArticle {
 	anchor: string;
 	/** ジャンル＋明示カテゴリ（重複除去済み）。明示カテゴリは見出し直後の categories コメントで付与する */
 	categories: string[];
+	/** 管理人のピックアップ（はてブ由来）の記事か。このジャンルは技術カテゴリではないので categories に入れない */
+	pickup: boolean;
 }
+
+const PICKUP_GENRE = '管理人のピックアップ';
 
 const FENCE = /^\s*(?:```|~~~)/;
 const HEADING = /^(#{1,6})\s+(.*?)\s*$/;
@@ -108,7 +112,11 @@ export function extractArticles(post: { postId: string; date: Date; body: string
 			// H3見出しかつリンクの場合はcategoriesなどを設定して最後にreturn
 			const link = hashes.length === 3 ? rawText.match(LINK_HEADING) : null;
 			if (link) {
-				const categories = [state.genre, ...readExplicitCategories(lines, index + 1)];
+				const pickup = state.genre === PICKUP_GENRE;
+				const categories = [
+					...(pickup ? [] : [state.genre]),
+					...readExplicitCategories(lines, index + 1),
+				];
 				state.articles.push({
 					postId: post.postId,
 					date: post.date,
@@ -117,6 +125,7 @@ export function extractArticles(post: { postId: string; date: Date; body: string
 					url: link[2],
 					anchor,
 					categories: [...new Set(categories)].filter(Boolean),
+					pickup,
 				});
 			}
 			return state;
