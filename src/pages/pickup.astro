@@ -7,7 +7,7 @@ import { withBase } from '../lib/url';
 const articles = (await getArticles()).filter((article) => article.pickup);
 ---
 
-<BaseLayout title="Pickup | knowledge-flow" description="管理人がはてなブックマークで選んだ記事">
+<BaseLayout title="Pickup | knowledge-flow" description="管理人が気になった記事">
 	<header class="page-header">
 		<h1 class="page-title">管理人のピックアップ</h1>
 		<p class="page-description">{articles.length} 件の記事</p>
