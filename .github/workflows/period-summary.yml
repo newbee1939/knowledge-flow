@@ -5,8 +5,10 @@ name: Period Summary
 # トークンの扱い・push が pages.yml を直接起動できない事情は daily-report.yml のコメントを参照。
 on:
   schedule:
-    # 1 日 09:00 JST = 1 日 00:00 UTC。cron は UTC で書く（ARCHITECTURE.md の落とし穴 5）。
-    - cron: '0 0 1 * *'
+    # daily-report.yml の初回と同じ 1 日 01:37 JST に走らせる。cron は UTC で書く（ARCHITECTURE.md の落とし穴 5）。
+    # 01:37 JST は前日 16:37 UTC、つまり UTC では「月末日」になる。cron では月末日を直接書けないため
+    # 28〜31 日に起動し、下の check ステップで「JST の今日が 1 日」の run だけを通す。
+    - cron: '37 16 28-31 * *'
   workflow_dispatch:
     inputs:
       period:
@@ -39,7 +41,21 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # schedule は 28〜31 日に起動するので、JST の 1 日でなければ何もせず成功で終える。
+      # 手動実行（workflow_dispatch）はいつでも通す。
+      # スキップした run も success なので pages.yml が再デプロイするが、月 3 回程度で実害は無い。
+      - id: check
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT" != 'schedule' ] || [ "$(date +%d)" = '01' ]; then
+            echo 'needed=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'needed=false' >> "$GITHUB_OUTPUT"
+          fi
+
       - id: subscription
+        if: steps.check.outputs.needed == 'true'
         uses: anthropics/claude-code-action@fd1c128679612beff4ca259c78021c506e8aa7a7 # v1.0.237
         continue-on-error: true
         with:
@@ -59,6 +75,7 @@ jobs:
       # ステップを参照）。ここが読む日次レポートは外部サイト由来の文章を含むので、
       # プロンプトインジェクションの連鎖はこのワークフローにも届く。
       - name: push（触ってはいけない場所の変更があれば中止）
+        if: steps.check.outputs.needed == 'true'
         run: |
           # 触ってよいのは docs/ だけ。':(exclude)docs/' は「docs/ を除いて」の意味で、
           # 除いてなお残れば、はみ出し。

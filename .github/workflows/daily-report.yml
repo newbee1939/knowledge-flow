@@ -1,6 +1,6 @@
 name: Daily Report
 
-# 毎日深夜 03:37 JST に /daily-report Skill を実行し、当日のレポートを main へ push する（P3）。
+# 毎日深夜 01:37 JST に /daily-report Skill を実行し、当日のレポートを main へ push する（P3）。
 # この push は GITHUB_TOKEN で行われるため push イベントとしては pages.yml を起動できない。
 # pages.yml 側が本ワークフローの完了を workflow_run で直接受けて起動し、サイトが自動更新される（P3-4 の連鎖）。
 #
@@ -14,12 +14,12 @@ name: Daily Report
 # 朝までに 1 本あればよいので、起動は朝までに閉じている。これは取りこぼし対策でもある。
 # SKILL.md 手順 3 の取得ウィンドウ（24 時間）は実行時刻を基準にスライドするため、
 # 遅い時刻に復旧するほど前日ぶんのニュースが穴になる。早い時間帯に固めておけば、
-# 最後の 06:37 まで持ち越しても穴は 3 時間で収まる。
+# 最後の 04:37 まで持ち越しても穴は 3 時間で収まる。
 on:
   schedule:
-    # cron は UTC で書く（ARCHITECTURE.md の落とし穴 5）。18:37〜21:37 UTC = 03:37〜06:37 JST。
+    # cron は UTC で書く（ARCHITECTURE.md の落とし穴 5）。16:37〜19:37 UTC = 01:37〜04:37 JST。
     # 正時ちょうどは実行が集中して遅延しやすいため、分をずらしている。
-    - cron: '37 18-21 * * *'
+    - cron: '37 16-19 * * *'
   workflow_dispatch:
     inputs:
       force:
