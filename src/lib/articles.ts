@@ -90,46 +90,40 @@ export function extractArticles(post: { postId: string; date: Date; body: string
 	const lines = maskFencedLines(post.body.split('\n'));
 	const slugger = new GithubSlugger();
 
-	// bodyの中身を1行ずつ処理する
-	return lines.reduce<{ articles: PostArticle[]; genre: string }>(
-		(state, line, index) => {
-			const heading = line.match(HEADING);
-			// 見出し行でない場合はスキップする
-			if (!heading) {
-				return state;
-			}
+	// 全見出しを文書順に slug 化する（Astro とカウンタを同期させるため、H3 以外も飛ばさない）
+	const headings = lines.flatMap((line, index) => {
+		const heading = line.match(HEADING);
+		if (!heading) {
+			return [];
+		}
+		const [, hashes, rawText] = heading;
+		const text = toTextContent(rawText);
+		return [{ level: hashes.length, rawText, text, anchor: slugger.slug(text), index }];
+	});
 
-			const [, hashes, rawText] = heading;
-			const text = toTextContent(rawText);
-			const anchor = slugger.slug(text);
-
-			// H2見出しの場合はジャンルだけ設定してreturn
-			if (hashes.length === 2) {
-				state.genre = text;
-				return state;
-			}
-
-			// H3見出しかつリンクの場合はcategoriesなどを設定して最後にreturn
-			const link = hashes.length === 3 ? rawText.match(LINK_HEADING) : null;
-			if (link) {
-				const pickup = state.genre === PICKUP_GENRE;
-				const categories = [
-					...(pickup ? [] : [state.genre]),
-					...readExplicitCategories(lines, index + 1),
-				];
-				state.articles.push({
-					postId: post.postId,
-					date: post.date,
-					genre: state.genre,
-					title: link[1],
-					url: link[2],
-					anchor,
-					categories: [...new Set(categories)].filter(Boolean),
-					pickup,
-				});
-			}
-			return state;
-		},
-		{ articles: [], genre: '' },
-	).articles;
+	// リンク付きの H3 見出しを記事にする。ジャンルは直前の H2 見出し
+	return headings.flatMap((heading, i) => {
+		const link = heading.level === 3 ? heading.rawText.match(LINK_HEADING) : null;
+		if (!link) {
+			return [];
+		}
+		const genre = headings.slice(0, i).findLast((h) => h.level === 2)?.text ?? '';
+		const pickup = genre === PICKUP_GENRE;
+		const categories = [
+			...(pickup ? [] : [genre]),
+			...readExplicitCategories(lines, heading.index + 1),
+		];
+		return [
+			{
+				postId: post.postId,
+				date: post.date,
+				genre,
+				title: link[1],
+				url: link[2],
+				anchor: heading.anchor,
+				categories: [...new Set(categories)].filter(Boolean),
+				pickup,
+			},
+		];
+	});
 }
