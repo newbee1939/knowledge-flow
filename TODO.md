@@ -78,7 +78,6 @@
     - **先に仕様化テストを書いてから着手する。** テストを 1 文字も変えずに全件通ることを「挙動不変」の証拠にする（CLAUDE.md）
     - `src/lib/posts.ts` が 4 つの関心（posts / periods / articles / tips）を持っている。ファイル分割の候補
     - `getTips()` が tips と posts の両方を読んでいる。リンク切れ検査をどこに置くかの再検討
-    - `src/lib/articles.ts` の `extractArticles` が `reduce` の中で state オブジェクトを書き換えている。読みづらさの元
     - `src/components/Timeline.astro` が 201 行で最大。構造の組み立てと見た目が同居している
     - `scripts/articles-index.ts` が `posts.ts` を通らず fs を直接読む。抽出ロジックは共有しているが、URL 重複検査は効かない
 - 目次表示機能
