@@ -12,6 +12,12 @@ updates:
       npm:
         patterns:
           - "*"
+      # セキュリティ修正は月 1 回を待たずに届く（リポジトリ設定の Dependabot security updates が有効な場合）。
+      # バラバラに来ないよう 1 本にまとめる。
+      npm-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
     open-pull-requests-limit: 1
     # @astrojs/check（astro check）が peer で typescript ^5 || ^6 までしか許さず、
     # 7 に上げると npm ci が ERESOLVE で落ちる。@astrojs/check が 7 に対応したら外す。
