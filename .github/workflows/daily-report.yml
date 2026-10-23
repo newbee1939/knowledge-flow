@@ -126,6 +126,15 @@ jobs:
       - name: push（触ってはいけない場所の変更があれば中止）
         if: steps.check.outputs.needed == 'true'
         run: |
+          # Claude は記事を書き終えても commit せずに終わることがある（手順 11 の取りこぼし）。
+          # 書き込み可の 2 か所に未コミットの変更が残っていれば、代わりに commit する。
+          # add するのはこの 2 か所だけなので、他の場所の変更はここで拾われない。
+          git add docs/ .claude/skills/daily-report/failures.json
+          if ! git diff --cached --quiet; then
+            git -c user.name='claude[bot]' -c user.email='41898282+claude[bot]@users.noreply.github.com' \
+              commit -m "report: $(date +%F)"
+          fi
+
           # 触ってよいのは記事（docs/）と、取得の連続失敗回数を書く failures.json だけ。
           #
           # .claude/skills/ をディレクトリごと許してはいけない。同じ場所に SKILL.md
